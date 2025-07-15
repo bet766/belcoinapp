@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bellcoin - Login</title>
+  <title>Belcoin - Plataforma Segura</title>
   <meta charset="UTF-8" />
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -9,17 +9,18 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #232526, #414345);
+      background: linear-gradient(to right, #1e1e1e, #2c3e50);
       color: white;
       text-align: center;
       padding: 30px;
     }
     .container {
-      max-width: 400px;
+      max-width: 450px;
       margin: auto;
       background: #2e2e2e;
       padding: 20px;
       border-radius: 10px;
+      display: none;
     }
     input, button {
       width: 90%;
@@ -34,185 +35,95 @@
       font-weight: bold;
       cursor: pointer;
     }
-    #painel, #cadastroTela {
-      display: none;
+    h2 {
+      color: #00ffcc;
+    }
+    a {
+      color: #00ffcc;
+      cursor: pointer;
+    }
+    .trader-card {
+      background: #1b1b1b;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      width: 100%;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      height: 10px;
+      background: #4caf50;
+      width: 0%;
     }
   </style>
 </head>
 <body>
 
+<h2>Belcoin</h2>
+
+<!-- TELA DE LOGIN -->
 <div class="container" id="loginTela">
-  <h2>Bellcoin</h2>
-  <p><strong>Login</strong></p>
+  <h3>Login - Belcoin</h3>
   <input type="email" id="emailLogin" placeholder="E-mail" />
   <input type="password" id="senhaLogin" placeholder="Senha" />
   <button onclick="logar()">Entrar</button>
-  <p>Ainda não tem conta? <a href="#" onclick="mostrarCadastro()">Registrar</a></p>
+  <p>Não tem conta? <a onclick="mostrarCadastro()">Registrar</a></p>
 </div>
 
+<!-- TELA DE CADASTRO -->
 <div class="container" id="cadastroTela">
-  <h2>Cadastro na Bellcoin</h2>
+  <h3>Cadastro na Belcoin</h3>
   <input type="text" id="nome" placeholder="Nome completo" />
   <input type="email" id="email" placeholder="E-mail" />
   <input type="text" id="cpf" placeholder="CPF" />
   <input type="text" id="telefone" placeholder="Telefone" />
   <input type="password" id="senha" placeholder="Senha" />
   <button onclick="registrar()">Registrar</button>
-  <p>Já tem conta? <a href="#" onclick="mostrarLogin()">Voltar ao login</a></p>
+  <p>Já tem conta? <a onclick="mostrarLogin()">Voltar ao login</a></p>
 </div>
 
-<div class="container" id="painel">
-  <h2>Bem-vindo à Bellcoin</h2>
+<!-- TELA DO PAINEL -->
+<div class="container" id="painelTela">
+  <h3>Bem-vindo à Belcoin!</h3>
   <p>✅ Plataforma de investimento segura</p>
   <p>🚀 Já no mercado há 3 meses</p>
-  <p>⚙️ Atualizamos tudo para não afetar seus rendimentos!</p>
-  <button onclick="logout()">Sair</button>
-</div>
+  <p>🛠️ Atualizada sem afetar seus rendimentos</p>
 
-<script>
-  // CONFIGURAÇÃO FIREBASE AQUI
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_DOMINIO.firebaseapp.com",
-    projectId: "SEU_PROJECT_ID",
-    storageBucket: "SEU_BUCKET",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  <div>
+    <h4>Seu link de indicação:</h4>
+    <p id="linkIndicacao"></p>
+  </div>
 
-  // Mostrar telas
-  function mostrarCadastro() {
-    document.getElementById('loginTela').style.display = 'none';
-    document.getElementById('cadastroTela').style.display = 'block';
-  }
-  function mostrarLogin() {
-    document.getElementById('cadastroTela').style.display = 'none';
-    document.getElementById('loginTela').style.display = 'block';
-  }
+  <div>
+    <h4>Quem você indicou:</h4>
+    <ul id="listaIndicados"></ul>
+  </div>
 
-  // Registrar usuário
-  function registrar() {
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const cpf = document.getElementById('cpf').value;
-    const telefone = document.getElementById('telefone').value;
-    const senha = document.getElementById('senha').value;
+  <!-- Traders -->
+  <div class="trader-card">
+    <h4>Plano 24h</h4>
+    <button onclick="investir(24)">Investir</button>
+    <div class="progress-bar"><div class="progress-fill" id="barra24"></div></div>
+  </div>
 
-    auth.createUserWithEmailAndPassword(email, senha)
-      .then(userCredential => {
-        const uid = userCredential.user.uid;
-        return db.collection("usuarios").doc(uid).set({
-          nome, email, cpf, telefone, saldo: 0, indicados: [], vip: false
-        });
-      })
-      .then(() => {
-        alert("Registrado com sucesso!");
-        mostrarLogin();
-      })
-      .catch(error => alert(error.message));
-  }
+  <div class="trader-card">
+    <h4>Plano 48h</h4>
+    <button onclick="investir(48)">Investir</button>
+    <div class="progress-bar"><div class="progress-fill" id="barra48"></div></div>
+  </div>
 
-  // Login
-  function logar() {
-    const email = document.getElementById('emailLogin').value;
-    const senha = document.getElementById('senhaLogin').value;
+  <div class="trader-card">
+    <h4>Plano 72h</h4>
+    <button onclick="investir(72)">Investir</button>
+    <div class="progress-bar"><div class="progress-fill" id="barra72"></div></div>
+  </div>
 
-    auth.signInWithEmailAndPassword(email, senha)
-      .then(() => {
-        document.getElementById('loginTela').style.display = 'none';
-        document.getElementById('painel').style.display = 'block';
-      })
-      .catch(error => alert(error.message));
-  }
-
-  // Logout
-  function logout() {
-    auth.signOut().then(() => {
-      document.getElementById('painel').style.display = 'none';
-      document.getElementById('loginTela').style.display = 'block';
-    });
-  }
-
-  // Manter usuário logado
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById('loginTela').style.display = 'none';
-      document.getElementById('painel').style.display = 'block';
-    }
-  });
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Bellcoin - Investimentos</title>
-  <meta charset="UTF-8">
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #fff;
-      text-align: center;
-      padding: 30px;
-    }
-    .investimento-card {
-      background-color: #222;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      height: 20px;
-      background-color: #444;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    .progress-bar-inner {
-      height: 100%;
-      background-color: #4caf50;
-      width: 0%;
-      transition: width 1s linear;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #28a745;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-
-<h2>Traders da Bellcoin</h2>
-<p>Escolha um plano de rendimento:</p>
-
-<div class="investimento-card">
-  <h3>Plano 24h</h3>
-  <button onclick="investir(24)">Investir</button>
-  <div class="progress-bar"><div class="progress-bar-inner" id="progresso24"></div></div>
-</div>
-
-<div class="investimento-card">
-  <h3>Plano 48h</h3>
-  <button onclick="investir(48)">Investir</button>
-  <div class="progress-bar"><div class="progress-bar-inner" id="progresso48"></div></div>
-</div>
-
-<div class="investimento-card">
-  <h3>Plano 72h</h3>
-  <button onclick="investir(72)">Investir</button>
-  <div class="progress-bar"><div class="progress-bar-inner" id="progresso72"></div></div>
+  <button onclick="logout()">Sair da Conta</button>
 </div>
 
 <script>
@@ -229,16 +140,106 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Função para investir
+  function mostrarCadastro() {
+    document.getElementById('loginTela').style.display = 'none';
+    document.getElementById('cadastroTela').style.display = 'block';
+    document.getElementById('painelTela').style.display = 'none';
+  }
+
+  function mostrarLogin() {
+    document.getElementById('loginTela').style.display = 'block';
+    document.getElementById('cadastroTela').style.display = 'none';
+    document.getElementById('painelTela').style.display = 'none';
+  }
+
+  function registrar() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const indicadoPor = urlParams.get("ref") || null;
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const cpf = document.getElementById('cpf').value;
+    const telefone = document.getElementById('telefone').value;
+    const senha = document.getElementById('senha').value;
+
+    auth.createUserWithEmailAndPassword(email, senha)
+      .then(cred => {
+        return db.collection("usuarios").doc(cred.user.uid).set({
+          nome, email, cpf, telefone, saldo: 0, vip: false, indicados: [], indicadoPor
+        }).then(() => {
+          if (indicadoPor) {
+            db.collection("usuarios").doc(indicadoPor).update({
+              indicados: firebase.firestore.FieldValue.arrayUnion(cred.user.uid)
+            });
+          }
+        });
+      })
+      .then(() => {
+        alert("Registrado com sucesso!");
+        mostrarLogin();
+      })
+      .catch(error => alert("Erro: " + error.message));
+  }
+
+  function logar() {
+    const email = document.getElementById('emailLogin').value;
+    const senha = document.getElementById('senhaLogin').value;
+    auth.signInWithEmailAndPassword(email, senha)
+      .then(() => mostrarPainel())
+      .catch(error => alert("Erro: " + error.message));
+  }
+
+  function logout() {
+    auth.signOut().then(() => mostrarLogin());
+  }
+
+  function mostrarPainel() {
+    document.getElementById('loginTela').style.display = 'none';
+    document.getElementById('cadastroTela').style.display = 'none';
+    document.getElementById('painelTela').style.display = 'block';
+
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const refLink = `${window.location.origin}${window.location.pathname}?ref=${user.uid}`;
+    document.getElementById("linkIndicacao").innerText = refLink;
+
+    db.collection("usuarios").doc(user.uid).get().then(doc => {
+      const dados = doc.data();
+      const lista = document.getElementById("listaIndicados");
+      lista.innerHTML = "";
+      if (dados.indicados && dados.indicados.length > 0) {
+        dados.indicados.forEach(uid => {
+          db.collection("usuarios").doc(uid).get().then(doc2 => {
+            if (doc2.exists) {
+              const li = document.createElement("li");
+              li.textContent = doc2.data().nome;
+              lista.appendChild(li);
+            }
+          });
+        });
+      }
+    });
+
+    db.collection("investimentos")
+      .where("uid", "==", user.uid)
+      .where("status", "==", "ativo")
+      .get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const total = data.fim - data.inicio;
+          const restante = data.fim - Date.now();
+          const perc = Math.max(0, Math.min(100, 100 - (restante / total) * 100));
+          const barId = data.plano === "24h" ? "barra24" : data.plano === "48h" ? "barra48" : "barra72";
+          document.getElementById(barId).style.width = perc + "%";
+        });
+      });
+  }
+
   function investir(horas) {
     const user = auth.currentUser;
-    if (!user) {
-      alert("Você precisa estar logado para investir.");
-      return;
-    }
+    if (!user) return alert("Faça login para investir.");
     const agora = Date.now();
     const fim = agora + horas * 60 * 60 * 1000;
-
     db.collection("investimentos").add({
       uid: user.uid,
       plano: `${horas}h`,
@@ -246,29 +247,18 @@
       fim: fim,
       status: "ativo"
     }).then(() => {
-      alert("Investimento registrado com sucesso!");
+      alert("Investimento feito com sucesso!");
+      mostrarPainel();
     });
   }
 
-  // Atualiza progresso
-  auth.onAuthStateChanged(user => {
-    if (!user) return;
-
-    db.collection("investimentos")
-      .where("uid", "==", user.uid)
-      .where("status", "==", "ativo")
-      .get()
-      .then(snapshot => {
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const total = data.fim - data.inicio;
-          const restante = data.fim - Date.now();
-          const perc = Math.max(0, Math.min(100, 100 - (restante / total) * 100));
-          const barId = data.plano === "24h" ? "progresso24" : data.plano === "48h" ? "progresso48" : "progresso72";
-          document.getElementById(barId).style.width = `${perc.toFixed(0)}%`;
-        });
-      });
-  });
+  window.onload = () => {
+    auth.onAuthStateChanged(user => {
+      if (user) mostrarPainel();
+      else mostrarLogin();
+    });
+  };
 </script>
+
 </body>
 </html>
