@@ -4,19 +4,53 @@
   <meta charset="UTF-8" />
   <title>Belcoin App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: #f0f0f0; margin:0; padding:0; }
-    .container { max-width:400px; margin:auto; padding:20px; }
-    h1, h2 { text-align:center; color:#00c853; }
-    input, button { width:100%; padding:12px; margin:8px 0; border:none; border-radius:5px;}
-    input { background:#1e1e1e; color:#fff; }
-    button { background:#00c853; color:#fff; font-size:16px; cursor:pointer; }
-    .card { background:#1e1e1e; padding:16px; margin:16px 0; border-radius:8px; }
-    .btn-block { width:100%; margin:10px 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #00c853;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      background: #1e1e1e;
+      color: #fff;
+    }
+    button {
+      background: #00c853;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .card {
+      background: #1e1e1e;
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 8px;
+    }
+    .btn-block {
+      width: 100%;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
@@ -31,13 +65,15 @@
     <button id="login-btn">Entrar</button>
     <p id="msg" style="color:#ff5252;"></p>
   </div>
-
   <div id="app-screen" class="container" style="display:none;">
     <h2 id="welcome-msg"></h2>
+
     <div id="balance-card" class="card">
       <strong>Saldo:</strong> R$ <span id="balance">0.00</span>
     </div>
+
     <button id="deposit-btn" class="btn-block">Fazer depósito mínimo R$50</button>
+
     <div id="main-menu" style="display:none;">
       <div class="card">
         <h3>Investimento</h3>
@@ -45,210 +81,28 @@
         <button class="invest-btn" data-days="7">Investir 7 dias</button>
         <button class="invest-btn" data-days="30">Investir 30 dias</button>
       </div>
+
       <div class="card">
         <h3>Cupons</h3>
         <button id="cupom-btn">Usar Cupom</button>
       </div>
+
       <div class="card">
         <h3>Indicação</h3>
         <p>Link para indicar:</p>
         <input id="ref-link" readonly />
       </div>
+
       <div class="card">
         <h3>Grupos VIP</h3>
         <button id="vip-btn">Entrar no Grupo VIP</button>
       </div>
+
       <div class="card">
         <h3>Histórico</h3>
         <ul id="history-list"></ul>
       </div>
+
       <button id="logout-btn" class="btn-block" style="background:#d50000;">Sair</button>
     </div>
   </div>
-
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "...",
-      authDomain: "belcoin.firebaseapp.com",
-      projectId: "belcoin",
-      storageBucket: "belcoin.appspot.com",
-      messagingSenderId: "...",
-      appId: "..."
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    // Element references
-    const loginScreen = document.getElementById('login-screen');
-    const appScreen = document.getElementById('app-screen');
-    const signupBtn = document.getElementById('signup-btn');
-    const loginBtn = document.getElementById('login-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    const msg = document.getElementById('msg');
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const cpfInput = document.getElementById('cpf');
-    const phoneInput = document.getElementById('phone');
-    const passwordInput = document.getElementById('password');
-    const welcomeMsg = document.getElementById('welcome-msg');
-    const balanceSpan = document.getElementById('balance');
-    const depositBtn = document.getElementById('deposit-btn');
-    const mainMenu = document.getElementById('main-menu');
-    const investButtons = document.querySelectorAll('.invest-btn');
-    const cupomBtn = document.getElementById('cupom-btn');
-    const refLink = document.getElementById('ref-link');
-    const vipBtn = document.getElementById('vip-btn');
-    const historyList = document.getElementById('history-list');
-
-    let currentUser;
-
-    // Show welcome toast
-    const showWelcome = (name) => {
-      welcomeMsg.textContent = `BEM-VINDO AO BELL COIN, ${name.toUpperCase()}!`;
-      loginScreen.style.display = 'none';
-      appScreen.style.display = 'block';
-      mainMenu.style.display = 'none';
-    };
-
-    // Auth state listener
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        currentUser = user;
-        const udoc = await db.collection('usuarios').doc(user.uid).get();
-        const data = udoc.data();
-        showWelcome(data.nome);
-        setupRefLink(user.uid);
-        loadBalance(data.saldo);
-        loadHistory();
-        checkDeposit(data.saldo);
-        logEvent('login', {});
-      } else {
-        loginScreen.style.display = 'block';
-        appScreen.style.display = 'none';
-      }
-    });
-
-    // Sign up
-    signupBtn.onclick = async () => {
-      try {
-        const userCred = await auth.createUserWithEmailAndPassword(emailInput.value, passwordInput.value);
-        const uid = userCred.user.uid;
-        await db.collection('usuarios').doc(uid).set({
-          nome: nameInput.value,
-          email: emailInput.value,
-          cpf: cpfInput.value,
-          telefone: phoneInput.value,
-          saldo: 0,
-          cargo: 'cliente',
-          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        logEvent('signup', {});
-      } catch (e) { msg.textContent = e.message; }
-    };
-
-    // Login
-    loginBtn.onclick = () => {
-      auth.signInWithEmailAndPassword(emailInput.value, passwordInput.value)
-        .catch(e => msg.textContent = e.message);
-    };
-
-    // Logout
-    logoutBtn.onclick = () => auth.signOut();
-
-    // Setup referral link
-    const setupRefLink = (uid) => {
-      const link = `${window.location.origin}${window.location.pathname}?ref=${uid}`;
-      refLink.value = link;
-    };
-
-    // Deposit
-    depositBtn.onclick = async () => {
-      const amount = 50;
-      const uid = currentUser.uid;
-      await db.collection('usuarios').doc(uid).update({ saldo: firebase.firestore.FieldValue.increment(amount) });
-      await db.collection('logs').add({ 
-        tipo:'deposito', valor:amount, uid, ts: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      const udoc = await db.collection('usuarios').doc(uid).get();
-      const newSaldo = udoc.data().saldo;
-      loadBalance(newSaldo);
-      checkDeposit(newSaldo);
-    };
-
-    // Check deposit to unlock menu
-    const checkDeposit = (saldo) => {
-      if (saldo >= 50) mainMenu.style.display = 'block';
-    };
-
-    // Investments
-    investButtons.forEach(btn => btn.onclick = async () => {
-      const days = parseInt(btn.dataset.days);
-      const amount = 50;
-      const uid = currentUser.uid;
-      const now = Date.now();
-      await db.collection('investimentos').add({
-        uid, amount, days,
-        criadoEm: now,
-        venceEm: now + days*24*60*60*1000,
-        progresso:0
-      });
-      logEvent('investimento', {days, amount});
-      loadHistory();
-    });
-
-    // Cupom
-    cupomBtn.onclick = async () => {
-      const cupom = prompt("Insira o código do cupom:");
-      if (cupom) {
-        await db.collection('cupons').add({uid: currentUser.uid, cupom, usadoEm: firebase.firestore.FieldValue.serverTimestamp()});
-        logEvent('cupom', {cupom});
-        loadHistory();
-      }
-    };
-
-    // VIP
-    vipBtn.onclick = () => {
-      alert("Aqui você será redirecionado(a) para o grupo VIP!");
-      logEvent('vip_click', {});
-    };
-
-    // Load balance
-    const loadBalance = (val) => {
-      balanceSpan.textContent = val.toFixed(2);
-    };
-
-    // Log event
-    const logEvent = (tipo, extra) => {
-      db.collection('logs').add({
-        uid: currentUser.uid,
-        tipo,
-        extra,
-        ts: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    };
-
-    // Load history
-    async function loadHistory() {
-      historyList.innerHTML = '';
-      const logs = await db.collection('logs').where('uid','==',currentUser.uid).orderBy('ts','desc').limit(10).get();
-      logs.forEach(doc => {
-        const d = doc.data();
-        const li = document.createElement('li');
-        li.textContent = `${new Date(d.ts.toDate()).toLocaleString()} — ${d.tipo}`;
-        historyList.appendChild(li);
-      });
-    }
-
-    // Referral sign-up
-    window.onload = async () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.has('ref')) {
-        const ref = params.get('ref');
-        db.collection('indicacoes').add({ referrer:ref, ts: firebase.firestore.FieldValue.serverTimestamp() });
-      }
-    };
-  </script>
-</body>
-</html>
