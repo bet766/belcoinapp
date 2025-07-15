@@ -1,422 +1,254 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Belcoin App - Investimentos</title>
-<style>
-  /* Reset e base */
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-  body { background: linear-gradient(135deg, #ff416c, #ff4b2b); min-height: 100vh; color: #fff; }
-  #app { max-width: 420px; margin: 40px auto; background: #222; border-radius: 12px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-
-  h1, h2, h3 { margin-bottom: 20px; font-weight: 700; text-align: center; }
-
-  input, button, select {
-    width: 100%; padding: 12px 15px; margin: 10px 0; border-radius: 8px; border: none; font-size: 16px;
-  }
-
-  input { background: #444; color: #eee; }
-  input::placeholder { color: #bbb; }
-  select { background: #555; color: #eee; }
-
-  button {
-    background: #ff416c;
-    color: #fff;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  button:hover {
-    background: #ff1e4d;
-  }
-
-  nav { display: flex; justify-content: space-around; margin-bottom: 20px; }
-  nav button {
-    background: transparent; color: #fff; border: none; padding: 12px 20px;
-    font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent;
-    transition: border-color 0.3s ease;
-  }
-  nav button.active {
-    border-color: #ff416c;
-  }
-
-  .hidden { display: none; }
-
-  .card {
-    background: #333;
-    border-radius: 10px;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-  }
-
-  .card strong {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 18px;
-  }
-
-  table {
-    width: 100%; border-collapse: collapse; color: #fff;
-  }
-  th, td {
-    border-bottom: 1px solid #555; padding: 10px; text-align: left;
-  }
-  th {
-    background: #ff416c;
-    font-weight: 700;
-  }
-
-  /* Form error message */
-  .error-msg {
-    color: #ff6b6b; margin-top: 8px; font-size: 14px; text-align: center;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Belcoin App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #f0f0f0; margin:0; padding:0; }
+    .container { max-width:400px; margin:auto; padding:20px; }
+    h1, h2 { text-align:center; color:#00c853; }
+    input, button { width:100%; padding:12px; margin:8px 0; border:none; border-radius:5px;}
+    input { background:#1e1e1e; color:#fff; }
+    button { background:#00c853; color:#fff; font-size:16px; cursor:pointer; }
+    .card { background:#1e1e1e; padding:16px; margin:16px 0; border-radius:8px; }
+    .btn-block { width:100%; margin:10px 0; }
+  </style>
 </head>
 <body>
-
-<div id="app">
-
-  <!-- Login/Cadastro -->
-  <div id="login-section">
-    <h1>Bem-vindo ao Belcoin</h1>
-
-    <input type="email" id="email" placeholder="Email" autocomplete="username" />
-    <input type="password" id="password" placeholder="Senha" autocomplete="current-password" />
-    <button id="btnLogin">Entrar</button>
-    <p style="text-align:center; margin:10px 0;">ou</p>
-    <h3>Cadastro</h3>
-    <input type="text" id="nome" placeholder="Nome completo" />
-    <input type="text" id="cpf" placeholder="CPF" maxlength="14" />
-    <input type="tel" id="telefone" placeholder="Telefone" />
-    <input type="email" id="emailCadastro" placeholder="Email" autocomplete="email" />
-    <input type="password" id="senhaCadastro" placeholder="Senha" />
-    <button id="btnCadastro">Cadastrar</button>
-    <p id="msgErro" class="error-msg"></p>
+  <div id="login-screen" class="container">
+    <h1>Belcoin</h1>
+    <input id="name" placeholder="Nome" />
+    <input id="email" type="email" placeholder="E‑mail" />
+    <input id="cpf" placeholder="CPF" />
+    <input id="phone" placeholder="Telefone" />
+    <input id="password" type="password" placeholder="Senha (mínimo 6 dígitos)" />
+    <button id="signup-btn">Cadastrar‑se</button>
+    <button id="login-btn">Entrar</button>
+    <p id="msg" style="color:#ff5252;"></p>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard-section" class="hidden">
-    <nav>
-      <button class="tab-btn active" data-tab="home">Início</button>
-      <button class="tab-btn" data-tab="investir">Investir</button>
-      <button class="tab-btn" data-tab="depositar">Depositar</button>
-      <button class="tab-btn" data-tab="perfil">Perfil</button>
-      <button id="btnLogout" style="color:#ff6b6b;">Sair</button>
-    </nav>
-
-    <div id="home" class="tab-content">
-      <h2>Saldo disponível</h2>
+  <div id="app-screen" class="container" style="display:none;">
+    <h2 id="welcome-msg"></h2>
+    <div id="balance-card" class="card">
+      <strong>Saldo:</strong> R$ <span id="balance">0.00</span>
+    </div>
+    <button id="deposit-btn" class="btn-block">Fazer depósito mínimo R$50</button>
+    <div id="main-menu" style="display:none;">
       <div class="card">
-        <strong>R$ <span id="saldo">0.00</span></strong>
+        <h3>Investimento</h3>
+        <button class="invest-btn" data-days="1">Investir 1 dia</button>
+        <button class="invest-btn" data-days="7">Investir 7 dias</button>
+        <button class="invest-btn" data-days="30">Investir 30 dias</button>
       </div>
-
-      <h2>Investimentos ativos</h2>
-      <table>
-        <thead>
-          <tr><th>Tipo</th><th>Valor (R$)</th><th>Data Início</th><th>Status</th></tr>
-        </thead>
-        <tbody id="listaInvestimentos"></tbody>
-      </table>
-    </div>
-
-    <div id="investir" class="tab-content hidden">
-      <h2>Novo Investimento</h2>
-      <select id="tipoInvestimento">
-        <option value="" disabled selected>Selecione o prazo</option>
-        <option value="1">1 Dia</option>
-        <option value="7">7 Dias</option>
-        <option value="30">30 Dias</option>
-      </select>
-      <input type="number" id="valorInvestimento" placeholder="Valor em R$" min="10" />
-      <button id="btnInvestir">Investir</button>
-      <p id="msgInvestir" class="error-msg"></p>
-    </div>
-
-    <div id="depositar" class="tab-content hidden">
-      <h2>Depósito</h2>
-      <p>Para depositar, clique no botão abaixo para abrir a API de pagamento.</p>
-      <button id="btnPagarApi">Pagar via API (futuro)</button>
-      <p id="msgDeposito" class="error-msg"></p>
-    </div>
-
-    <div id="perfil" class="tab-content hidden">
-      <h2>Perfil</h2>
-      <input type="text" id="perfilNome" placeholder="Nome completo" />
-      <input type="text" id="perfilCpf" placeholder="CPF" maxlength="14" />
-      <input type="tel" id="perfilTelefone" placeholder="Telefone" />
-      <input type="email" id="perfilEmail" placeholder="Email" disabled />
-      <button id="btnSalvarPerfil">Salvar Perfil</button>
-      <p id="msgPerfil" class="error-msg"></p>
+      <div class="card">
+        <h3>Cupons</h3>
+        <button id="cupom-btn">Usar Cupom</button>
+      </div>
+      <div class="card">
+        <h3>Indicação</h3>
+        <p>Link para indicar:</p>
+        <input id="ref-link" readonly />
+      </div>
+      <div class="card">
+        <h3>Grupos VIP</h3>
+        <button id="vip-btn">Entrar no Grupo VIP</button>
+      </div>
+      <div class="card">
+        <h3>Histórico</h3>
+        <ul id="history-list"></ul>
+      </div>
+      <button id="logout-btn" class="btn-block" style="background:#d50000;">Sair</button>
     </div>
   </div>
 
-</div>
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "...",
+      authDomain: "belcoin.firebaseapp.com",
+      projectId: "belcoin",
+      storageBucket: "belcoin.appspot.com",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    // Element references
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    const signupBtn = document.getElementById('signup-btn');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const msg = document.getElementById('msg');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const cpfInput = document.getElementById('cpf');
+    const phoneInput = document.getElementById('phone');
+    const passwordInput = document.getElementById('password');
+    const welcomeMsg = document.getElementById('welcome-msg');
+    const balanceSpan = document.getElementById('balance');
+    const depositBtn = document.getElementById('deposit-btn');
+    const mainMenu = document.getElementById('main-menu');
+    const investButtons = document.querySelectorAll('.invest-btn');
+    const cupomBtn = document.getElementById('cupom-btn');
+    const refLink = document.getElementById('ref-link');
+    const vipBtn = document.getElementById('vip-btn');
+    const historyList = document.getElementById('history-list');
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDg-uRqxD6-B4zQnn6buPUZEDTh7aHoBK8",
-    authDomain: "belcoin-92ee8.firebaseapp.com",
-    projectId: "belcoin-92ee8",
-    storageBucket: "belcoin-92ee8.appspot.com",
-    messagingSenderId: "604040948702",
-    appId: "1:604040948702:web:eb4f5f50ea11f25b4e3778"
-  };
+    let currentUser;
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+    // Show welcome toast
+    const showWelcome = (name) => {
+      welcomeMsg.textContent = `BEM-VINDO AO BELL COIN, ${name.toUpperCase()}!`;
+      loginScreen.style.display = 'none';
+      appScreen.style.display = 'block';
+      mainMenu.style.display = 'none';
+    };
 
-  // Elementos UI
-  const loginSection = document.getElementById('login-section');
-  const dashboardSection = document.getElementById('dashboard-section');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const btnLogin = document.getElementById('btnLogin');
-  const nomeCadastro = document.getElementById('nome');
-  const cpfCadastro = document.getElementById('cpf');
-  const telefoneCadastro = document.getElementById('telefone');
-  const emailCadastro = document.getElementById('emailCadastro');
-  const senhaCadastro = document.getElementById('senhaCadastro');
-  const btnCadastro = document.getElementById('btnCadastro');
-  const msgErro = document.getElementById('msgErro');
-  const saldoSpan = document.getElementById('saldo');
-  const listaInvestimentos = document.getElementById('listaInvestimentos');
-  const tabs = document.querySelectorAll('.tab-btn');
-  const tabContents = document.querySelectorAll('.tab-content');
-  const btnLogout = document.getElementById('btnLogout');
-  const tipoInvestimento = document.getElementById('tipoInvestimento');
-  const valorInvestimento = document.getElementById('valorInvestimento');
-  const btnInvestir = document.getElementById('btnInvestir');
-  const msgInvestir = document.getElementById('msgInvestir');
-  const btnPagarApi = document.getElementById('btnPagarApi');
-  const msgDeposito = document.getElementById('msgDeposito');
-  const perfilNome = document.getElementById('perfilNome');
-  const perfilCpf = document.getElementById('perfilCpf');
-  const perfilTelefone = document.getElementById('perfilTelefone');
-  const perfilEmail = document.getElementById('perfilEmail');
-  const btnSalvarPerfil = document.getElementById('btnSalvarPerfil');
-  const msgPerfil = document.getElementById('msgPerfil');
-
-  let usuarioAtual = null;
-
-  // Alterna abas no dashboard
-  tabs.forEach(btn => {
-    btn.addEventListener('click', () => {
-      tabs.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const target = btn.dataset.tab;
-      tabContents.forEach(tc => tc.classList.add('hidden'));
-      document.getElementById(target).classList.remove('hidden');
-      msgInvestir.textContent = '';
-      msgDeposito.textContent = '';
-      msgPerfil.textContent = '';
+    // Auth state listener
+    auth.onAuthStateChanged(async user => {
+      if (user) {
+        currentUser = user;
+        const udoc = await db.collection('usuarios').doc(user.uid).get();
+        const data = udoc.data();
+        showWelcome(data.nome);
+        setupRefLink(user.uid);
+        loadBalance(data.saldo);
+        loadHistory();
+        checkDeposit(data.saldo);
+        logEvent('login', {});
+      } else {
+        loginScreen.style.display = 'block';
+        appScreen.style.display = 'none';
+      }
     });
-  });
 
-  // Login
-  btnLogin.addEventListener('click', () => {
-    msgErro.textContent = '';
-    const email = emailInput.value.trim();
-    const senha = passwordInput.value.trim();
-    if (!email || !senha) {
-      msgErro.textContent = 'Preencha email e senha.';
-      return;
-    }
-    auth.signInWithEmailAndPassword(email, senha)
-      .then(({ user }) => {
-        usuarioAtual = user;
-        carregarDadosUsuario();
-        mostrarDashboard();
-      })
-      .catch(err => {
-        msgErro.textContent = 'Erro no login: ' + err.message;
-      });
-  });
-
-  // Cadastro
-  btnCadastro.addEventListener('click', () => {
-    msgErro.textContent = '';
-    const nome = nomeCadastro.value.trim();
-    const cpf = cpfCadastro.value.trim();
-    const telefone = telefoneCadastro.value.trim();
-    const email = emailCadastro.value.trim();
-    const senha = senhaCadastro.value.trim();
-    if (!nome || !cpf || !telefone || !email || !senha) {
-      msgErro.textContent = 'Preencha todos os campos.';
-      return;
-    }
-    auth.createUserWithEmailAndPassword(email, senha)
-      .then(({ user }) => {
-        usuarioAtual = user;
-        // Salvar dados extras no Firestore
-        return db.collection('usuarios').doc(user.uid).set({
-          nome,
-          cpf,
-          telefone,
-          email,
-          saldo: 0
+    // Sign up
+    signupBtn.onclick = async () => {
+      try {
+        const userCred = await auth.createUserWithEmailAndPassword(emailInput.value, passwordInput.value);
+        const uid = userCred.user.uid;
+        await db.collection('usuarios').doc(uid).set({
+          nome: nameInput.value,
+          email: emailInput.value,
+          cpf: cpfInput.value,
+          telefone: phoneInput.value,
+          saldo: 0,
+          cargo: 'cliente',
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         });
-      })
-      .then(() => {
-        carregarDadosUsuario();
-        mostrarDashboard();
-      })
-      .catch(err => {
-        msgErro.textContent = 'Erro no cadastro: ' + err.message;
+        logEvent('signup', {});
+      } catch (e) { msg.textContent = e.message; }
+    };
+
+    // Login
+    loginBtn.onclick = () => {
+      auth.signInWithEmailAndPassword(emailInput.value, passwordInput.value)
+        .catch(e => msg.textContent = e.message);
+    };
+
+    // Logout
+    logoutBtn.onclick = () => auth.signOut();
+
+    // Setup referral link
+    const setupRefLink = (uid) => {
+      const link = `${window.location.origin}${window.location.pathname}?ref=${uid}`;
+      refLink.value = link;
+    };
+
+    // Deposit
+    depositBtn.onclick = async () => {
+      const amount = 50;
+      const uid = currentUser.uid;
+      await db.collection('usuarios').doc(uid).update({ saldo: firebase.firestore.FieldValue.increment(amount) });
+      await db.collection('logs').add({ 
+        tipo:'deposito', valor:amount, uid, ts: firebase.firestore.FieldValue.serverTimestamp()
       });
-  });
+      const udoc = await db.collection('usuarios').doc(uid).get();
+      const newSaldo = udoc.data().saldo;
+      loadBalance(newSaldo);
+      checkDeposit(newSaldo);
+    };
 
-  // Carregar dados do usuário logado
-  function carregarDadosUsuario() {
-    db.collection('usuarios').doc(usuarioAtual.uid).get()
-      .then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          saldoSpan.textContent = data.saldo ? data.saldo.toFixed(2) : '0.00';
-          perfilNome.value = data.nome || '';
-          perfilCpf.value = data.cpf || '';
-          perfilTelefone.value = data.telefone || '';
-          perfilEmail.value = data.email || '';
-          carregarInvestimentosUsuario();
-        }
+    // Check deposit to unlock menu
+    const checkDeposit = (saldo) => {
+      if (saldo >= 50) mainMenu.style.display = 'block';
+    };
+
+    // Investments
+    investButtons.forEach(btn => btn.onclick = async () => {
+      const days = parseInt(btn.dataset.days);
+      const amount = 50;
+      const uid = currentUser.uid;
+      const now = Date.now();
+      await db.collection('investimentos').add({
+        uid, amount, days,
+        criadoEm: now,
+        venceEm: now + days*24*60*60*1000,
+        progresso:0
       });
-  }
-
-  // Mostrar dashboard, esconder login
-  function mostrarDashboard() {
-    loginSection.classList.add('hidden');
-    dashboardSection.classList.remove('hidden');
-  }
-
-  // Logout
-  btnLogout.addEventListener('click', () => {
-    auth.signOut().then(() => {
-      usuarioAtual = null;
-      dashboardSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-      clearCamposLoginCadastro();
+      logEvent('investimento', {days, amount});
+      loadHistory();
     });
-  });
 
-  function clearCamposLoginCadastro() {
-    emailInput.value = '';
-    passwordInput.value = '';
-    nomeCadastro.value = '';
-    cpfCadastro.value = '';
-    telefoneCadastro.value = '';
-    emailCadastro.value = '';
-    senhaCadastro.value = '';
-    msgErro.textContent = '';
-  }
+    // Cupom
+    cupomBtn.onclick = async () => {
+      const cupom = prompt("Insira o código do cupom:");
+      if (cupom) {
+        await db.collection('cupons').add({uid: currentUser.uid, cupom, usadoEm: firebase.firestore.FieldValue.serverTimestamp()});
+        logEvent('cupom', {cupom});
+        loadHistory();
+      }
+    };
 
-  // Carregar investimentos do usuário logado
-  function carregarInvestimentosUsuario() {
-    listaInvestimentos.innerHTML = '';
-    db.collection('investimentos')
-      .where('usuarioId', '==', usuarioAtual.uid)
-      .get()
-      .then(snapshot => {
-        if (snapshot.empty) {
-          listaInvestimentos.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum investimento ativo.</td></tr>';
-          return;
-        }
-        snapshot.forEach(doc => {
-          const inv = doc.data();
-          listaInvestimentos.innerHTML += `
-            <tr>
-              <td>${inv.tipo || ''} dia(s)</td>
-              <td>R$ ${parseFloat(inv.valor || 0).toFixed(2)}</td>
-              <td>${inv.dataInicio || ''}</td>
-              <td>${inv.status || 'ativo'}</td>
-            </tr>
-          `;
-        });
+    // VIP
+    vipBtn.onclick = () => {
+      alert("Aqui você será redirecionado(a) para o grupo VIP!");
+      logEvent('vip_click', {});
+    };
+
+    // Load balance
+    const loadBalance = (val) => {
+      balanceSpan.textContent = val.toFixed(2);
+    };
+
+    // Log event
+    const logEvent = (tipo, extra) => {
+      db.collection('logs').add({
+        uid: currentUser.uid,
+        tipo,
+        extra,
+        ts: firebase.firestore.FieldValue.serverTimestamp()
       });
-  }
+    };
 
-  // Investir
-  btnInvestir.addEventListener('click', () => {
-    msgInvestir.textContent = '';
-    const tipo = tipoInvestimento.value;
-    const valor = parseFloat(valorInvestimento.value);
-    if (!tipo) {
-      msgInvestir.textContent = 'Selecione o prazo do investimento.';
-      return;
+    // Load history
+    async function loadHistory() {
+      historyList.innerHTML = '';
+      const logs = await db.collection('logs').where('uid','==',currentUser.uid).orderBy('ts','desc').limit(10).get();
+      logs.forEach(doc => {
+        const d = doc.data();
+        const li = document.createElement('li');
+        li.textContent = `${new Date(d.ts.toDate()).toLocaleString()} — ${d.tipo}`;
+        historyList.appendChild(li);
+      });
     }
-    if (isNaN(valor) || valor < 10) {
-      msgInvestir.textContent = 'Informe um valor válido (mínimo R$10).';
-      return;
-    }
-    // Salvar no Firestore
-    const dataInicio = new Date().toISOString().split('T')[0];
-    db.collection('investimentos').add({
-      usuarioId: usuarioAtual.uid,
-      tipo,
-      valor,
-      dataInicio,
-      status: 'ativo'
-    }).then(() => {
-      // Atualizar saldo (simples subtração)
-      db.collection('usuarios').doc(usuarioAtual.uid).get()
-        .then(doc => {
-          let saldoAtual = doc.data().saldo || 0;
-          saldoAtual -= valor;
-          return db.collection('usuarios').doc(usuarioAtual.uid).update({ saldo: saldoAtual });
-        })
-        .then(() => {
-          carregarDadosUsuario();
-          tipoInvestimento.value = '';
-          valorInvestimento.value = '';
-          alert('Investimento realizado com sucesso!');
-        });
-    });
-  });
 
-  // Depositar (botão API futura)
-  btnPagarApi.addEventListener('click', () => {
-    alert('Aqui você poderá integrar sua API de pagamento futuramente.');
-    // Exemplo: redirecionar para API externa ou abrir modal de pagamento
-  });
-
-  // Salvar perfil
-  btnSalvarPerfil.addEventListener('click', () => {
-    msgPerfil.textContent = '';
-    const nome = perfilNome.value.trim();
-    const cpf = perfilCpf.value.trim();
-    const telefone = perfilTelefone.value.trim();
-    if (!nome || !cpf || !telefone) {
-      msgPerfil.textContent = 'Preencha todos os campos.';
-      return;
-    }
-    db.collection('usuarios').doc(usuarioAtual.uid).update({
-      nome,
-      cpf,
-      telefone
-    }).then(() => {
-      alert('Perfil atualizado com sucesso!');
-    });
-  });
-
-  // Observa mudanças no auth (recarrega dados se usuário logar/recarregar página)
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      usuarioAtual = user;
-      carregarDadosUsuario();
-      mostrarDashboard();
-    } else {
-      usuarioAtual = null;
-      dashboardSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-      clearCamposLoginCadastro();
-    }
-  });
-</script>
-
+    // Referral sign-up
+    window.onload = async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('ref')) {
+        const ref = params.get('ref');
+        db.collection('indicacoes').add({ referrer:ref, ts: firebase.firestore.FieldValue.serverTimestamp() });
+      }
+    };
+  </script>
 </body>
 </html>
