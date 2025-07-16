@@ -1,163 +1,302 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Plataforma de Investimentos</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <title>Belcoin - Banco Digital</title>
   <style>
     body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: white;
       margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      padding: 0;
     }
     .container {
-      background-color: rgba(0, 0, 0, 0.8);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      max-width: 420px;
-      width: 100%;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
     }
-    h1, h2, h3 {
-      text-align: center;
-      color: #00ffcc;
+    .card {
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      margin-top: 30px;
     }
-    input, button {
+    h2, h3 {
+      color: #00e676;
+    }
+    input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
-      border-radius: 8px;
       border: none;
-      font-size: 16px;
+      border-radius: 8px;
+      background: #2a2a2a;
+      color: white;
     }
     button {
-      background-color: #00ffcc;
-      color: #000;
-      font-weight: bold;
+      width: 100%;
+      padding: 12px;
+      background: #00c853;
+      color: white;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-    }
-    .hidden {
-      display: none;
-    }
-    .vip-button {
-      background-color: gold;
-      color: #000;
       font-weight: bold;
+    }
+    .link {
+      color: #00e676;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .hidden { display: none; }
+    .extrato {
+      background: #292929;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDg-uRqxD6-B4zQnn6buPUZEDTh7aHoBK8",
-      authDomain: "belcoin-92ee8.firebaseapp.com",
-      projectId: "belcoin-92ee8",
-      storageBucket: "belcoin-92ee8.appspot.com",
-      messagingSenderId: "604040948702",
-      appId: "1:604040948702:web:eb78259e25ef4399bb8b4f",
-      measurementId: "G-SD1EYWDWPS"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
   <div class="container">
-    <h1>Belcoin</h1>
 
-    <!-- LOGIN -->
-    <div id="auth-section">
-      <input type="email" id="email" placeholder="E-mail" />
-      <input type="password" id="password" placeholder="Senha" />
+    <div class="card" id="loginCard">
+      <h2>Bem-vindo à <strong>Belcoin</strong></h2>
+      <input type="email" id="loginEmail" placeholder="Email" />
+      <input type="password" id="loginPassword" placeholder="Senha" />
       <button onclick="login()">Entrar</button>
-      <button onclick="showRegister()">Registrar</button>
+      <div class="link" onclick="toggleCards()">Criar conta</div>
     </div>
 
-    <!-- REGISTRO -->
-    <div id="register-section" class="hidden">
-      <input type="text" id="fullname" placeholder="Nome completo" />
-      <input type="text" id="cpf" placeholder="CPF" />
-      <input type="text" id="phone" placeholder="Telefone" />
-      <input type="email" id="reg-email" placeholder="E-mail" />
-      <input type="password" id="reg-password" placeholder="Senha" />
-      <button onclick="register()">Registrar</button>
+    <div class="card hidden" id="registerCard">
+      <h2>Criar conta na Belcoin</h2>
+      <input type="text" id="regNome" placeholder="Nome completo" />
+      <input type="email" id="regEmail" placeholder="Email" />
+      <input type="password" id="regSenha" placeholder="Senha" />
+      <input type="text" id="regTelefone" placeholder="Telefone" />
+      <input type="text" id="regCPF" placeholder="CPF" />
+      <button onclick="register()">Cadastrar</button>
+      <div class="link" onclick="toggleCards()">Já tem conta? Entrar</div>
     </div>
 
-    <!-- APLICATIVO -->
-    <div id="app-section" class="hidden">
-      <h2>Bem-vindo à Belcoin!</h2>
-      <p>Plataforma de investimentos segura, ativa no mercado há 3 meses.<br/>
-      Atualização feita sem impactar os lucros dos clientes.</p>
+    <div class="card hidden" id="appCard">
+      <h2 id="welcomeText">Olá, usuário</h2>
+      <p><strong>Saldo:</strong> R$ <span id="saldo">0,00</span></p>
 
-      <h3>Traders</h3>
-      <button>Investir 24h</button>
-      <button>Investir 48h</button>
-      <button>Investir 72h</button>
+      <h3>Depositar</h3>
+      <input type="number" id="valorDeposito" placeholder="Digite o valor" />
+      <button onclick="depositar()">Confirmar Depósito</button>
 
-      <h3>Seu link de indicação</h3>
-      <p id="ref-link">https://belcoin.netlify.app/?ref=UID</p>
+      <h3>Saque</h3>
+      <input type="number" id="valorSaque" placeholder="Valor para saque" />
+      <button onclick="sacar()">Solicitar Saque</button>
 
-      <h3>Grupo VIP</h3>
-      <button class="vip-button" onclick="acessarGrupo()">Acessar Grupo VIP</button>
+      <h3>Transferir para outro usuário (CPF)</h3>
+      <input type="text" id="cpfDestino" placeholder="CPF do destinatário" />
+      <div id="nomeDestinatario" style="margin: 8px 0;"></div>
+      <input type="number" id="valorTransferencia" placeholder="Valor a transferir" />
+      <button onclick="transferir()">Transferir</button>
+
+      <h3>Extrato</h3>
+      <div id="extratoContainer"></div>
+
+      <button onclick="logout()" style="margin-top: 20px;">Sair da conta</button>
     </div>
   </div>
 
-  <script>
-    function showRegister() {
-      document.getElementById('auth-section').classList.add('hidden');
-      document.getElementById('register-section').classList.remove('hidden');
-    }
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
-    function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const uid = userCredential.user.uid;
-          document.getElementById('auth-section').classList.add('hidden');
-          document.getElementById('app-section').classList.remove('hidden');
-          document.getElementById('ref-link').innerText = "https://belcoin.netlify.app/?ref=" + uid;
-        })
-        .catch((error) => alert(error.message));
+  <script>
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DOMINIO.firebaseio.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_ID",
+      appId: "SEU_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    let currentUID = null;
+
+    function toggleCards() {
+      loginCard.classList.toggle("hidden");
+      registerCard.classList.toggle("hidden");
     }
 
     function register() {
-      const name = document.getElementById('fullname').value;
-      const cpf = document.getElementById('cpf').value;
-      const phone = document.getElementById('phone').value;
-      const email = document.getElementById('reg-email').value;
-      const password = document.getElementById('reg-password').value;
+      const nome = regNome.value;
+      const email = regEmail.value;
+      const senha = regSenha.value;
+      const telefone = regTelefone.value;
+      const cpf = regCPF.value;
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const uid = userCredential.user.uid;
-          return db.collection("usuarios").doc(uid).set({
-            nome: name,
-            cpf: cpf,
-            telefone: phone,
-            email: email,
-            linkIndicacao: "https://belcoin.netlify.app/?ref=" + uid
-          }).then(() => {
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('app-section').classList.remove('hidden');
-            document.getElementById('ref-link').innerText = "https://belcoin.netlify.app/?ref=" + uid;
+      auth.createUserWithEmailAndPassword(email, senha)
+        .then(cred => {
+          const uid = cred.user.uid;
+          return db.ref("usuarios/" + uid).set({
+            nome, email, telefone, cpf,
+            saldo: 0,
+            extrato: [],
+            ultimoRendimento: Date.now()
           });
         })
-        .catch((error) => alert(error.message));
+        .then(() => {
+          alert("Cadastro concluído com sucesso!");
+          toggleCards();
+        })
+        .catch(err => alert("Erro: " + err.message));
     }
 
-    function acessarGrupo() {
-      alert("Este botão será ativado após o primeiro depósito. Configure pelo painel.");
+    function login() {
+      auth.signInWithEmailAndPassword(loginEmail.value, loginPassword.value)
+        .then(cred => {
+          currentUID = cred.user.uid;
+          carregarPainel();
+        })
+        .catch(err => alert("Erro ao entrar: " + err.message));
+    }
+
+    function carregarPainel() {
+      db.ref("usuarios/" + currentUID).once("value")
+        .then(snapshot => {
+          const user = snapshot.val();
+          welcomeText.innerText = "Olá, " + user.nome;
+          saldo.innerText = user.saldo.toFixed(2);
+          gerarRendimento(user);
+          mostrarExtrato(user.extrato || []);
+          loginCard.classList.add("hidden");
+          appCard.classList.remove("hidden");
+        });
+    }
+
+    function gerarRendimento(user) {
+      const agora = Date.now();
+      const ultima = user.ultimoRendimento || agora;
+      const horas = (agora - ultima) / (1000 * 60 * 60);
+      if (horas >= 24) {
+        const rendimento = user.saldo * 0.0005;
+        const novoSaldo = user.saldo + rendimento;
+        const extrato = user.extrato || [];
+        extrato.push({ tipo: "rendimento", valor: rendimento, data: agora });
+        db.ref("usuarios/" + currentUID).update({
+          saldo: novoSaldo,
+          extrato,
+          ultimoRendimento: agora
+        });
+        saldo.innerText = novoSaldo.toFixed(2);
+        mostrarExtrato(extrato);
+      }
+    }
+
+    function depositar() {
+      const valor = parseFloat(valorDeposito.value);
+      if (!valor || valor <= 0) return alert("Valor inválido");
+      db.ref("usuarios/" + currentUID).once("value")
+        .then(snapshot => {
+          const user = snapshot.val();
+          const novoSaldo = user.saldo + valor;
+          const extrato = user.extrato || [];
+          extrato.push({ tipo: "depósito", valor, data: Date.now() });
+          return db.ref("usuarios/" + currentUID).update({ saldo: novoSaldo, extrato });
+        })
+        .then(() => {
+          alert("Depósito feito com sucesso!");
+          carregarPainel();
+        });
+    }
+
+    function sacar() {
+      const valor = parseFloat(valorSaque.value);
+      if (!valor || valor <= 0) return alert("Valor inválido");
+      db.ref("usuarios/" + currentUID).once("value")
+        .then(snapshot => {
+          const user = snapshot.val();
+          if (user.saldo < valor) return alert("Saldo insuficiente");
+          const novoSaldo = user.saldo - valor;
+          const extrato = user.extrato || [];
+          extrato.push({ tipo: "saque", valor, data: Date.now() });
+          return db.ref("usuarios/" + currentUID).update({ saldo: novoSaldo, extrato });
+        })
+        .then(() => {
+          alert("Saque solicitado!");
+          carregarPainel();
+        });
+    }
+
+    function transferir() {
+      const cpf = cpfDestino.value;
+      const valor = parseFloat(valorTransferencia.value);
+      if (!cpf || !valor || valor <= 0) return alert("Preencha corretamente.");
+
+      db.ref("usuarios").once("value")
+        .then(snapshot => {
+          let uidDestino = null, nomeDest = "";
+          snapshot.forEach(child => {
+            const u = child.val();
+            if (u.cpf === cpf) {
+              uidDestino = child.key;
+              nomeDest = u.nome;
+            }
+          });
+
+          if (!uidDestino) return alert("Usuário não encontrado.");
+
+          if (!confirm("Deseja transferir R$ " + valor.toFixed(2) + " para " + nomeDest + "?")) return;
+
+          return Promise.all([
+            db.ref("usuarios/" + currentUID).once("value"),
+            db.ref("usuarios/" + uidDestino).once("value")
+          ]).then(([snapFrom, snapTo]) => {
+            const de = snapFrom.val();
+            const para = snapTo.val();
+
+            if (de.saldo < valor) return alert("Saldo insuficiente");
+
+            de.saldo -= valor;
+            para.saldo += valor;
+            de.extrato = de.extrato || [];
+            para.extrato = para.extrato || [];
+
+            de.extrato.push({ tipo: "transferência enviada", valor, data: Date.now(), para: nomeDest });
+            para.extrato.push({ tipo: "transferência recebida", valor, data: Date.now(), de: de.nome });
+
+            return Promise.all([
+              db.ref("usuarios/" + currentUID).update({ saldo: de.saldo, extrato: de.extrato }),
+              db.ref("usuarios/" + uidDestino).update({ saldo: para.saldo, extrato: para.extrato })
+            ]).then(() => {
+              alert("Transferência realizada!");
+              carregarPainel();
+            });
+          });
+        });
+    }
+
+    function mostrarExtrato(lista) {
+      const container = extratoContainer;
+      container.innerHTML = "";
+      lista.reverse().forEach(item => {
+        const data = new Date(item.data).toLocaleString();
+        const msg = item.tipo.toUpperCase() + ": R$ " + item.valor.toFixed(2);
+        const extra = item.para ? " → " + item.para : item.de ? " ← " + item.de : "";
+        const div = document.createElement("div");
+        div.className = "extrato";
+        div.innerText = `[${data}] ${msg}${extra}`;
+        container.appendChild(div);
+      });
+    }
+
+    function logout() {
+      auth.signOut().then(() => location.reload());
     }
   </script>
 </body>
