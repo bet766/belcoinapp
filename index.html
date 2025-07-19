@@ -3,165 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Belcoin - Plataforma de Investimentos</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <title>Belcoin - Login e Cadastro</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #0f0f1a, #101828);
+      background-color: #111;
       color: white;
-      height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
     }
-    .card {
-      background: #1f2937;
-      border-radius: 10px;
-      padding: 30px;
-      width: 100%;
-      max-width: 350px;
-      box-shadow: 0 0 12px rgba(0, 255, 168, 0.2);
+    h1 {
+      color: #ffd700;
     }
-    h2 {
-      text-align: center;
-      color: #00FFA8;
+    .tabs {
+      display: flex;
       margin-bottom: 20px;
     }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 12px;
-      border: none;
+    .tab {
+      padding: 10px 20px;
+      background-color: #333;
+      margin: 0 5px;
+      cursor: pointer;
       border-radius: 5px;
     }
-    .btn {
-      background-color: #00FFA8;
+    .tab.active {
+      background-color: #ffd700;
       color: black;
+    }
+    .form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 300px;
+    }
+    .form.active {
+      display: flex;
+    }
+    input {
       padding: 10px;
-      width: 100%;
-      margin-bottom: 10px;
-      border: none;
       border-radius: 5px;
+      border: none;
+    }
+    button {
+      padding: 10px;
+      background-color: #ffd700;
+      border: none;
+      color: black;
       font-weight: bold;
       cursor: pointer;
+      border-radius: 5px;
     }
-    .btn:hover {
-      background-color: #00dd99;
-    }
-    .hidden {
+    #message {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #333;
+      color: white;
       display: none;
+      border-radius: 5px;
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
+  <h1>Belcoin</h1>
 
-  <!-- LOGIN/CADASTRO CENTRALIZADO -->
-  <div id="login-area" class="card">
-    <h2>Belcoin</h2>
-    <input type="email" id="email" placeholder="Digite seu e-mail" />
-    <input type="password" id="password" placeholder="Digite sua senha" />
-    <button class="btn" onclick="login()">Entrar</button>
-    <button class="btn" onclick="signup()">Cadastrar</button>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('login')">Login</div>
+    <div class="tab" onclick="switchTab('register')">Cadastro</div>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="card hidden">
-    <h2>Bem-vindo à Belcoin</h2>
-    <p><strong>Email:</strong> <span id="userEmail"></span></p>
-    <p><strong>💰 Saldo:</strong> R$ <span id="userBalance">0.00</span></p>
-
-    <hr><br>
-    <p><strong>Investimentos:</strong></p>
-    <button class="btn" onclick="investir(1, 5)">1 Dia - 5% (R$10)</button>
-    <button class="btn" onclick="investir(7, 20)">7 Dias - 20% (R$50)</button>
-    <button class="btn" onclick="investir(30, 100)">30 Dias - 100% (R$100)</button>
-    <br><hr><br>
-    <button class="btn" onclick="logout()">Sair</button>
+  <div id="loginForm" class="form active">
+    <input type="email" id="loginEmail" placeholder="E-mail" />
+    <input type="password" id="loginPassword" placeholder="Senha" />
+    <button onclick="login()">Entrar</button>
   </div>
 
-  <script>
-    // 🔧 COLE SUA CONFIG DO FIREBASE AQUI
+  <div id="registerForm" class="form">
+    <input type="email" id="registerEmail" placeholder="E-mail" />
+    <input type="password" id="registerPassword" placeholder="Senha" />
+    <button onclick="register()">Cadastrar</button>
+  </div>
+
+  <div id="message"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBY10W0PXZAkz2Zr06iXa_T9t-GEgm_WgY",
       authDomain: "belcoin-38d95.firebaseapp.com",
-      databaseURL: "SEU_DATABASE_URL",
       projectId: "belcoin-38d95",
       storageBucket: "belcoin-38d95.firebasestorage.app",
       messagingSenderId: "351419236081",
-      appId: "1:351419236081:web:d83537260c1dba5c767350"
+      appId: "1:351419236081:web:d83537260c1dba5c767350",
+      measurementId: "G-S9F5VEEP3J"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    function showMessage(msg) {
+      const msgBox = document.getElementById('message');
+      msgBox.textContent = msg;
+      msgBox.style.display = 'block';
+      setTimeout(() => {
+        msgBox.style.display = 'none';
+      }, 10000); // 10 segundos
+    }
+
+    function register() {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showMessage('Bem-vindo à Belcoin!');
+          setTimeout(() => {
+            window.location.href = 'interface.html'; // Redireciona após 10s
+          }, 10000);
+        })
+        .catch(error => {
+          showMessage(error.message);
+        });
+    }
 
     function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => showDashboard())
-        .catch(e => alert("Erro no login: " + e.message));
-    }
-
-    function signup() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(user => {
-          const uid = user.user.uid;
-          db.ref('users/' + uid).set({ email: email, balance: 0 });
-          showDashboard();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showMessage('Bem-vindo novamente à Belcoin!');
+          setTimeout(() => {
+            window.location.href = 'interface.html'; // Redireciona após 10s
+          }, 10000);
         })
-        .catch(e => alert("Erro ao cadastrar: " + e.message));
-    }
-
-    function logout() {
-      auth.signOut().then(() => {
-        document.getElementById('dashboard').classList.add('hidden');
-        document.getElementById('login-area').classList.remove('hidden');
-      });
-    }
-
-    function showDashboard() {
-      const user = auth.currentUser;
-      if (user) {
-        document.getElementById('login-area').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        document.getElementById('userEmail').innerText = user.email;
-
-        db.ref('users/' + user.uid + '/balance').on('value', snapshot => {
-          document.getElementById('userBalance').innerText = snapshot.val().toFixed(2);
+        .catch(error => {
+          showMessage(error.message);
         });
+    }
+
+    window.switchTab = function(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      if (tab === 'login') {
+        document.querySelector('.tab:nth-child(1)').classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        document.querySelector('.tab:nth-child(2)').classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
       }
-    }
-
-    function investir(dias, lucro) {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const uid = user.uid;
-      const valor = dias === 1 ? 10 : dias === 7 ? 50 : 100;
-      const ganho = valor * (lucro / 100);
-
-      const userRef = db.ref('users/' + uid);
-      userRef.once('value').then(snapshot => {
-        let saldoAtual = snapshot.val().balance;
-        saldoAtual += ganho;
-        userRef.update({ balance: saldoAtual });
-        alert("Investimento realizado! Lucro de R$" + ganho.toFixed(2));
-      });
-    }
-
-    auth.onAuthStateChanged(user => {
-      if (user) showDashboard();
-    });
+    };
   </script>
 </body>
 </html>
