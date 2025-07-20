@@ -1,325 +1,349 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Belcoin - Plataforma Completa</title>
-  <style>
-    /* Fonte e reset */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    * {
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-    body {
-      margin: 0; padding: 0;
-      background-color: #0b0b0b;
-      color: #eee;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: #111;
-      border: 2px solid #00ff99;
-      border-radius: 12px;
-      padding: 30px;
-      width: 380px;
-      box-shadow: 0 0 15px #00ff99;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #00ff99;
-    }
-    input[type=email], input[type=password], input[type=number], input[type=text] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0 20px 0;
-      background: #222;
-      border: none;
-      border-radius: 8px;
-      color: #eee;
-      font-size: 1rem;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      background: #00ff99;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #000;
-      cursor: pointer;
-      margin-bottom: 15px;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #00cc7a;
-    }
-    .link {
-      text-align: center;
-      color: #00ff99;
-      cursor: pointer;
-      text-decoration: underline;
-      margin-bottom: 15px;
-      font-weight: 600;
-    }
-    .hidden {
-      display: none;
-    }
-    /* Painel interno */
-    #painel h2 {
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-    #painel .saldo {
-      font-size: 1.4rem;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-    #painel button {
-      margin-bottom: 12px;
-    }
-    #painel .btn-danger {
-      background-color: #cc0000;
-      color: white;
-    }
-    #painel .btn-danger:hover {
-      background-color: #990000;
-    }
-    #painel input[type=number] {
-      margin-bottom: 10px;
-    }
-    #painel .trader-btns button {
-      margin-bottom: 8px;
-      background: #222;
-      color: #00ff99;
-      border: 2px solid #00ff99;
-    }
-    #painel .trader-btns button:hover {
-      background: #00ff99;
-      color: #000;
-    }
-    #statusMsg {
-      margin-bottom: 15px;
-      text-align: center;
-      font-weight: 600;
-      color: #00ff99;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Belcon - Login e Cadastro</title>
+<style>
+  /* Reset básico */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
+  body {
+    background-color: #000;
+    color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #container {
+    background-color: #111;
+    padding: 30px 40px;
+    width: 360px;
+    border-radius: 4px;
+  }
+  h1 {
+    text-align: center;
+    color: #0f0;
+    margin-bottom: 30px;
+    font-weight: bold;
+    font-size: 2rem;
+    user-select: none;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+  }
+  input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 16px;
+    background-color: #222;
+    border: 1px solid #444;
+    color: #eee;
+    outline: none;
+    border-radius: 0; /* borda reta, sem arredondar */
+    font-size: 1rem;
+  }
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
+    border-color: #0f0; /* Verde só no foco do input */
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    background-color: #0f0;
+    border: none;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    border-radius: 2px;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #0c0;
+  }
+  .link {
+    color: #0f0;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.9rem;
+    user-select: none;
+  }
+  .link:hover {
+    text-decoration: underline;
+  }
+  #message {
+    margin-bottom: 12px;
+    color: #f66;
+    font-weight: bold;
+    min-height: 20px;
+    text-align: center;
+  }
+  /* Painel após login */
+  #dashboard {
+    display: none;
+    flex-direction: column;
+    color: #0f0;
+  }
+  #dashboard h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  #saldo {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  #buttons button {
+    margin-bottom: 12px;
+  }
+  #traders {
+    margin-top: 20px;
+  }
+  #traders ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  #traders ul li {
+    padding: 6px 10px;
+    background-color: #222;
+    margin-bottom: 6px;
+    border-radius: 2px;
+  }
+  #logoutBtn {
+    margin-top: 25px;
+    background-color: #f00;
+    color: #fff;
+  }
+  #logoutBtn:hover {
+    background-color: #b00;
+  }
+</style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-  <div class="container" id="auth-container">
-    <!-- LOGIN -->
-    <div id="login-section">
-      <h2>Belcoin - Login</h2>
-      <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
-      <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" />
-      <button onclick="login()">Entrar</button>
-      <div class="link" onclick="showRegister()">Não tem conta? Registrar-se</div>
-      <p id="loginError" style="color:#cc0000;text-align:center;"></p>
-    </div>
+<div id="container">
 
-    <!-- REGISTRO -->
-    <div id="register-section" class="hidden">
-      <h2>Belcoin - Registro</h2>
-      <input type="email" id="registerEmail" placeholder="E-mail" autocomplete="email" />
-      <input type="password" id="registerPassword" placeholder="Senha" autocomplete="new-password" />
-      <input type="password" id="registerPasswordConfirm" placeholder="Confirme a senha" autocomplete="new-password" />
-      <button onclick="register()">Registrar</button>
-      <div class="link" onclick="showLogin()">Já tem conta? Entrar</div>
-      <p id="registerError" style="color:#cc0000;text-align:center;"></p>
-    </div>
+  <!-- Login -->
+  <div id="loginTab">
+    <h1>Belcon</h1>
+    <div id="message"></div>
+    <label for="loginEmail">E-mail</label>
+    <input type="email" id="loginEmail" autocomplete="username" />
+    <label for="loginPassword">Senha</label>
+    <input type="password" id="loginPassword" autocomplete="current-password" />
+    <button id="loginBtn">Login</button>
+    <div class="link" id="showRegister">Não tem conta? Registrar-se</div>
   </div>
 
-  <!-- PAINEL INTERNO -->
-  <div class="container hidden" id="painel">
-    <h2>Belcoin - Painel</h2>
-    <div id="statusMsg"></div>
-    <div class="saldo">Saldo Atual: <strong id="saldoDisplay">R$ 0,00</strong></div>
-
-    <label for="depositAmount">Valor para Depositar (R$):</label>
-    <input type="number" id="depositAmount" min="0" step="0.01" placeholder="0.00" />
-    <button onclick="depositar()">Depositar</button>
-
-    <label for="withdrawAmount">Valor para Sacar (R$):</label>
-    <input type="number" id="withdrawAmount" min="0" step="0.01" placeholder="0.00" />
-    <button onclick="sacar()">Sacar</button>
-
-    <div class="trader-btns">
-      <h3>Investimentos Traders</h3>
-      <button onclick="investir(1, 1)">Trader 24h - 1% de lucro</button>
-      <button onclick="investir(7, 10)">Trader 7 dias - 10% de lucro</button>
-      <button onclick="investir(30, 50)">Trader 30 dias - 50% de lucro</button>
-    </div>
-
-    <label for="cupomInput">Cupom de Bônus:</label>
-    <input type="text" id="cupomInput" placeholder="Digite seu cupom" />
-    <button onclick="usarCupom()">Aplicar Cupom</button>
-
-    <button onclick="entrarGrupoVIP()">Entrar no Grupo VIP</button>
-    <button class="btn-danger" onclick="logout()">Sair</button>
+  <!-- Cadastro -->
+  <div id="registerTab" style="display:none;">
+    <h1>Belcon</h1>
+    <div id="regMessage"></div>
+    <label for="regName">Nome completo</label>
+    <input type="text" id="regName" />
+    <label for="regCPF">CPF</label>
+    <input type="text" id="regCPF" maxlength="14" placeholder="000.000.000-00" />
+    <label for="regPhone">Telefone</label>
+    <input type="tel" id="regPhone" placeholder="(XX) XXXXX-XXXX" />
+    <label for="regEmail">E-mail</label>
+    <input type="email" id="regEmail" autocomplete="email" />
+    <label for="regPassword">Senha</label>
+    <input type="password" id="regPassword" autocomplete="new-password" />
+    <button id="registerBtn">Registrar-se</button>
+    <div class="link" id="showLogin">Já tem conta? Login</div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- Painel -->
+  <div id="dashboard">
+    <h2>Bem-vindo, <span id="userName"></span>!</h2>
+    <div id="saldo">Saldo: R$ <span id="userSaldo">0,00</span></div>
+    <div id="buttons">
+      <button id="depositBtn">Depositar</button>
+      <button id="withdrawBtn">Sacar</button>
+      <button id="vipBtn">Acessar Grupos VIP</button>
+    </div>
+    <div id="traders">
+      <h3>Traders ativos:</h3>
+      <ul>
+        <li>Trader 1 - Rendimento 5% em 24h</li>
+        <li>Trader 2 - Rendimento 10% em 48h</li>
+        <li>Trader 3 - Rendimento 20% em 72h</li>
+      </ul>
+    </div>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
-  <script>
-    // --- CONFIGURE AQUI SEUS DADOS FIREBASE ---
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_AUTH_DOMAIN",
-      databaseURL: "SEU_DATABASE_URL",
-      projectId: "SEU_PROJECT_ID",
-      storageBucket: "SEU_STORAGE_BUCKET",
-      messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-      appId: "SEU_APP_ID"
-    };
+</div>
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBY10W0PXZAkz2Zr06iXa_T9t-GEgm_WgY",
+    authDomain: "belcoin-38d95.firebaseapp.com",
+    projectId: "belcoin-38d95",
+    storageBucket: "belcoin-38d95.firebasestorage.app",
+    messagingSenderId: "351419236081",
+    appId: "1:351419236081:web:d835372601dba5c767350",
+    measurementId: "G-S9F5VEEP3J"
+  };
 
-    // --- MANIPULAÇÃO DE TELA ---
-    const loginSection = document.getElementById('login-section');
-    const registerSection = document.getElementById('register-section');
-    const authContainer = document.getElementById('auth-container');
-    const painel = document.getElementById('painel');
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-    const loginError = document.getElementById('loginError');
-    const registerError = document.getElementById('registerError');
-    const statusMsg = document.getElementById('statusMsg');
+  // Elementos
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  const dashboard = document.getElementById("dashboard");
 
-    function showRegister(){
-      loginSection.classList.add('hidden');
-      registerSection.classList.remove('hidden');
-      loginError.textContent = "";
-      registerError.textContent = "";
+  const message = document.getElementById("message");
+  const regMessage = document.getElementById("regMessage");
+
+  // Mostrar cadastro
+  document.getElementById("showRegister").onclick = () => {
+    loginTab.style.display = "none";
+    registerTab.style.display = "block";
+    message.textContent = "";
+    regMessage.textContent = "";
+  };
+
+  // Mostrar login
+  document.getElementById("showLogin").onclick = () => {
+    registerTab.style.display = "none";
+    loginTab.style.display = "block";
+    message.textContent = "";
+    regMessage.textContent = "";
+  };
+
+  // Login
+  document.getElementById("loginBtn").onclick = () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if(!email || !password){
+      message.textContent = "Preencha todos os campos!";
+      return;
     }
-    function showLogin(){
-      registerSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-      loginError.textContent = "";
-      registerError.textContent = "";
-    }
+    message.textContent = "";
 
-    // --- LOGIN ---
-    function login() {
-      loginError.textContent = "";
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-
-      if(!email || !password){
-        loginError.textContent = "Preencha todos os campos.";
-        return;
-      }
-      auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          entrarPainel();
-        })
-        .catch(error => {
-          loginError.textContent = error.message;
-        });
-    }
-
-    // --- REGISTRO ---
-    function register() {
-      registerError.textContent = "";
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-
-      if(!email || !password || !passwordConfirm){
-        registerError.textContent = "Preencha todos os campos.";
-        return;
-      }
-      if(password !== passwordConfirm){
-        registerError.textContent = "As senhas não coincidem.";
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          // Cria dados iniciais do usuário no database
-          db.ref('usuarios/' + userCredential.user.uid).set({
-            saldo: 0,
-            createdAt: Date.now()
-          });
-          entrarPainel();
-        })
-        .catch(error => {
-          registerError.textContent = error.message;
-        });
-    }
-
-    // --- ENTRAR PAINEL ---
-    function entrarPainel(){
-      authContainer.classList.add('hidden');
-      painel.classList.remove('hidden');
-      loginError.textContent = "";
-      registerError.textContent = "";
-      statusMsg.textContent = "";
-      carregarSaldo();
-    }
-
-    // --- SAIR ---
-    function logout() {
-      auth.signOut().then(() => {
-        painel.classList.add('hidden');
-        authContainer.classList.remove('hidden');
+    auth.signInWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        loadUserData(userCredential.user.uid);
+      })
+      .catch(error => {
+        message.textContent = error.message;
       });
-    }
+  };
 
-    // --- CARREGAR SALDO ---
-    function carregarSaldo() {
-      const user = auth.currentUser;
-      if(!user) return;
-      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo');
-      saldoRef.on('value', snapshot => {
-        const saldo = snapshot.val() || 0;
-        document.getElementById('saldoDisplay').textContent = "R$ " + saldo.toFixed(2);
+  // Registrar
+  document.getElementById("registerBtn").onclick = () => {
+    const name = document.getElementById("regName").value.trim();
+    const cpf = document.getElementById("regCPF").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+
+    if(!name || !cpf || !phone || !email || !password){
+      regMessage.textContent = "Preencha todos os campos!";
+      return;
+    }
+    regMessage.textContent = "";
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        // Salvar dados extras no Firestore
+        return db.collection("users").doc(userCredential.user.uid).set({
+          name: name,
+          cpf: cpf,
+          phone: phone,
+          saldo: 0
+        });
+      })
+      .then(() => {
+        regMessage.style.color = "#0f0";
+        regMessage.textContent = "Registrado com sucesso! Faça login.";
+        setTimeout(() => {
+          registerTab.style.display = "none";
+          loginTab.style.display = "block";
+          regMessage.textContent = "";
+        }, 2000);
+      })
+      .catch(error => {
+        regMessage.style.color = "#f66";
+        regMessage.textContent = error.message;
       });
-    }
+  };
 
-    // --- DEPOSITAR ---
-    function depositar() {
-      const valor = parseFloat(document.getElementById('depositAmount').value);
-      if(isNaN(valor) || valor <= 0){
-        statusMsg.style.color = 'red';
-        statusMsg.textContent = "Digite um valor válido para depósito.";
-        return;
-      }
-      const user = auth.currentUser;
-      if(!user) return;
-      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo');
-      saldoRef.transaction(current => {
-        return (current || 0) + valor;
-      }, (error, committed) => {
-        if(error) {
-          statusMsg.style.color = 'red';
-          statusMsg.textContent = "Erro no depósito.";
-        } else if(committed) {
-          statusMsg.style.color = '#00ff99';
-          statusMsg.textContent = "Depósito realizado com sucesso!";
-          document.getElementById('depositAmount').value = "";
+  // Carregar dados do usuário e mostrar painel
+  function loadUserData(uid){
+    db.collection("users").doc(uid).get()
+      .then(doc => {
+        if(doc.exists){
+          const data = doc.data();
+          document.getElementById("userName").textContent = data.name;
+          document.getElementById("userSaldo").textContent = data.saldo.toFixed(2).replace('.',',');
+          showDashboard();
+        } else {
+          alert("Dados do usuário não encontrados.");
         }
+      })
+      .catch(err => {
+        alert("Erro ao carregar dados: " + err.message);
       });
-    }
+  }
 
-    // --- SACAR ---
-    function sacar() {
-      const valor = parseFloat(document.getElementById('withdrawAmount').value);
-      if(isNaN(valor) || valor <= 0){
-        statusMsg.style.color = 'red';
-        statusMsg.textContent = "Digite um valor válido para saque.";
-        return;
-      }
-      const user = auth.currentUser;
-      if(!user) return;
-      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo
+  // Mostrar painel e esconder telas de login/cadastro
+  function showDashboard(){
+    loginTab.style.display = "none";
+    registerTab.style.display = "none";
+    dashboard.style.display = "flex";
+  }
+
+  // Logout
+  document.getElementById("logoutBtn").onclick = () => {
+    auth.signOut().then(() => {
+      dashboard.style.display = "none";
+      loginTab.style.display = "block";
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginPassword").value = "";
+      message.textContent = "";
+    });
+  };
+
+  // Botões depósito, saque e VIP - aqui só mostra alertas simulando
+  document.getElementById("depositBtn").onclick = () => {
+    alert("Função Depósito - Em desenvolvimento");
+  };
+  document.getElementById("withdrawBtn").onclick = () => {
+    alert("Função Saque - Em desenvolvimento");
+  };
+  document.getElementById("vipBtn").onclick = () => {
+    alert("Acesso aos grupos VIP - Em desenvolvimento");
+  };
+
+  // Monitorar autenticação para manter sessão aberta
+  auth.onAuthStateChanged(user => {
+    if(user){
+      loadUserData(user.uid);
+    } else {
+      dashboard.style.display = "none";
+      loginTab.style.display = "block";
+    }
+  });
+
+</script>
+
+</body>
+  </html>
