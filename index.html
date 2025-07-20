@@ -1,48 +1,115 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Belcoin - Login & Cadastro</title>
+  <style>
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      background: #0e0e0e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #container {
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
+      width: 380px;
+      box-shadow: 0 0 15px #0f0;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #00ff88;
+    }
+    input {
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 14px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00ff88;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #00cc6e;
+    }
+    .link {
+      margin-top: 15px;
+      cursor: pointer;
+      color: #00ff88;
+      font-size: 14px;
+      text-decoration: underline;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #00ff88;
+    }
+    #dashboard {
+      display: none;
+    }
+    .saldo {
+      font-size: 18px;
+      margin: 10px 0;
+      color: #0f0;
+    }
+  </style>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2); width: 350px; }
-    .tabs { display: flex; justify-content: space-around; margin-bottom: 20px; }
-    .tabs button { padding: 10px; cursor: pointer; background: #eee; border: none; border-radius: 4px; }
-    .tabs button.active { background: #007bff; color: white; }
-    .form { display: none; }
-    .form.active { display: block; }
-    input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; }
-    .msg { text-align: center; margin-top: 10px; font-weight: bold; color: green; }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="tabs">
-      <button id="tabLogin" class="active">Login</button>
-      <button id="tabRegister">Cadastro</button>
+  <div id="container">
+    <div id="login-form">
+      <h1>Belcoin - Login</h1>
+      <input type="email" id="login-email" placeholder="Email" required />
+      <input type="password" id="login-password" placeholder="Senha" required />
+      <button onclick="login()">Entrar</button>
+      <div class="link" onclick="showRegister()">Criar conta</div>
+      <div id="login-error" style="color:#f44;"></div>
     </div>
 
-    <div id="loginForm" class="form active">
-      <input type="email" id="loginEmail" placeholder="Email">
-      <input type="password" id="loginSenha" placeholder="Senha">
-      <button onclick="logar()">Entrar</button>
+    <div id="register-form" style="display:none;">
+      <h1>Belcoin - Cadastro</h1>
+      <input type="text" id="register-name" placeholder="Nome Completo" required />
+      <input type="text" id="register-cpf" placeholder="CPF (somente números)" maxlength="11" required />
+      <input type="email" id="register-email" placeholder="Email" required />
+      <input type="password" id="register-password" placeholder="Senha" required />
+      <input type="tel" id="register-phone" placeholder="Telefone" required />
+      <input type="date" id="register-birthdate" required />
+      <button onclick="register()">Cadastrar</button>
+      <div class="link" onclick="showLogin()">Já tem conta?</div>
+      <div id="register-error" style="color:#f44;"></div>
     </div>
 
-    <div id="registerForm" class="form">
-      <input type="text" id="nome" placeholder="Nome completo">
-      <input type="text" id="cpf" placeholder="CPF">
-      <input type="date" id="nascimento" placeholder="Data de nascimento">
-      <input type="tel" id="telefone" placeholder="Telefone">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="senha" placeholder="Senha">
-      <button onclick="registrar()">Cadastrar</button>
-    </div>
+    <div id="message" style="display:none;"></div>
 
-    <div id="msg" class="msg"></div>
+    <div id="dashboard">
+      <h1>Bem-vindo à Belcoin</h1>
+      <p id="welcome-message"></p>
+      <div class="saldo">Saldo atual: <strong>R$ 0,00</strong></div>
+      <button>Depositar</button>
+      <button>Sacar</button>
+      <button onclick="logout()">Sair</button>
+    </div>
   </div>
 
   <script>
@@ -55,72 +122,104 @@
       appId: "1:351419236081:web:d83537260c1dba5c767350",
       measurementId: "G-S9F5VEEP3J"
     };
+
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const tabLogin = document.getElementById('tabLogin');
-    const tabRegister = document.getElementById('tabRegister');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const msg = document.getElementById('msg');
+    document.getElementById('register-birthdate').max = new Date().toISOString().split("T")[0];
 
-    tabLogin.onclick = () => {
-      tabLogin.classList.add('active');
-      tabRegister.classList.remove('active');
-      loginForm.classList.add('active');
-      registerForm.classList.remove('active');
-    };
-
-    tabRegister.onclick = () => {
-      tabRegister.classList.add('active');
-      tabLogin.classList.remove('active');
-      registerForm.classList.add('active');
-      loginForm.classList.remove('active');
-    };
-
-    function mostrarMensagem(texto) {
-      msg.innerText = texto;
-      setTimeout(() => { msg.innerText = ""; }, 10000);
+    function showLogin() {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('register-form').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('message').style.display = 'none';
     }
 
-    function logar() {
-      const email = document.getElementById('loginEmail').value;
-      const senha = document.getElementById('loginSenha').value;
-      auth.signInWithEmailAndPassword(email, senha)
-        .then(() => {
-          mostrarMensagem("Bem-vindo novamente à Belcoin");
-          setTimeout(() => { window.location.href = "interface.html"; }, 10000);
-        })
-        .catch(err => alert("Erro no login: " + err.message));
+    function showRegister() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('message').style.display = 'none';
     }
 
-    function registrar() {
-      const nome = document.getElementById('nome').value;
-      const cpf = document.getElementById('cpf').value;
-      const nascimento = document.getElementById('nascimento').value;
-      const telefone = document.getElementById('telefone').value;
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('senha').value;
+    async function register() {
+      const name = document.getElementById('register-name').value;
+      const cpf = document.getElementById('register-cpf').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const phone = document.getElementById('register-phone').value;
+      const birthdate = document.getElementById('register-birthdate').value;
 
-      if (!nome || !cpf || !nascimento || !telefone || !email || !senha) {
-        alert("Preencha todos os campos!");
+      if (!name || !cpf || !email || !password || !phone || !birthdate) {
+        document.getElementById('register-error').innerText = "Preencha todos os campos!";
         return;
       }
 
-      auth.createUserWithEmailAndPassword(email, senha)
-        .then((userCredential) => {
-          const userId = userCredential.user.uid;
-          return db.collection("usuarios").doc(userId).set({
-            nome, cpf, nascimento, telefone, email, saldo: 0
-          });
-        })
-        .then(() => {
-          mostrarMensagem("Bem-vindo à Belcoin!");
-          setTimeout(() => { window.location.href = "interface.html"; }, 10000);
-        })
-        .catch(err => alert("Erro ao cadastrar: " + err.message));
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        await db.collection("users").doc(user.uid).set({
+          name,
+          cpf,
+          email,
+          phone,
+          birthdate,
+          saldo: 0
+        });
+        showMessage("Bem-vindo à Belcoin");
+      } catch (error) {
+        document.getElementById('register-error').innerText = error.message;
+      }
     }
+
+    async function login() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      if (!email || !password) {
+        document.getElementById('login-error').innerText = "Digite o email e a senha.";
+        return;
+      }
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showMessage("Bem-vindo novamente à Belcoin");
+      } catch (error) {
+        document.getElementById('login-error').innerText = error.message;
+      }
+    }
+
+    function showMessage(text) {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('register-form').style.display = 'none';
+      const msg = document.getElementById('message');
+      msg.innerText = text;
+      msg.style.display = 'block';
+      setTimeout(() => {
+        msg.style.display = 'none';
+        showDashboard();
+      }, 10000);
+    }
+
+    async function showDashboard() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const doc = await db.collection("users").doc(user.uid).get();
+      const data = doc.data();
+      document.getElementById('welcome-message').innerText = `Olá, ${data.name}`;
+      document.getElementById('dashboard').style.display = 'block';
+    }
+
+    function logout() {
+      auth.signOut().then(showLogin);
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) showDashboard();
+      else showLogin();
+    });
   </script>
 </body>
 </html>
