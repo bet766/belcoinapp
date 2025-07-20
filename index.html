@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Belcon - Login e Cadastro</title>
 <style>
-  /* Reset básico */
-  * {
-    margin: 0; padding: 0; box-sizing: border-box;
-    font-family: Arial, sans-serif;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
   body {
     background-color: #000;
     color: #eee;
@@ -32,11 +28,7 @@
     font-size: 2rem;
     user-select: none;
   }
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-  }
+  label { display: block; margin-bottom: 6px; font-size: 0.9rem; }
   input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
     width: 100%;
     padding: 8px 10px;
@@ -45,11 +37,11 @@
     border: 1px solid #444;
     color: #eee;
     outline: none;
-    border-radius: 0; /* borda reta, sem arredondar */
+    border-radius: 0;
     font-size: 1rem;
   }
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
-    border-color: #0f0; /* Verde só no foco do input */
+    border-color: #0f0;
   }
   button {
     width: 100%;
@@ -64,9 +56,7 @@
     border-radius: 2px;
     transition: background-color 0.3s;
   }
-  button:hover {
-    background-color: #0c0;
-  }
+  button:hover { background-color: #0c0; }
   .link {
     color: #0f0;
     cursor: pointer;
@@ -74,64 +64,32 @@
     font-size: 0.9rem;
     user-select: none;
   }
-  .link:hover {
-    text-decoration: underline;
-  }
-  #message {
+  .link:hover { text-decoration: underline; }
+  #message, #regMessage {
     margin-bottom: 12px;
-    color: #f66;
     font-weight: bold;
     min-height: 20px;
     text-align: center;
   }
-  /* Painel após login */
+  #message { color: #f66; }
+  #regMessage { color: #f66; }
   #dashboard {
     display: none;
     flex-direction: column;
     color: #0f0;
   }
-  #dashboard h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  #saldo {
-    font-size: 1.4rem;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  #buttons button {
-    margin-bottom: 12px;
-  }
-  #traders {
-    margin-top: 20px;
-  }
-  #traders ul {
-    list-style: none;
-    padding-left: 0;
-  }
-  #traders ul li {
-    padding: 6px 10px;
-    background-color: #222;
-    margin-bottom: 6px;
-    border-radius: 2px;
-  }
+  #dashboard h2 { text-align: center; margin-bottom: 20px; }
+  #saldo { font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
+  #buttons button { margin-bottom: 12px; }
   #logoutBtn {
     margin-top: 25px;
     background-color: #f00;
     color: #fff;
   }
-  #logoutBtn:hover {
-    background-color: #b00;
-  }
+  #logoutBtn:hover { background-color: #b00; }
 </style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-
 <div id="container">
 
   <!-- Login -->
@@ -173,45 +131,28 @@
       <button id="withdrawBtn">Sacar</button>
       <button id="vipBtn">Acessar Grupos VIP</button>
     </div>
-    <div id="traders">
-      <h3>Traders ativos:</h3>
-      <ul>
-        <li>Trader 1 - Rendimento 5% em 24h</li>
-        <li>Trader 2 - Rendimento 10% em 48h</li>
-        <li>Trader 3 - Rendimento 20% em 72h</li>
-      </ul>
-    </div>
     <button id="logoutBtn">Logout</button>
   </div>
 
 </div>
 
 <script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBY10W0PXZAkz2Zr06iXa_T9t-GEgm_WgY",
-    authDomain: "belcoin-38d95.firebaseapp.com",
-    projectId: "belcoin-38d95",
-    storageBucket: "belcoin-38d95.firebasestorage.app",
-    messagingSenderId: "351419236081",
-    appId: "1:351419236081:web:d835372601dba5c767350",
-    measurementId: "G-S9F5VEEP3J"
-  };
+  // Substitua esse valor pelo seu ID da planilha e o nome da aba
+  const sheetID = '1SbfPGbejReu53fkTHVqTU85hAFvbNh7xb7kGE2cSjNs';
+  const sheetName = 'Página1';
 
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  // URL do Opensheet para leitura (público)
+  const openSheetURL = `https://opensheet.elk.sh/${sheetID}/${sheetName}`;
 
-  // Elementos
+  // URL do Apps Script para cadastro (substitua pelo seu)
+  const appsScriptURL = 'COLE_AQUI_SEU_URL_DO_APPS_SCRIPT';
+
   const loginTab = document.getElementById("loginTab");
   const registerTab = document.getElementById("registerTab");
   const dashboard = document.getElementById("dashboard");
-
   const message = document.getElementById("message");
   const regMessage = document.getElementById("regMessage");
 
-  // Mostrar cadastro
   document.getElementById("showRegister").onclick = () => {
     loginTab.style.display = "none";
     registerTab.style.display = "block";
@@ -219,7 +160,6 @@
     regMessage.textContent = "";
   };
 
-  // Mostrar login
   document.getElementById("showLogin").onclick = () => {
     registerTab.style.display = "none";
     loginTab.style.display = "block";
@@ -227,7 +167,6 @@
     regMessage.textContent = "";
   };
 
-  // Login
   document.getElementById("loginBtn").onclick = () => {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -238,112 +177,110 @@
     }
     message.textContent = "";
 
-    auth.signInWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        loadUserData(userCredential.user.uid);
+    fetch(openSheetURL)
+      .then(res => res.json())
+      .then(data => {
+        // Busca usuário na planilha (case insensitive)
+        const user = data.find(u => u.Email.toLowerCase() === email.toLowerCase() && u.Senha === password);
+        if(user){
+          showDashboard(user);
+        } else {
+          message.textContent = "E-mail ou senha incorretos.";
+        }
       })
-      .catch(error => {
-        message.textContent = error.message;
+      .catch(err => {
+        message.textContent = "Erro ao acessar banco de dados.";
+        console.error(err);
       });
   };
 
-  // Registrar
   document.getElementById("registerBtn").onclick = () => {
-    const name = document.getElementById("regName").value.trim();
+    const nome = document.getElementById("regName").value.trim();
     const cpf = document.getElementById("regCPF").value.trim();
-    const phone = document.getElementById("regPhone").value.trim();
+    const telefone = document.getElementById("regPhone").value.trim();
     const email = document.getElementById("regEmail").value.trim();
-    const password = document.getElementById("regPassword").value;
+    const senha = document.getElementById("regPassword").value;
 
-    if(!name || !cpf || !phone || !email || !password){
+    if(!nome || !cpf || !telefone || !email || !senha){
       regMessage.textContent = "Preencha todos os campos!";
       return;
     }
     regMessage.textContent = "";
 
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        // Salvar dados extras no Firestore
-        return db.collection("users").doc(userCredential.user.uid).set({
-          name: name,
+    // Busca novo ID
+    fetch(openSheetURL)
+      .then(res => res.json())
+      .then(data => {
+        const newID = data.length + 1;
+
+        const postData = {
+          id: newID,
+          nome: nome,
           cpf: cpf,
-          phone: phone,
-          saldo: 0
+          telefone: telefone,
+          email: email,
+          senha: senha,
+          saldo: 0,
+          status: "ativo"
+        };
+
+        fetch(appsScriptURL, {
+          method: "POST",
+          body: JSON.stringify(postData),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => res.json())
+        .then(resp => {
+          if(resp.status === "success"){
+            regMessage.style.color = "#0f0";
+            regMessage.textContent = "Registrado com sucesso! Faça login.";
+            setTimeout(() => {
+              registerTab.style.display = "none";
+              loginTab.style.display = "block";
+              regMessage.textContent = "";
+            }, 2000);
+          } else {
+            regMessage.style.color = "#f66";
+            regMessage.textContent = resp.message || "Erro ao registrar.";
+          }
+        })
+        .catch(err => {
+          regMessage.style.color = "#f66";
+          regMessage.textContent = "Erro ao conectar ao servidor.";
+          console.error(err);
         });
       })
-      .then(() => {
-        regMessage.style.color = "#0f0";
-        regMessage.textContent = "Registrado com sucesso! Faça login.";
-        setTimeout(() => {
-          registerTab.style.display = "none";
-          loginTab.style.display = "block";
-          regMessage.textContent = "";
-        }, 2000);
-      })
-      .catch(error => {
+      .catch(err => {
         regMessage.style.color = "#f66";
-        regMessage.textContent = error.message;
+        regMessage.textContent = "Erro ao acessar banco de dados.";
+        console.error(err);
       });
   };
 
-  // Carregar dados do usuário e mostrar painel
-  function loadUserData(uid){
-    db.collection("users").doc(uid).get()
-      .then(doc => {
-        if(doc.exists){
-          const data = doc.data();
-          document.getElementById("userName").textContent = data.name;
-          document.getElementById("userSaldo").textContent = data.saldo.toFixed(2).replace('.',',');
-          showDashboard();
-        } else {
-          alert("Dados do usuário não encontrados.");
-        }
-      })
-      .catch(err => {
-        alert("Erro ao carregar dados: " + err.message);
-      });
-  }
+  function showDashboard(user){
+    document.getElementById("userName").textContent = user.Nome;
+    document.getElementById("userSaldo").textContent = parseFloat(user.Saldo).toFixed(2).replace('.',',');
 
-  // Mostrar painel e esconder telas de login/cadastro
-  function showDashboard(){
     loginTab.style.display = "none";
     registerTab.style.display = "none";
     dashboard.style.display = "flex";
+
+    message.textContent = "";
+    regMessage.textContent = "";
   }
 
-  // Logout
   document.getElementById("logoutBtn").onclick = () => {
-    auth.signOut().then(() => {
-      dashboard.style.display = "none";
-      loginTab.style.display = "block";
-      document.getElementById("loginEmail").value = "";
-      document.getElementById("loginPassword").value = "";
-      message.textContent = "";
-    });
+    dashboard.style.display = "none";
+    loginTab.style.display = "block";
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPassword").value = "";
+    message.textContent = "";
   };
 
-  // Botões depósito, saque e VIP - aqui só mostra alertas simulando
-  document.getElementById("depositBtn").onclick = () => {
-    alert("Função Depósito - Em desenvolvimento");
-  };
-  document.getElementById("withdrawBtn").onclick = () => {
-    alert("Função Saque - Em desenvolvimento");
-  };
-  document.getElementById("vipBtn").onclick = () => {
-    alert("Acesso aos grupos VIP - Em desenvolvimento");
-  };
-
-  // Monitorar autenticação para manter sessão aberta
-  auth.onAuthStateChanged(user => {
-    if(user){
-      loadUserData(user.uid);
-    } else {
-      dashboard.style.display = "none";
-      loginTab.style.display = "block";
-    }
-  });
+  document.getElementById("depositBtn").onclick = () => alert("Função Depósito - Em desenvolvimento");
+  document.getElementById("withdrawBtn").onclick = () => alert("Função Saque - Em desenvolvimento");
+  document.getElementById("vipBtn").onclick = () => alert("Acesso aos grupos VIP - Em desenvolvimento");
 
 </script>
-
 </body>
-  </html>
+</html>
