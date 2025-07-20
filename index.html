@@ -1,118 +1,243 @@
+
+</body>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Login e Cadastro</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #00ffcc;
-    }
-    .box {
-      background: #222;
-      padding: 20px;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 20px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      border: none;
-      border-radius: 6px;
-    }
-    button {
-      background-color: #00cc88;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 12px;
-    }
-    button:hover {
-      background-color: #009f66;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Belcoin - Login, Cadastro e Painel</title>
+<style>
+  body {
+    background-color: #000;
+    color: #0f0;
+    font-family: Arial, sans-serif;
+    margin: 0; padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background-color: #111;
+    border: 2px solid #0f0;
+    border-radius: 8px;
+    padding: 20px;
+    width: 360px;
+  }
+  h1, h2 {
+    text-align: center;
+  }
+  input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #222;
+    border: 1px solid #0f0;
+    color: #0f0;
+    border-radius: 0;
+    font-size: 1rem;
+  }
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
+    outline: none;
+    border-color: #0c0;
+  }
+  button {
+    width: 100%;
+    background-color: #0f0;
+    border: none;
+    color: #000;
+    font-weight: bold;
+    padding: 12px;
+    margin: 15px 0 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 2px;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #0c0;
+  }
+  .link {
+    color: #0f0;
+    cursor: pointer;
+    text-align: center;
+    display: block;
+    user-select: none;
+  }
+  .hidden {
+    display: none;
+  }
+  #message, #regMessage {
+    height: 24px;
+    text-align: center;
+    font-weight: bold;
+  }
+  #message {
+    color: #f66;
+  }
+  #regMessage {
+    color: #f66;
+  }
+  #dashboard {
+    color: #0f0;
+  }
+  #dashboard div {
+    margin: 10px 0;
+  }
+  #dashboard button {
+    margin-top: 20px;
+    background-color: #f00;
+    color: #fff;
+  }
+  #dashboard button:hover {
+    background-color: #b00;
+  }
+</style>
 </head>
 <body>
-  <h1>Belcoin - Login</h1>
 
-  <div class="box">
-    <h2>Entrar</h2>
-    <input type="email" id="loginEmail" placeholder="Email" required />
-    <input type="password" id="loginSenha" placeholder="Senha" required />
-    <button onclick="login()">Entrar</button>
-    <p id="loginMsg"></p>
+<div class="container">
+
+  <!-- Login -->
+  <div id="loginTab">
+    <h1>Belcoin</h1>
+    <div id="message"></div>
+    <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
+    <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" />
+    <button id="loginBtn">Entrar</button>
+    <span class="link" id="showRegister">Não tem conta? Registrar-se</span>
   </div>
 
-  <div class="box">
-    <h2>Cadastrar</h2>
-    <input type="text" id="cadastroNome" placeholder="Nome completo" required />
-    <input type="email" id="cadastroEmail" placeholder="Email" required />
-    <input type="password" id="cadastroSenha" placeholder="Senha" required />
-    <input type="text" id="cadastroCpf" placeholder="CPF" />
-    <input type="text" id="cadastroTelefone" placeholder="Telefone" />
-    <button onclick="cadastrar()">Cadastrar</button>
-    <p id="cadastroMsg"></p>
+  <!-- Cadastro -->
+  <div id="registerTab" class="hidden">
+    <h1>Belcoin</h1>
+    <div id="regMessage"></div>
+    <input type="text" id="regName" placeholder="Nome completo" />
+    <input type="text" id="regCPF" placeholder="CPF" maxlength="14" />
+    <input type="tel" id="regPhone" placeholder="Telefone (XX) XXXXX-XXXX" />
+    <input type="email" id="regEmail" placeholder="E-mail" autocomplete="email" />
+    <input type="password" id="regPassword" placeholder="Senha" autocomplete="new-password" />
+    <button id="registerBtn">Registrar-se</button>
+    <span class="link" id="showLogin">Já tem conta? Login</span>
   </div>
 
-  <script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbx36RW6_HgcVoLreerW0_29AVzszy71votLbQvgpwq-pyYpDzejX8OiNl4YUxwPjV8VAA/exec";
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <h2>Bem-vindo, <span id="userName"></span>!</h2>
+    <div><strong>Saldo:</strong> R$ <span id="userSaldo">0,00</span></div>
+    <div><strong>Trader ativo:</strong> <span id="userTrader">Nenhum</span></div>
+    <div><strong>Valor investido:</strong> R$ <span id="userInvestido">0,00</span></div>
+    <div><strong>Liberação do investimento:</strong> <span id="userLiberacao">--</span></div>
 
-    function login() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const senha = document.getElementById('loginSenha').value.trim();
+    <button id="logoutBtn">Sair</button>
+  </div>
 
-      fetch(apiUrl + '?action=login')
-        .then(res => res.json())
-        .then(data => {
-          const user = data.find(u => u.email === email && u.senha === senha);
-          if (user) {
-            document.getElementById('loginMsg').innerText = `Bem-vindo, ${user.nome}! Saldo: R$${user.saldo}`;
-          } else {
-            document.getElementById('loginMsg').innerText = "Usuário ou senha inválidos.";
-          }
-        });
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbx36RW6_HgcVoLreerW0_29AVzszy71votLbQvgpwq-pyYpDzejX8OiNl4YUxwPjV8VAA/exec";
+
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  const dashboard = document.getElementById("dashboard");
+
+  const message = document.getElementById("message");
+  const regMessage = document.getElementById("regMessage");
+
+  document.getElementById("showRegister").onclick = () => {
+    loginTab.classList.add("hidden");
+    registerTab.classList.remove("hidden");
+    message.textContent = "";
+    regMessage.textContent = "";
+  };
+
+  document.getElementById("showLogin").onclick = () => {
+    registerTab.classList.add("hidden");
+    loginTab.classList.remove("hidden");
+    message.textContent = "";
+    regMessage.textContent = "";
+  };
+
+  document.getElementById("loginBtn").onclick = () => {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    if(!email || !password){
+      message.textContent = "Preencha todos os campos!";
+      return;
     }
+    message.textContent = "";
 
-    function cadastrar() {
-      const nome = document.getElementById('cadastroNome').value.trim();
-      const email = document.getElementById('cadastroEmail').value.trim();
-      const senha = document.getElementById('cadastroSenha').value.trim();
-      const cpf = document.getElementById('cadastroCpf').value.trim();
-      const telefone = document.getElementById('cadastroTelefone').value.trim();
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({action:"login", email, senha: password})
+    }).then(res => res.json()).then(data => {
+      if(data.success){
+        mostrarDashboard(data.usuario);
+      } else {
+        message.textContent = "E-mail ou senha incorretos.";
+      }
+    }).catch(() => {
+      message.textContent = "Erro na comunicação. Tente novamente.";
+    });
+  };
 
-      fetch(apiUrl + "?action=add", {
-        method: "POST",
-        body: JSON.stringify({
-          nome: nome,
-          email: email,
-          senha: senha,
-          cpf: cpf,
-          telefone: telefone,
-          saldo: 0,
-          status: "ativo"
-        }),
+  document.getElementById("registerBtn").onclick = () => {
+    const name = document.getElementById("regName").value.trim();
+    const cpf = document.getElementById("regCPF").value.trim();
+    const phone = document.getElementById("regPhone").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const password = document.getElementById("regPassword").value;
+
+    if(!name || !cpf || !phone || !email || !password){
+      regMessage.textContent = "Preencha todos os campos!";
+      return;
+    }
+    regMessage.textContent = "";
+
+    fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action:"register",
+        nome: name,
+        cpf,
+        telefone: phone,
+        email,
+        senha: password
       })
-        .then(res => res.text())
-        .then(txt => {
-          document.getElementById('cadastroMsg').innerText = "Cadastro realizado com sucesso!";
-        })
-        .catch(err => {
-          document.getElementById('cadastroMsg').innerText = "Erro ao cadastrar.";
-        });
-    }
-  </script>
+    }).then(res => res.json()).then(data => {
+      if(data.success){
+        alert("Registrado com sucesso! Faça login.");
+        registerTab.classList.add("hidden");
+        loginTab.classList.remove("hidden");
+      } else {
+        regMessage.textContent = data.msg || "Erro ao registrar.";
+      }
+    }).catch(() => {
+      regMessage.textContent = "Erro na comunicação. Tente novamente.";
+    });
+  };
+
+  function mostrarDashboard(usuario){
+    loginTab.classList.add("hidden");
+    registerTab.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+
+    document.getElementById("userName").textContent = usuario.nome || "";
+    document.getElementById("userSaldo").textContent = (parseFloat(usuario.saldo) || 0).toFixed(2).replace('.',',');
+    document.getElementById("userTrader").textContent = usuario.trader || "Nenhum";
+    document.getElementById("userInvestido").textContent = (parseFloat(usuario.investimento) || 0).toFixed(2).replace('.',',');
+    document.getElementById("userLiberacao").textContent = usuario.liberacao || "--";
+  }
+
+  document.getElementById("logoutBtn").onclick = () => {
+    dashboard.classList.add("hidden");
+    loginTab.classList.remove("hidden");
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPassword").value = "";
+    message.textContent = "";
+  };
+</script>
+
 </body>
-</html>
+</html></html>
