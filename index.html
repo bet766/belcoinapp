@@ -2,176 +2,204 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Painel do Usuário</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belcoin - Login & Cadastro</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" />
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
+    * {
+      font-family: 'Roboto', sans-serif;
+      box-sizing: border-box;
       margin: 0;
-      background: #f3f4f6;
+      padding: 0;
     }
-    .header {
-      background-color: #1f2937;
-      color: white;
-      padding: 20px;
-      text-align: center;
+
+    body {
+      background-color: #0a0a0a;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    .dashboard {
-      max-width: 900px;
-      margin: 40px auto;
-      background: white;
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background-color: #1a1a1a;
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 150, 0.2);
     }
-    .saldo {
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 20px;
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #00ff99;
     }
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-    button {
-      background: #10b981;
-      border: none;
-      color: white;
-      padding: 15px;
-      font-size: 16px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #059669;
-    }
-    .section {
-      margin-top: 30px;
-    }
-    .section h3 {
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-    .input-cupom {
+
+    input {
       width: 100%;
       padding: 12px;
+      margin-bottom: 15px;
       border-radius: 8px;
-      border: 1px solid #ccc;
+      border: none;
+      background-color: #2b2b2b;
+      color: #fff;
     }
-    .logout {
-      margin-top: 40px;
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00ff99;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .toggle {
+      margin-top: 15px;
       text-align: center;
     }
-    .logout button {
-      background: #ef4444;
+
+    #painel {
+      display: none;
+    }
+
+    .painel-btn {
+      margin-top: 10px;
+      padding: 10px;
+      width: 100%;
+      background-color: #333;
+      color: #00ff99;
+      border: 1px solid #00ff99;
+      border-radius: 8px;
+    }
+
+    .logout {
+      background-color: red;
+      color: #fff;
     }
   </style>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <div class="header">
-    <h1>Belcoin - Área do Cliente</h1>
-  </div>
-
-  <div class="dashboard">
-    <div class="saldo" id="saldo">Saldo Atual: R$ 0,00</div>
-
-    <div class="buttons">
-      <button onclick="depositar()">Depositar</button>
-      <button onclick="investir()">Investir</button>
-      <button onclick="verInvestimentos()">Meus Investimentos</button>
-      <button onclick="sacar()">Sacar</button>
-      <button onclick="inserirCupom()">Inserir Cupom</button>
-      <button onclick="abrirGrupoVIP()">Grupo VIP</button>
-    </div>
-
-    <div class="section" id="lista-investimentos" style="display:none;">
-      <h3>Investimentos Ativos</h3>
-      <div id="investimentos"></div>
-    </div>
-
-    <div class="logout">
-      <button onclick="logout()">Sair</button>
+  <div class="container" id="auth">
+    <h1>Belcoin</h1>
+    <input type="email" id="email" placeholder="Seu e-mail">
+    <input type="password" id="senha" placeholder="Sua senha">
+    <button onclick="login()">Entrar</button>
+    <div class="toggle">
+      <p>Não tem conta? <a href="#" onclick="cadastro()">Cadastre-se</a></p>
     </div>
   </div>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_DOMINIO.firebaseapp.com",
-    projectId: "SEU_PROJETO_ID",
-    storageBucket: "SEU_BUCKET",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID",
-    databaseURL: "https://SEU_PROJETO.firebaseio.com"
-  };
+  <div class="container" id="painel">
+    <h1>Bem-vindo à Belcoin</h1>
+    <p id="saldo">Saldo: R$ 0,00</p>
+    <button class="painel-btn" onclick="depositar()">💰 Depositar</button>
+    <button class="painel-btn" onclick="sacar()">📤 Sacar</button>
+    <button class="painel-btn" onclick="indicar()">🔗 Indicar Amigos</button>
+    <button class="painel-btn" onclick="acessarTraders()">📈 Traders</button>
+    <button class="painel-btn" onclick="entrarVIP()">💎 Grupo VIP</button>
+    <button class="painel-btn logout" onclick="logout()">Sair</button>
+  </div>
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  // Checar usuário logado
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      const uid = user.uid;
-      db.ref("usuarios/" + uid + "/saldo").once("value").then(snap => {
-        const saldo = snap.val() || 0;
-        document.getElementById("saldo").innerText = "Saldo Atual: R$ " + saldo.toFixed(2);
+  <script>
+    // 🔧 Substitua pelas suas credenciais do Firebase
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_AUTH_DOMAIN",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_BUCKET",
+      messagingSenderId: "SEU_MESSAGING_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function login() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      auth.signInWithEmailAndPassword(email, senha)
+        .then(user => {
+          mostrarPainel();
+        })
+        .catch(() => alert('Erro ao logar!'));
+    }
+
+    function cadastro() {
+      const email = document.getElementById('email').value;
+      const senha = document.getElementById('senha').value;
+
+      auth.createUserWithEmailAndPassword(email, senha)
+        .then(user => {
+          db.collection('usuarios').doc(user.user.uid).set({ saldo: 0 });
+          mostrarPainel();
+        })
+        .catch(() => alert('Erro ao cadastrar!'));
+    }
+
+    function mostrarPainel() {
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('painel').style.display = 'block';
+      carregarSaldo();
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        document.getElementById('auth').style.display = 'block';
+        document.getElementById('painel').style.display = 'none';
       });
-    } else {
-      window.location.href = "login.html"; // redirecionar se não logado
     }
-  });
 
-  function depositar() {
-    alert("Função de depósito acionada!");
-    // Aqui você pode abrir um modal ou link para pagamento via PIX/dólar
-  }
-
-  function investir() {
-    alert("Abrir opções de 24h, 48h e 72h com valores personalizados.");
-    // Você pode criar um modal com seleções
-  }
-
-  function verInvestimentos() {
-    document.getElementById("lista-investimentos").style.display = "block";
-    // Simulação de progresso
-    document.getElementById("investimentos").innerHTML = `
-      <p>Trader 24h - Progresso: 80%</p>
-      <p>Trader 48h - Progresso: 45%</p>
-    `;
-  }
-
-  function sacar() {
-    alert("Função de saque acionada! Solicitação será enviada ao admin.");
-    // Conectar com Firebase em /saques
-  }
-
-  function inserirCupom() {
-    const cupom = prompt("Digite o cupom:");
-    if (cupom) {
-      alert("Cupom " + cupom + " enviado para validação.");
-      // Salvar em /cupons ou validar em tempo real
+    function carregarSaldo() {
+      const user = auth.currentUser;
+      if (user) {
+        db.collection('usuarios').doc(user.uid).get().then(doc => {
+          const saldo = doc.data().saldo.toFixed(2);
+          document.getElementById('saldo').innerText = "Saldo: R$ " + saldo;
+        });
+      }
     }
-  }
 
-  function abrirGrupoVIP() {
-    window.open("https://t.me/seugrupovip", "_blank");
-  }
+    function depositar() {
+      alert('Função de depósito em desenvolvimento.');
+    }
 
-  function logout() {
-    auth.signOut().then(() => {
-      window.location.href = "login.html";
+    function sacar() {
+      alert('Função de saque em desenvolvimento.');
+    }
+
+    function indicar() {
+      const uid = auth.currentUser.uid;
+      const link = window.location.origin + "/?ref=" + uid;
+      prompt("Compartilhe seu link de indicação:", link);
+    }
+
+    function acessarTraders() {
+      alert('Redirecionando para os traders...');
+    }
+
+    function entrarVIP() {
+      window.open("https://wa.me/5551997088974", "_blank");
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        mostrarPainel();
+      }
     });
-  }
-</script>
-
+  </script>
 </body>
 </html>
