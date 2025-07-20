@@ -2,224 +2,176 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Belcoin - Login & Cadastro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Belcoin - Painel do Usuário</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      font-family: Arial, sans-serif;
-      background: #0e0e0e;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: #f3f4f6;
     }
-    #container {
-      background: #1a1a1a;
-      padding: 30px;
-      border-radius: 12px;
-      width: 380px;
-      box-shadow: 0 0 15px #0f0;
+    .header {
+      background-color: #1f2937;
+      color: white;
+      padding: 20px;
       text-align: center;
     }
-    h1 {
-      margin-bottom: 20px;
-      color: #00ff88;
-    }
-    input {
-      width: 100%;
-      margin: 8px 0;
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 14px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #00ff88;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:hover {
-      background: #00cc6e;
-    }
-    .link {
-      margin-top: 15px;
-      cursor: pointer;
-      color: #00ff88;
-      font-size: 14px;
-      text-decoration: underline;
-    }
-    #message {
-      margin-top: 20px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #00ff88;
-    }
-    #dashboard {
-      display: none;
+    .dashboard {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     .saldo {
-      font-size: 18px;
-      margin: 10px 0;
-      color: #0f0;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    button {
+      background: #10b981;
+      border: none;
+      color: white;
+      padding: 15px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #059669;
+    }
+    .section {
+      margin-top: 30px;
+    }
+    .section h3 {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+    .input-cupom {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .logout {
+      margin-top: 40px;
+      text-align: center;
+    }
+    .logout button {
+      background: #ef4444;
     }
   </style>
-
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-  <div id="container">
-    <div id="login-form">
-      <h1>Belcoin - Login</h1>
-      <input type="email" id="login-email" placeholder="Email" required />
-      <input type="password" id="login-password" placeholder="Senha" required />
-      <button onclick="login()">Entrar</button>
-      <div class="link" onclick="showRegister()">Criar conta</div>
-      <div id="login-error" style="color:#f44;"></div>
+
+  <div class="header">
+    <h1>Belcoin - Área do Cliente</h1>
+  </div>
+
+  <div class="dashboard">
+    <div class="saldo" id="saldo">Saldo Atual: R$ 0,00</div>
+
+    <div class="buttons">
+      <button onclick="depositar()">Depositar</button>
+      <button onclick="investir()">Investir</button>
+      <button onclick="verInvestimentos()">Meus Investimentos</button>
+      <button onclick="sacar()">Sacar</button>
+      <button onclick="inserirCupom()">Inserir Cupom</button>
+      <button onclick="abrirGrupoVIP()">Grupo VIP</button>
     </div>
 
-    <div id="register-form" style="display:none;">
-      <h1>Belcoin - Cadastro</h1>
-      <input type="text" id="register-name" placeholder="Nome Completo" required />
-      <input type="text" id="register-cpf" placeholder="CPF (somente números)" maxlength="11" required />
-      <input type="email" id="register-email" placeholder="Email" required />
-      <input type="password" id="register-password" placeholder="Senha" required />
-      <input type="tel" id="register-phone" placeholder="Telefone" required />
-      <input type="date" id="register-birthdate" required />
-      <button onclick="register()">Cadastrar</button>
-      <div class="link" onclick="showLogin()">Já tem conta?</div>
-      <div id="register-error" style="color:#f44;"></div>
+    <div class="section" id="lista-investimentos" style="display:none;">
+      <h3>Investimentos Ativos</h3>
+      <div id="investimentos"></div>
     </div>
 
-    <div id="message" style="display:none;"></div>
-
-    <div id="dashboard">
-      <h1>Bem-vindo à Belcoin</h1>
-      <p id="welcome-message"></p>
-      <div class="saldo">Saldo atual: <strong>R$ 0,00</strong></div>
-      <button>Depositar</button>
-      <button>Sacar</button>
+    <div class="logout">
       <button onclick="logout()">Sair</button>
     </div>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBY10W0PXZAkz2Zr06iXa_T9t-GEgm_WgY",
-      authDomain: "belcoin-38d95.firebaseapp.com",
-      projectId: "belcoin-38d95",
-      storageBucket: "belcoin-38d95.appspot.com",
-      messagingSenderId: "351419236081",
-      appId: "1:351419236081:web:d83537260c1dba5c767350",
-      measurementId: "G-S9F5VEEP3J"
-    };
+<script>
+  const firebaseConfig = {
+    apiKey: "SUA_API_KEY",
+    authDomain: "SEU_DOMINIO.firebaseapp.com",
+    projectId: "SEU_PROJETO_ID",
+    storageBucket: "SEU_BUCKET",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID",
+    databaseURL: "https://SEU_PROJETO.firebaseio.com"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
 
-    document.getElementById('register-birthdate').max = new Date().toISOString().split("T")[0];
-
-    function showLogin() {
-      document.getElementById('login-form').style.display = 'block';
-      document.getElementById('register-form').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('message').style.display = 'none';
+  // Checar usuário logado
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const uid = user.uid;
+      db.ref("usuarios/" + uid + "/saldo").once("value").then(snap => {
+        const saldo = snap.val() || 0;
+        document.getElementById("saldo").innerText = "Saldo Atual: R$ " + saldo.toFixed(2);
+      });
+    } else {
+      window.location.href = "login.html"; // redirecionar se não logado
     }
+  });
 
-    function showRegister() {
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('register-form').style.display = 'block';
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('message').style.display = 'none';
+  function depositar() {
+    alert("Função de depósito acionada!");
+    // Aqui você pode abrir um modal ou link para pagamento via PIX/dólar
+  }
+
+  function investir() {
+    alert("Abrir opções de 24h, 48h e 72h com valores personalizados.");
+    // Você pode criar um modal com seleções
+  }
+
+  function verInvestimentos() {
+    document.getElementById("lista-investimentos").style.display = "block";
+    // Simulação de progresso
+    document.getElementById("investimentos").innerHTML = `
+      <p>Trader 24h - Progresso: 80%</p>
+      <p>Trader 48h - Progresso: 45%</p>
+    `;
+  }
+
+  function sacar() {
+    alert("Função de saque acionada! Solicitação será enviada ao admin.");
+    // Conectar com Firebase em /saques
+  }
+
+  function inserirCupom() {
+    const cupom = prompt("Digite o cupom:");
+    if (cupom) {
+      alert("Cupom " + cupom + " enviado para validação.");
+      // Salvar em /cupons ou validar em tempo real
     }
+  }
 
-    async function register() {
-      const name = document.getElementById('register-name').value;
-      const cpf = document.getElementById('register-cpf').value;
-      const email = document.getElementById('register-email').value;
-      const password = document.getElementById('register-password').value;
-      const phone = document.getElementById('register-phone').value;
-      const birthdate = document.getElementById('register-birthdate').value;
+  function abrirGrupoVIP() {
+    window.open("https://t.me/seugrupovip", "_blank");
+  }
 
-      if (!name || !cpf || !email || !password || !phone || !birthdate) {
-        document.getElementById('register-error').innerText = "Preencha todos os campos!";
-        return;
-      }
-
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        await db.collection("users").doc(user.uid).set({
-          name,
-          cpf,
-          email,
-          phone,
-          birthdate,
-          saldo: 0
-        });
-        showMessage("Bem-vindo à Belcoin");
-      } catch (error) {
-        document.getElementById('register-error').innerText = error.message;
-      }
-    }
-
-    async function login() {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-
-      if (!email || !password) {
-        document.getElementById('login-error').innerText = "Digite o email e a senha.";
-        return;
-      }
-
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-        showMessage("Bem-vindo novamente à Belcoin");
-      } catch (error) {
-        document.getElementById('login-error').innerText = error.message;
-      }
-    }
-
-    function showMessage(text) {
-      document.getElementById('login-form').style.display = 'none';
-      document.getElementById('register-form').style.display = 'none';
-      const msg = document.getElementById('message');
-      msg.innerText = text;
-      msg.style.display = 'block';
-      setTimeout(() => {
-        msg.style.display = 'none';
-        showDashboard();
-      }, 10000);
-    }
-
-    async function showDashboard() {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const doc = await db.collection("users").doc(user.uid).get();
-      const data = doc.data();
-      document.getElementById('welcome-message').innerText = `Olá, ${data.name}`;
-      document.getElementById('dashboard').style.display = 'block';
-    }
-
-    function logout() {
-      auth.signOut().then(showLogin);
-    }
-
-    auth.onAuthStateChanged(user => {
-      if (user) showDashboard();
-      else showLogin();
+  function logout() {
+    auth.signOut().then(() => {
+      window.location.href = "login.html";
     });
-  </script>
+  }
+</script>
+
 </body>
 </html>
