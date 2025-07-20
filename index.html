@@ -3,52 +3,64 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Belcoin - Login, Cadastro e Painel</title>
+<title>Belcon - Login e Cadastro</title>
 <style>
+  /* Reset básico */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  }
   body {
     background-color: #000;
     color: #0f0;
-    font-family: Arial, sans-serif;
-    margin: 0; padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
   }
-  .container {
+  #container {
     background-color: #111;
-    border: 2px solid #0f0;
-    border-radius: 8px;
-    padding: 20px;
+    padding: 30px 40px;
     width: 360px;
+    border-radius: 4px;
+    border: 2px solid #0f0; /* borda verde */
   }
-  h1, h2 {
+  h1 {
     text-align: center;
+    margin-bottom: 30px;
+    font-weight: bold;
+    font-size: 2rem;
+    user-select: none;
+  }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
   }
   input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+    padding: 8px 10px;
+    margin-bottom: 16px;
     background-color: #222;
     border: 1px solid #0f0;
     color: #0f0;
+    outline: none;
     border-radius: 0;
     font-size: 1rem;
   }
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="tel"]:focus {
-    outline: none;
     border-color: #0c0;
   }
   button {
     width: 100%;
+    padding: 10px;
     background-color: #0f0;
     border: none;
     color: #000;
     font-weight: bold;
-    padding: 12px;
-    margin: 15px 0 10px;
     cursor: pointer;
     font-size: 1rem;
+    margin-bottom: 12px;
     border-radius: 2px;
     transition: background-color 0.3s;
   }
@@ -59,82 +71,119 @@
     color: #0f0;
     cursor: pointer;
     text-align: center;
-    display: block;
+    font-size: 0.9rem;
     user-select: none;
   }
-  .hidden {
-    display: none;
+  .link:hover {
+    text-decoration: underline;
   }
   #message, #regMessage {
-    height: 24px;
-    text-align: center;
+    margin-bottom: 12px;
+    color: #f66;
     font-weight: bold;
+    min-height: 20px;
+    text-align: center;
   }
-  #message {
-    color: #f66;
-  }
-  #regMessage {
-    color: #f66;
-  }
+  /* Painel após login */
   #dashboard {
+    display: none;
+    flex-direction: column;
     color: #0f0;
   }
-  #dashboard div {
-    margin: 10px 0;
+  #dashboard h2 {
+    text-align: center;
+    margin-bottom: 20px;
   }
-  #dashboard button {
+  #saldo {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  #buttons button {
+    margin-bottom: 12px;
+  }
+  #traders {
     margin-top: 20px;
+  }
+  #traders ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  #traders ul li {
+    padding: 6px 10px;
+    background-color: #222;
+    margin-bottom: 6px;
+    border-radius: 2px;
+  }
+  #logoutBtn {
+    margin-top: 25px;
     background-color: #f00;
     color: #fff;
   }
-  #dashboard button:hover {
+  #logoutBtn:hover {
     background-color: #b00;
   }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div id="container">
 
   <!-- Login -->
   <div id="loginTab">
-    <h1>Belcoin</h1>
+    <h1>Belcon</h1>
     <div id="message"></div>
-    <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
-    <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" />
-    <button id="loginBtn">Entrar</button>
-    <span class="link" id="showRegister">Não tem conta? Registrar-se</span>
+    <label for="loginEmail">E-mail</label>
+    <input type="email" id="loginEmail" autocomplete="username" />
+    <label for="loginPassword">Senha</label>
+    <input type="password" id="loginPassword" autocomplete="current-password" />
+    <button id="loginBtn">Login</button>
+    <div class="link" id="showRegister">Não tem conta? Registrar-se</div>
   </div>
 
   <!-- Cadastro -->
-  <div id="registerTab" class="hidden">
-    <h1>Belcoin</h1>
+  <div id="registerTab" style="display:none;">
+    <h1>Belcon</h1>
     <div id="regMessage"></div>
-    <input type="text" id="regName" placeholder="Nome completo" />
-    <input type="text" id="regCPF" placeholder="CPF" maxlength="14" />
-    <input type="tel" id="regPhone" placeholder="Telefone (XX) XXXXX-XXXX" />
-    <input type="email" id="regEmail" placeholder="E-mail" autocomplete="email" />
-    <input type="password" id="regPassword" placeholder="Senha" autocomplete="new-password" />
+    <label for="regName">Nome completo</label>
+    <input type="text" id="regName" />
+    <label for="regCPF">CPF</label>
+    <input type="text" id="regCPF" maxlength="14" placeholder="000.000.000-00" />
+    <label for="regPhone">Telefone</label>
+    <input type="tel" id="regPhone" placeholder="(XX) XXXXX-XXXX" />
+    <label for="regEmail">E-mail</label>
+    <input type="email" id="regEmail" autocomplete="email" />
+    <label for="regPassword">Senha</label>
+    <input type="password" id="regPassword" autocomplete="new-password" />
     <button id="registerBtn">Registrar-se</button>
-    <span class="link" id="showLogin">Já tem conta? Login</span>
+    <div class="link" id="showLogin">Já tem conta? Login</div>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden">
+  <!-- Painel -->
+  <div id="dashboard">
     <h2>Bem-vindo, <span id="userName"></span>!</h2>
-    <div><strong>Saldo:</strong> R$ <span id="userSaldo">0,00</span></div>
-    <div><strong>Trader ativo:</strong> <span id="userTrader">Nenhum</span></div>
-    <div><strong>Valor investido:</strong> R$ <span id="userInvestido">0,00</span></div>
-    <div><strong>Liberação do investimento:</strong> <span id="userLiberacao">--</span></div>
-
-    <button id="logoutBtn">Sair</button>
+    <div id="saldo">Saldo: R$ <span id="userSaldo">0,00</span></div>
+    <div id="buttons">
+      <button id="depositBtn">Depositar</button>
+      <button id="withdrawBtn">Sacar</button>
+      <button id="vipBtn">Acessar Grupos VIP</button>
+    </div>
+    <div id="traders">
+      <h3>Traders ativos:</h3>
+      <ul id="tradersList">
+        <!-- Traders serão listados aqui -->
+      </ul>
+    </div>
+    <button id="logoutBtn">Logout</button>
   </div>
 
 </div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbz3KVeqmz_Ax9Z87MISOpGOV0wJMekT7qkgSKdJyLoAvDxys-z1V63XZaIBZu_nRshfyQ/exec";
+  // URL do seu Apps Script implantado
+  const API_URL = "https://script.google.com/macros/s/AKfycbz3KVeqmz_Ax9Z87MISOpGOV0wJMekT7qk.../exec";
 
+  // Elementos
   const loginTab = document.getElementById("loginTab");
   const registerTab = document.getElementById("registerTab");
   const dashboard = document.getElementById("dashboard");
@@ -142,20 +191,23 @@
   const message = document.getElementById("message");
   const regMessage = document.getElementById("regMessage");
 
+  // Mostrar cadastro
   document.getElementById("showRegister").onclick = () => {
-    loginTab.classList.add("hidden");
-    registerTab.classList.remove("hidden");
+    loginTab.style.display = "none";
+    registerTab.style.display = "block";
     message.textContent = "";
     regMessage.textContent = "";
   };
 
+  // Mostrar login
   document.getElementById("showLogin").onclick = () => {
-    registerTab.classList.add("hidden");
-    loginTab.classList.remove("hidden");
+    registerTab.style.display = "none";
+    loginTab.style.display = "block";
     message.textContent = "";
     regMessage.textContent = "";
   };
 
+  // Login
   document.getElementById("loginBtn").onclick = () => {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value;
@@ -169,17 +221,23 @@
     fetch(API_URL, {
       method: "POST",
       body: JSON.stringify({action:"login", email, senha: password})
-    }).then(res => res.json()).then(data => {
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Resposta login:", data);
       if(data.success){
         mostrarDashboard(data.usuario);
       } else {
-        message.textContent = "E-mail ou senha incorretos.";
+        message.textContent = data.msg || "E-mail ou senha incorretos.";
       }
-    }).catch(() => {
+    })
+    .catch(err => {
+      console.error("Erro na requisição login:", err);
       message.textContent = "Erro na comunicação. Tente novamente.";
     });
   };
 
+  // Registrar
   document.getElementById("registerBtn").onclick = () => {
     const name = document.getElementById("regName").value.trim();
     const cpf = document.getElementById("regCPF").value.trim();
@@ -203,38 +261,71 @@
         email,
         senha: password
       })
-    }).then(res => res.json()).then(data => {
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Resposta registro:", data);
       if(data.success){
         alert("Registrado com sucesso! Faça login.");
-        registerTab.classList.add("hidden");
-        loginTab.classList.remove("hidden");
+        registerTab.style.display = "none";
+        loginTab.style.display = "block";
+        regMessage.textContent = "";
       } else {
         regMessage.textContent = data.msg || "Erro ao registrar.";
       }
-    }).catch(() => {
+    })
+    .catch(err => {
+      console.error("Erro na requisição registro:", err);
       regMessage.textContent = "Erro na comunicação. Tente novamente.";
     });
   };
 
+  // Mostrar painel após login
   function mostrarDashboard(usuario){
-    loginTab.classList.add("hidden");
-    registerTab.classList.add("hidden");
-    dashboard.classList.remove("hidden");
+    document.getElementById("userName").textContent = usuario.nome;
+    document.getElementById("userSaldo").textContent = Number(usuario.saldo).toFixed(2).replace('.',',');
+    // Exibir traders do usuário
+    const tradersList = document.getElementById("tradersList");
+    tradersList.innerHTML = ""; // limpar
 
-    document.getElementById("userName").textContent = usuario.nome || "";
-    document.getElementById("userSaldo").textContent = (parseFloat(usuario.saldo) || 0).toFixed(2).replace('.',',');
-    document.getElementById("userTrader").textContent = usuario.trader || "Nenhum";
-    document.getElementById("userInvestido").textContent = (parseFloat(usuario.investimento) || 0).toFixed(2).replace('.',',');
-    document.getElementById("userLiberacao").textContent = usuario.liberacao || "--";
+    if(usuario.traders && usuario.traders.length > 0){
+      usuario.traders.forEach(t => {
+        const li = document.createElement("li");
+        li.textContent = `${t.nome} - Investido: R$ ${Number(t.investimento).toFixed(2).replace('.',',')} - Libera em: ${t.liberacao}`;
+        tradersList.appendChild(li);
+      });
+    } else {
+      const li = document.createElement("li");
+      li.textContent = "Nenhum trader ativo.";
+      tradersList.appendChild(li);
+    }
+
+    loginTab.style.display = "none";
+    registerTab.style.display = "none";
+    dashboard.style.display = "flex";
   }
 
+  // Logout
   document.getElementById("logoutBtn").onclick = () => {
-    dashboard.classList.add("hidden");
-    loginTab.classList.remove("hidden");
+    dashboard.style.display = "none";
+    loginTab.style.display = "block";
+    // Limpar campos
     document.getElementById("loginEmail").value = "";
     document.getElementById("loginPassword").value = "";
     message.textContent = "";
   };
+
+  // Botões depósito, saque e VIP - aqui só mostra alertas simulando
+  document.getElementById("depositBtn").onclick = () => {
+    alert("Função Depósito - Em desenvolvimento");
+  };
+  document.getElementById("withdrawBtn").onclick = () => {
+    alert("Função Saque - Em desenvolvimento");
+  };
+  document.getElementById("vipBtn").onclick = () => {
+    alert("Acesso aos grupos VIP - Em desenvolvimento");
+  };
+
 </script>
 
 </body>
