@@ -2,178 +2,324 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Plataforma de Investimentos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Belcoin - Plataforma Completa</title>
   <style>
+    /* Fonte e reset */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #e8f5e9;
+      margin: 0; padding: 0;
+      background-color: #0b0b0b;
+      color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
     .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      padding: 20px;
+      background: #111;
+      border: 2px solid #00ff99;
+      border-radius: 12px;
+      padding: 30px;
+      width: 380px;
+      box-shadow: 0 0 15px #00ff99;
     }
     h2 {
       text-align: center;
-      color: #2e7d32;
+      margin-bottom: 20px;
+      color: #00ff99;
     }
-    input, button {
+    input[type=email], input[type=password], input[type=number], input[type=text] {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      padding: 12px;
+      margin: 10px 0 20px 0;
+      background: #222;
+      border: none;
+      border-radius: 8px;
+      color: #eee;
+      font-size: 1rem;
     }
     button {
-      background-color: #2e7d32;
-      color: white;
+      width: 100%;
+      padding: 14px;
+      background: #00ff99;
       border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #000;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: background 0.3s ease;
     }
-    #dashboard {
+    button:hover {
+      background: #00cc7a;
+    }
+    .link {
+      text-align: center;
+      color: #00ff99;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .hidden {
       display: none;
     }
-    .saldo, .trader, .deposito, .saque {
-      margin: 15px 0;
-      padding: 15px;
-      background: #f1f8e9;
-      border-radius: 8px;
+    /* Painel interno */
+    #painel h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    #painel .saldo {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #painel button {
+      margin-bottom: 12px;
+    }
+    #painel .btn-danger {
+      background-color: #cc0000;
+      color: white;
+    }
+    #painel .btn-danger:hover {
+      background-color: #990000;
+    }
+    #painel input[type=number] {
+      margin-bottom: 10px;
+    }
+    #painel .trader-btns button {
+      margin-bottom: 8px;
+      background: #222;
+      color: #00ff99;
+      border: 2px solid #00ff99;
+    }
+    #painel .trader-btns button:hover {
+      background: #00ff99;
+      color: #000;
+    }
+    #statusMsg {
+      margin-bottom: 15px;
+      text-align: center;
+      font-weight: 600;
+      color: #00ff99;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="auth">
-    <h2>Belcoin - Entrar</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Senha" />
-    <button onclick="login()">Entrar</button>
-    <button onclick="register()">Cadastrar</button>
-    <p id="authStatus" style="color:red;"></p>
+
+  <div class="container" id="auth-container">
+    <!-- LOGIN -->
+    <div id="login-section">
+      <h2>Belcoin - Login</h2>
+      <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
+      <input type="password" id="loginPassword" placeholder="Senha" autocomplete="current-password" />
+      <button onclick="login()">Entrar</button>
+      <div class="link" onclick="showRegister()">Não tem conta? Registrar-se</div>
+      <p id="loginError" style="color:#cc0000;text-align:center;"></p>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="register-section" class="hidden">
+      <h2>Belcoin - Registro</h2>
+      <input type="email" id="registerEmail" placeholder="E-mail" autocomplete="email" />
+      <input type="password" id="registerPassword" placeholder="Senha" autocomplete="new-password" />
+      <input type="password" id="registerPasswordConfirm" placeholder="Confirme a senha" autocomplete="new-password" />
+      <button onclick="register()">Registrar</button>
+      <div class="link" onclick="showLogin()">Já tem conta? Entrar</div>
+      <p id="registerError" style="color:#cc0000;text-align:center;"></p>
+    </div>
   </div>
 
-  <div class="container" id="dashboard">
-    <h2>Bem-vindo à Belcoin</h2>
-    <div class="saldo">
-      <strong>Saldo Atual:</strong> <span id="saldo">R$ 0,00</span>
+  <!-- PAINEL INTERNO -->
+  <div class="container hidden" id="painel">
+    <h2>Belcoin - Painel</h2>
+    <div id="statusMsg"></div>
+    <div class="saldo">Saldo Atual: <strong id="saldoDisplay">R$ 0,00</strong></div>
+
+    <label for="depositAmount">Valor para Depositar (R$):</label>
+    <input type="number" id="depositAmount" min="0" step="0.01" placeholder="0.00" />
+    <button onclick="depositar()">Depositar</button>
+
+    <label for="withdrawAmount">Valor para Sacar (R$):</label>
+    <input type="number" id="withdrawAmount" min="0" step="0.01" placeholder="0.00" />
+    <button onclick="sacar()">Sacar</button>
+
+    <div class="trader-btns">
+      <h3>Investimentos Traders</h3>
+      <button onclick="investir(1, 1)">Trader 24h - 1% de lucro</button>
+      <button onclick="investir(7, 10)">Trader 7 dias - 10% de lucro</button>
+      <button onclick="investir(30, 50)">Trader 30 dias - 50% de lucro</button>
     </div>
-    <div class="deposito">
-      <strong>Depositar:</strong><br/>
-      <input type="number" id="valorDeposito" placeholder="Valor (R$)" />
-      <button onclick="depositar()">Confirmar Depósito</button>
-    </div>
-    <div class="saque">
-      <strong>Sacar:</strong><br/>
-      <input type="number" id="valorSaque" placeholder="Valor (R$)" />
-      <button onclick="sacar()">Confirmar Saque</button>
-    </div>
-    <div class="trader">
-      <strong>Traders Disponíveis:</strong><br/>
-      <button onclick="investir(1)">Trader 24h - 1%</button><br/>
-      <button onclick="investir(7)">Trader 7 dias - 10%</button><br/>
-      <button onclick="investir(30)">Trader 30 dias - 50%</button>
-    </div>
-    <button onclick="logout()">Sair</button>
+
+    <label for="cupomInput">Cupom de Bônus:</label>
+    <input type="text" id="cupomInput" placeholder="Digite seu cupom" />
+    <button onclick="usarCupom()">Aplicar Cupom</button>
+
+    <button onclick="entrarGrupoVIP()">Entrar no Grupo VIP</button>
+    <button class="btn-danger" onclick="logout()">Sair</button>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    // 🔧 CONFIGURAÇÃO FIREBASE AQUI:
+    // --- CONFIGURE AQUI SEUS DADOS FIREBASE ---
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
-      authDomain: "SEU_PROJETO.firebaseapp.com",
-      databaseURL: "https://SEU_PROJETO.firebaseio.com",
-      projectId: "SEU_PROJETO",
-      storageBucket: "SEU_PROJETO.appspot.com",
-      messagingSenderId: "SEU_ID",
+      authDomain: "SEU_AUTH_DOMAIN",
+      databaseURL: "SEU_DATABASE_URL",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_STORAGE_BUCKET",
+      messagingSenderId: "SEU_MESSAGING_SENDER_ID",
       appId: "SEU_APP_ID"
     };
-    firebase.initializeApp(firebaseConfig);
 
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // --- MANIPULAÇÃO DE TELA ---
+    const loginSection = document.getElementById('login-section');
+    const registerSection = document.getElementById('register-section');
+    const authContainer = document.getElementById('auth-container');
+    const painel = document.getElementById('painel');
+
+    const loginError = document.getElementById('loginError');
+    const registerError = document.getElementById('registerError');
+    const statusMsg = document.getElementById('statusMsg');
+
+    function showRegister(){
+      loginSection.classList.add('hidden');
+      registerSection.classList.remove('hidden');
+      loginError.textContent = "";
+      registerError.textContent = "";
+    }
+    function showLogin(){
+      registerSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      loginError.textContent = "";
+      registerError.textContent = "";
+    }
+
+    // --- LOGIN ---
     function login() {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, pass)
-        .then(() => showDashboard())
-        .catch(e => document.getElementById("authStatus").innerText = "Erro ao entrar: " + e.message);
-    }
+      loginError.textContent = "";
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
 
-    function register() {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, pass)
-        .then(user => {
-          db.ref("users/" + user.user.uid).set({ saldo: 0 });
-          showDashboard();
+      if(!email || !password){
+        loginError.textContent = "Preencha todos os campos.";
+        return;
+      }
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          entrarPainel();
         })
-        .catch(e => document.getElementById("authStatus").innerText = "Erro ao cadastrar: " + e.message);
+        .catch(error => {
+          loginError.textContent = error.message;
+        });
     }
 
-    function showDashboard() {
-      document.getElementById("auth").style.display = "none";
-      document.getElementById("dashboard").style.display = "block";
-      updateSaldo();
+    // --- REGISTRO ---
+    function register() {
+      registerError.textContent = "";
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+      if(!email || !password || !passwordConfirm){
+        registerError.textContent = "Preencha todos os campos.";
+        return;
+      }
+      if(password !== passwordConfirm){
+        registerError.textContent = "As senhas não coincidem.";
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          // Cria dados iniciais do usuário no database
+          db.ref('usuarios/' + userCredential.user.uid).set({
+            saldo: 0,
+            createdAt: Date.now()
+          });
+          entrarPainel();
+        })
+        .catch(error => {
+          registerError.textContent = error.message;
+        });
     }
 
+    // --- ENTRAR PAINEL ---
+    function entrarPainel(){
+      authContainer.classList.add('hidden');
+      painel.classList.remove('hidden');
+      loginError.textContent = "";
+      registerError.textContent = "";
+      statusMsg.textContent = "";
+      carregarSaldo();
+    }
+
+    // --- SAIR ---
     function logout() {
       auth.signOut().then(() => {
-        document.getElementById("dashboard").style.display = "none";
-        document.getElementById("auth").style.display = "block";
+        painel.classList.add('hidden');
+        authContainer.classList.remove('hidden');
       });
     }
 
-    function updateSaldo() {
+    // --- CARREGAR SALDO ---
+    function carregarSaldo() {
       const user = auth.currentUser;
-      db.ref("users/" + user.uid + "/saldo").on("value", snapshot => {
+      if(!user) return;
+      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo');
+      saldoRef.on('value', snapshot => {
         const saldo = snapshot.val() || 0;
-        document.getElementById("saldo").innerText = "R$ " + saldo.toFixed(2);
+        document.getElementById('saldoDisplay').textContent = "R$ " + saldo.toFixed(2);
       });
     }
 
+    // --- DEPOSITAR ---
     function depositar() {
-      const valor = parseFloat(document.getElementById("valorDeposito").value);
-      if (isNaN(valor) || valor <= 0) return;
+      const valor = parseFloat(document.getElementById('depositAmount').value);
+      if(isNaN(valor) || valor <= 0){
+        statusMsg.style.color = 'red';
+        statusMsg.textContent = "Digite um valor válido para depósito.";
+        return;
+      }
       const user = auth.currentUser;
-      const saldoRef = db.ref("users/" + user.uid + "/saldo");
-      saldoRef.once("value").then(snapshot => {
-        const saldoAtual = snapshot.val() || 0;
-        saldoRef.set(saldoAtual + valor);
-      });
-    }
-
-    function sacar() {
-      const valor = parseFloat(document.getElementById("valorSaque").value);
-      if (isNaN(valor) || valor <= 0) return;
-      const user = auth.currentUser;
-      const saldoRef = db.ref("users/" + user.uid + "/saldo");
-      saldoRef.once("value").then(snapshot => {
-        const saldoAtual = snapshot.val() || 0;
-        if (valor > saldoAtual) {
-          alert("Saldo insuficiente.");
-        } else {
-          saldoRef.set(saldoAtual - valor);
+      if(!user) return;
+      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo');
+      saldoRef.transaction(current => {
+        return (current || 0) + valor;
+      }, (error, committed) => {
+        if(error) {
+          statusMsg.style.color = 'red';
+          statusMsg.textContent = "Erro no depósito.";
+        } else if(committed) {
+          statusMsg.style.color = '#00ff99';
+          statusMsg.textContent = "Depósito realizado com sucesso!";
+          document.getElementById('depositAmount').value = "";
         }
       });
     }
 
-    function investir(dias) {
-      alert(`Você investiu por ${dias} dia(s). Lucro será aplicado manualmente.`);
-    }
-
-    // Auto-login se já estiver logado
-    auth.onAuthStateChanged(user => {
-      if (user) showDashboard();
-    });
-  </script>
-</body>
-</html>
+    // --- SACAR ---
+    function sacar() {
+      const valor = parseFloat(document.getElementById('withdrawAmount').value);
+      if(isNaN(valor) || valor <= 0){
+        statusMsg.style.color = 'red';
+        statusMsg.textContent = "Digite um valor válido para saque.";
+        return;
+      }
+      const user = auth.currentUser;
+      if(!user) return;
+      const saldoRef = db.ref('usuarios/' + user.uid + '/saldo
