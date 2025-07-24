@@ -1,103 +1,127 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Belbank - Login & Cadastro</title>
+  <meta charset="UTF-8">
+  <title>Belbank - Acesso</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #5f27cd, #341f97);
-      color: #fff;
-      text-align: center;
-      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
     }
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 30px;
-    }
-    .form-container {
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
       background: #fff;
-      color: #333;
       padding: 30px;
       border-radius: 12px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    input, button {
+    h2 {
+      text-align: center;
+      color: #1e2a38;
+    }
+    input, select, button {
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      border: none;
+      margin: 8px 0;
+      border: 1px solid #ccc;
       border-radius: 6px;
+      font-size: 16px;
     }
     button {
-      background-color: #5f27cd;
+      background-color: #6a1b9a;
       color: white;
-      font-weight: bold;
+      border: none;
       cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #4a148c;
     }
     .link {
-      color: #5f27cd;
+      text-align: center;
+      margin-top: 10px;
       cursor: pointer;
-      text-decoration: underline;
-      display: block;
-      margin-bottom: 10px;
+      color: #6a1b9a;
+      font-size: 14px;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <h1>Belbank</h1>
+<div class="container" id="login">
+  <h2>Entrar no Belbank</h2>
+  <input type="email" placeholder="E-mail" id="loginEmail">
+  <input type="password" placeholder="Senha" id="loginSenha">
+  <button onclick="login()">Entrar</button>
+  <div class="link" onclick="mostrar('cadastro')">Criar conta</div>
+  <div class="link" onclick="mostrar('recuperar')">Esqueceu a senha?</div>
+</div>
 
-  <div class="form-container" id="loginForm">
-    <h2>Login</h2>
-    <input type="email" placeholder="E-mail" />
-    <input type="password" placeholder="Senha" />
-    <button>Entrar</button>
-    <span class="link" onclick="showRegister()">Não tem conta? Cadastre-se</span>
-    <span class="link" onclick="showRecovery()">Esqueceu a senha?</span>
-  </div>
+<div class="container hidden" id="cadastro">
+  <h2>Criar Conta Belbank</h2>
+  <input type="text" placeholder="Nome completo" id="cadNome">
+  <input type="text" placeholder="CPF (somente números)" id="cadCPF" maxlength="14" oninput="formatarCPF(this)">
+  <input type="email" placeholder="E-mail" id="cadEmail">
+  <input type="password" placeholder="Senha" id="cadSenha">
+  <input type="text" placeholder="Renda mensal (R$)" id="cadRenda">
+  <input type="tel" placeholder="Telefone/WhatsApp" id="cadTelefone" maxlength="15" oninput="formatarTelefone(this)">
+  <button onclick="cadastrar()">Cadastrar</button>
+  <div class="link" onclick="mostrar('login')">Voltar para login</div>
+</div>
 
-  <div class="form-container" id="registerForm" style="display:none">
-    <h2>Cadastro</h2>
-    <input type="text" placeholder="Nome completo" />
-    <input type="text" placeholder="CPF" />
-    <input type="email" placeholder="E-mail" />
-    <input type="password" placeholder="Senha" />
-    <button>Cadastrar</button>
-    <span class="link" onclick="showLogin()">Já tem conta? Entrar</span>
-  </div>
+<div class="container hidden" id="recuperar">
+  <h2>Recuperar Acesso</h2>
+  <p style="font-size:14px;text-align:center;">Preencha os dados cadastrados para recuperação.</p>
+  <input type="text" placeholder="Nome completo" id="recNome">
+  <input type="text" placeholder="CPF" id="recCPF" maxlength="14" oninput="formatarCPF(this)">
+  <input type="email" placeholder="E-mail" id="recEmail">
+  <button onclick="recuperar()">Enviar solicitação</button>
+  <div class="link" onclick="mostrar('login')">Voltar ao login</div>
+</div>
 
-  <div class="form-container" id="recoveryForm" style="display:none">
-    <h2>Recuperar Conta</h2>
-    <input type="text" placeholder="CPF" />
-    <input type="email" placeholder="E-mail usado no cadastro" />
-    <input type="text" placeholder="Telefone" />
-    <button>Enviar</button>
-    <p>Você será notificado no WhatsApp após validação dos dados.</p>
-    <span class="link" onclick="showLogin()">Voltar ao login</span>
-  </div>
+<script>
+  function mostrar(tela) {
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("cadastro").classList.add("hidden");
+    document.getElementById("recuperar").classList.add("hidden");
+    document.getElementById(tela).classList.remove("hidden");
+  }
 
-  <script>
-    function showLogin() {
-      document.getElementById('loginForm').style.display = 'block';
-      document.getElementById('registerForm').style.display = 'none';
-      document.getElementById('recoveryForm').style.display = 'none';
-    }
-    function showRegister() {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('registerForm').style.display = 'block';
-      document.getElementById('recoveryForm').style.display = 'none';
-    }
-    function showRecovery() {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('registerForm').style.display = 'none';
-      document.getElementById('recoveryForm').style.display = 'block';
-    }
-  </script>
+  function formatarCPF(campo) {
+    let valor = campo.value.replace(/\D/g, '');
+    if (valor.length > 11) valor = valor.substring(0,11);
+    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+    valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    campo.value = valor;
+  }
+
+  function formatarTelefone(campo) {
+    let valor = campo.value.replace(/\D/g, '');
+    valor = valor.replace(/^(\d{2})(\d)/g, "($1) $2");
+    valor = valor.replace(/(\d{5})(\d)/, "$1-$2");
+    campo.value = valor;
+  }
+
+  function login() {
+    alert("Login enviado! (Conectar com Firebase aqui)");
+  }
+
+  function cadastrar() {
+    alert("Cadastro enviado! (Conectar com Firebase aqui)");
+  }
+
+  function recuperar() {
+    alert("Recebemos sua solicitação! Nossa equipe do Belbank vai entrar em contato pelo WhatsApp.");
+  }
+</script>
 
 </body>
 </html>
