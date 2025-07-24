@@ -2,125 +2,102 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belbank - Login & Cadastro</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #0d3b26, #31d180);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff10;
-      backdrop-filter: blur(10px);
-      padding: 40px;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0, 255, 150, 0.3);
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #ffffff;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    button {
-      background-color: #2aff93;
-      color: black;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #1cd072;
-    }
-
-    .link {
-      margin-top: 15px;
-      color: #c0ffd0;
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .logo {
-      font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #5f27cd, #341f97);
       color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 30px;
+    }
+    .form-container {
+      background: #fff;
+      color: #333;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #5f27cd;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .link {
+      color: #5f27cd;
+      cursor: pointer;
+      text-decoration: underline;
+      display: block;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="logo">Belcoin</div>
+  <h1>Belbank</h1>
 
-    <!-- LOGIN -->
-    <div id="login-form">
-      <h2>Login</h2>
-      <input type="text" placeholder="CPF (somente números)" id="login-cpf">
-      <input type="password" placeholder="Senha" id="login-senha">
-      <button onclick="fazerLogin()">Entrar</button>
-      <div class="link" onclick="mostrarCadastro()">Ainda não tem conta? Cadastre-se</div>
-    </div>
+  <div class="form-container" id="loginForm">
+    <h2>Login</h2>
+    <input type="email" placeholder="E-mail" />
+    <input type="password" placeholder="Senha" />
+    <button>Entrar</button>
+    <span class="link" onclick="showRegister()">Não tem conta? Cadastre-se</span>
+    <span class="link" onclick="showRecovery()">Esqueceu a senha?</span>
+  </div>
 
-    <!-- CADASTRO -->
-    <div id="cadastro-form" class="hidden">
-      <h2>Cadastro</h2>
-      <input type="text" placeholder="Nome completo" id="cad-nome">
-      <input type="text" placeholder="CPF (somente números)" id="cad-cpf">
-      <input type="email" placeholder="Email" id="cad-email">
-      <input type="password" placeholder="Senha" id="cad-senha">
-      <button onclick="fazerCadastro()">Cadastrar</button>
-      <div class="link" onclick="mostrarLogin()">Já tem conta? Faça login</div>
-    </div>
+  <div class="form-container" id="registerForm" style="display:none">
+    <h2>Cadastro</h2>
+    <input type="text" placeholder="Nome completo" />
+    <input type="text" placeholder="CPF" />
+    <input type="email" placeholder="E-mail" />
+    <input type="password" placeholder="Senha" />
+    <button>Cadastrar</button>
+    <span class="link" onclick="showLogin()">Já tem conta? Entrar</span>
+  </div>
+
+  <div class="form-container" id="recoveryForm" style="display:none">
+    <h2>Recuperar Conta</h2>
+    <input type="text" placeholder="CPF" />
+    <input type="email" placeholder="E-mail usado no cadastro" />
+    <input type="text" placeholder="Telefone" />
+    <button>Enviar</button>
+    <p>Você será notificado no WhatsApp após validação dos dados.</p>
+    <span class="link" onclick="showLogin()">Voltar ao login</span>
   </div>
 
   <script>
-    function mostrarCadastro() {
-      document.getElementById("login-form").classList.add("hidden");
-      document.getElementById("cadastro-form").classList.remove("hidden");
+    function showLogin() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('recoveryForm').style.display = 'none';
     }
-
-    function mostrarLogin() {
-      document.getElementById("cadastro-form").classList.add("hidden");
-      document.getElementById("login-form").classList.remove("hidden");
+    function showRegister() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+      document.getElementById('recoveryForm').style.display = 'none';
     }
-
-    function fazerLogin() {
-      alert("Função de login será conectada ao Firebase.");
-    }
-
-    function fazerCadastro() {
-      alert("Função de cadastro será conectada ao Firebase.");
+    function showRecovery() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('recoveryForm').style.display = 'block';
     }
   </script>
+
 </body>
 </html>
