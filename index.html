@@ -1,113 +1,101 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Belcon - Login e Cadastro</title>
+  <meta charset="UTF-8">
+  <title>Belcoin - Login e Painel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-    body {
-      background-color: #000;
-      color: #0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    #container {
-      background-color: #111;
-      padding: 30px 40px;
-      width: 360px;
-      border-radius: 4px;
-      border: 2px solid #0f0;
-    }
-    h1 { text-align: center; margin-bottom: 30px; font-weight: bold; font-size: 2rem; user-select: none; }
-    label { display: block; margin-bottom: 6px; font-size: 0.9rem; }
-    input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
-      width: 100%; padding: 8px 10px; margin-bottom: 16px;
-      background-color: #222; border: 1px solid #0f0; color: #0f0;
-      outline: none; border-radius: 0; font-size: 1rem;
-    }
-    input:focus { border-color: #0c0; }
-    button {
-      width: 100%; padding: 10px; background-color: #0f0;
-      border: none; color: #000; font-weight: bold;
-      cursor: pointer; font-size: 1rem; margin-bottom: 12px; border-radius: 2px;
-      transition: background-color 0.3s;
-    }
-    button:hover { background-color: #0c0; }
-    .link { color: #0f0; cursor: pointer; text-align: center; font-size: 0.9rem; user-select: none; }
-    .link:hover { text-decoration: underline; }
-    #message, #regMessage { margin-bottom: 12px; color: #f66; font-weight: bold; min-height: 20px; text-align: center; }
-    #dashboard { display: none; flex-direction: column; color: #0f0; }
-    #dashboard h2 { text-align: center; margin-bottom: 20px; }
-    #saldo { font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
-    #buttons button { margin-bottom: 12px; }
-    #traders { margin-top: 20px; }
-    #traders ul { list-style: none; padding-left: 0; }
-    #traders ul li {
-      padding: 6px 10px; background-color: #222; margin-bottom: 6px; border-radius: 2px;
-    }
-    #logoutBtn { margin-top: 25px; background-color: #f00; color: #fff; }
-    #logoutBtn:hover { background-color: #b00; }
+    body { font-family: Arial, sans-serif; background: #101010; color: #fff; margin: 0; padding: 0; }
+    .container { max-width: 400px; margin: 50px auto; background: #1c1c1c; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px #000; }
+    h2 { text-align: center; }
+    input, button { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 8px; }
+    input { background: #333; color: #fff; }
+    button { background: #4caf50; color: white; cursor: pointer; }
+    #painel { display: none; background: #181818; padding: 20px; border-radius: 12px; margin-top: 20px; }
+    .info { background: #222; padding: 10px; margin: 10px 0; border-radius: 8px; }
   </style>
 </head>
 <body>
-<div id="container">
-  <div id="loginTab">
-    <h1>Belcon</h1>
-    <div id="message"></div>
-    <label for="loginEmail">E-mail</label>
-    <input type="email" id="loginEmail" autocomplete="username" />
-    <label for="loginPassword">Senha</label>
-    <input type="password" id="loginPassword" autocomplete="current-password" />
-    <button id="loginBtn">Login</button>
-    <div class="link" id="showRegister">Não tem conta? Registrar-se</div>
-  </div>  <div id="registerTab" style="display:none;">
-    <h1>Belcon</h1>
-    <div id="regMessage"></div>
-    <label for="regName">Nome completo</label>
-    <input type="text" id="regName" />
-    <label for="regCPF">CPF</label>
-    <input type="text" id="regCPF" maxlength="14" placeholder="000.000.000-00" />
-    <label for="regPhone">Telefone</label>
-    <input type="tel" id="regPhone" placeholder="(XX) XXXXX-XXXX" />
-    <label for="regEmail">E-mail</label>
-    <input type="email" id="regEmail" autocomplete="email" />
-    <label for="regPassword">Senha</label>
-    <input type="password" id="regPassword" autocomplete="new-password" />
-    <button id="registerBtn">Registrar-se</button>
-    <div class="link" id="showLogin">Já tem conta? Login</div>
-  </div>  <div id="dashboard">
-    <h2>Bem-vindo, <span id="userName"></span>!</h2>
-    <div id="saldo">Saldo: R$ <span id="userSaldo">0,00</span></div>
-    <div id="buttons">
-      <button id="depositBtn">Depositar</button>
-      <button id="withdrawBtn">Sacar</button>
-      <button id="vipBtn">Acessar Grupos VIP</button>
-    </div>
-    <div id="traders">
-      <h3>Traders ativos:</h3>
-      <ul id="tradersList"></ul>
-    </div>
-    <button id="logoutBtn">Logout</button>
-  </div>
+
+<div class="container" id="auth">
+  <h2>Belcoin - Login</h2>
+  <input type="text" id="email" placeholder="E-mail">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="fazerLogin()">Entrar</button>
+  <p style="text-align:center; margin-top:10px;">ou</p>
+  <input type="text" id="nome" placeholder="Nome Completo">
+  <input type="text" id="telefone" placeholder="Telefone">
+  <input type="text" id="cpf" placeholder="CPF">
+  <button onclick="fazerCadastro()">Cadastrar</button>
 </div>
+
+<div class="container" id="painel">
+  <h2>Bem-vindo, <span id="userName"></span></h2>
+  <div class="info"><strong>Saldo:</strong> R$ <span id="saldo"></span></div>
+  <div class="info"><strong>Trader ativo:</strong> <span id="trader"></span></div>
+  <div class="info"><strong>CPF:</strong> <span id="cpfInfo"></span></div>
+  <div class="info"><strong>Telefone:</strong> <span id="telefoneInfo"></span></div>
+  <div class="info"><strong>Status:</strong> <span id="status"></span></div>
+  <button onclick="sair()">Sair</button>
+</div>
+
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwrvoXymcSI89IE7kiw0Po-xi2Sh0na8hqipLj2BFI_PGzyi1C9DSJKkW8-3TsjTef2/exec";function mostrarDashboard(usuario) { document.getElementById("userName").textContent = usuario.nome; document.getElementById("userSaldo").textContent = Number(usuario.saldo).toFixed(2).replace('.', ','); const tradersList = document.getElementById("tradersList"); tradersList.innerHTML = ""; if (usuario.traders && usuario.traders.length > 0) { usuario.traders.forEach(t => { const li = document.createElement("li"); li.textContent = ${t.nome} - Investido: R$ ${Number(t.investimento).toFixed(2).replace('.', ',')} - Libera em: ${t.liberacao}; tradersList.appendChild(li); }); } else { tradersList.innerHTML = "<li>Nenhum trader ativo.</li>"; } loginTab.style.display = "none"; registerTab.style.display = "none"; dashboard.style.display = "flex"; }
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwrvoXymcSI89IE7kiw0Po-xi2Sh0na8hqipLj2BFI_PGzyi1C9DSJKkW8-3TsjTef2/exec";
 
-const loginTab = document.getElementById("loginTab"); const registerTab = document.getElementById("registerTab"); const dashboard = document.getElementById("dashboard"); const message = document.getElementById("message"); const regMessage = document.getElementById("regMessage");
+  function fazerCadastro() {
+    const nome = document.getElementById("nome").value;
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+    const telefone = document.getElementById("telefone").value;
+    const cpf = document.getElementById("cpf").value;
 
-document.getElementById("showRegister").onclick = () => { loginTab.style.display = "none"; registerTab.style.display = "block"; message.textContent = ""; regMessage.textContent = ""; };
+    if (!nome || !email || !senha || !telefone || !cpf) {
+      alert("Preencha todos os campos.");
+      return;
+    }
 
-document.getElementById("showLogin").onclick = () => { registerTab.style.display = "none"; loginTab.style.display = "block"; message.textContent = ""; regMessage.textContent = ""; };
+    fetch(scriptURL + `?tipo=cadastro&nome=${nome}&email=${email}&senha=${senha}&telefone=${telefone}&cpf=${cpf}`)
+      .then(res => res.text())
+      .then(res => {
+        if (res === "Cadastro realizado com sucesso") {
+          alert("Cadastro feito! Agora faça login.");
+        } else {
+          alert("Erro: " + res);
+        }
+      });
+  }
 
-document.getElementById("loginBtn").onclick = () => { const email = document.getElementById("loginEmail").value.trim(); const password = document.getElementById("loginPassword").value; if (!email || !password) { message.textContent = "Preencha todos os campos!"; return; } message.textContent = ""; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "login", email, senha: password }) }) .then(res => res.json()) .then(data => { if (data.success) { mostrarDashboard(data.usuario); } else { message.textContent = data.msg || "E-mail ou senha incorretos."; } }) .catch(err => { console.error("Erro login:", err); message.textContent = "Erro na comunicação. Tente novamente."; }); };
+  function fazerLogin() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
 
-document.getElementById("registerBtn").onclick = () => { const name = document.getElementById("regName").value.trim(); const cpf = document.getElementById("regCPF").value.trim(); const phone = document.getElementById("regPhone").value.trim(); const email = document.getElementById("regEmail").value.trim(); const password = document.getElementById("regPassword").value; if (!name || !cpf || !phone || !email || !password) { regMessage.textContent = "Preencha todos os campos!"; return; } regMessage.textContent = ""; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "register", nome: name, cpf, telefone: phone, email, senha: password }) }) .then(res => res.json()) .then(data => { if (data.success) { alert("Registrado com sucesso! Faça login."); registerTab.style.display = "none"; loginTab.style.display = "block"; regMessage.textContent = ""; } else { regMessage.textContent = data.msg || "Erro ao registrar."; } }) .catch(err => { console.error("Erro registro:", err); regMessage.textContent = "Erro na comunicação. Tente novamente."; }); };
+    if (!email || !senha) {
+      alert("Digite e-mail e senha.");
+      return;
+    }
 
-document.getElementById("logoutBtn").onclick = () => { dashboard.style.display = "none"; loginTab.style.display = "block"; document.getElementById("loginEmail").value = ""; document.getElementById("loginPassword").value = ""; message.textContent = ""; };
+    fetch(scriptURL + `?tipo=login&email=${email}&senha=${senha}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "sucesso") {
+          document.getElementById("auth").style.display = "none";
+          document.getElementById("painel").style.display = "block";
+          document.getElementById("userName").textContent = data.nome;
+          document.getElementById("saldo").textContent = data.saldo;
+          document.getElementById("cpfInfo").textContent = data.cpf;
+          document.getElementById("telefoneInfo").textContent = data.telefone;
+          document.getElementById("trader").textContent = data.trader || "Nenhum ativo";
+          document.getElementById("status").textContent = data.status || "Pendente";
+        } else {
+          alert("Login inválido.");
+        }
+      });
+  }
 
-document.getElementById("depositBtn").onclick = () => alert("Função Depósito - Em desenvolvimento"); document.getElementById("withdrawBtn").onclick = () => alert("Função Saque - Em desenvolvimento"); document.getElementById("vipBtn").onclick = () => alert("Acesso aos grupos VIP - Em desenvolvimento"); </script>
+  function sair() {
+    location.reload();
+  }
+</script>
 
 </body>
 </html>
