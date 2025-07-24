@@ -1,101 +1,152 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Belcoin - Login e Painel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Belcoin - Login & Cadastro</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #101010; color: #fff; margin: 0; padding: 0; }
-    .container { max-width: 400px; margin: 50px auto; background: #1c1c1c; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px #000; }
-    h2 { text-align: center; }
-    input, button { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 8px; }
-    input { background: #333; color: #fff; }
-    button { background: #4caf50; color: white; cursor: pointer; }
-    #painel { display: none; background: #181818; padding: 20px; border-radius: 12px; margin-top: 20px; }
-    .info { background: #222; padding: 10px; margin: 10px 0; border-radius: 8px; }
+    body {
+      background-color: #000;
+      font-family: Arial, sans-serif;
+      color: #0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      border: 2px solid #0f0;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      background-color: #111;
+      box-shadow: 0 0 15px #0f0;
+    }
+    h2 {
+      text-align: center;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      background: #000;
+      color: #0f0;
+      border: 1px solid #0f0;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0f0;
+      color: #000;
+      cursor: pointer;
+    }
+    .switch {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- Login -->
+    <div id="loginForm">
+      <h2>Login - Belcoin</h2>
+      <input type="email" id="loginEmail" placeholder="E-mail" required />
+      <input type="password" id="loginSenha" placeholder="Senha" required />
+      <button onclick="login()">Entrar</button>
+      <div class="switch">
+        <p>Não tem uma conta? <a href="#" onclick="mostrarCadastro()">Cadastrar-se</a></p>
+      </div>
+    </div>
 
-<div class="container" id="auth">
-  <h2>Belcoin - Login</h2>
-  <input type="text" id="email" placeholder="E-mail">
-  <input type="password" id="senha" placeholder="Senha">
-  <button onclick="fazerLogin()">Entrar</button>
-  <p style="text-align:center; margin-top:10px;">ou</p>
-  <input type="text" id="nome" placeholder="Nome Completo">
-  <input type="text" id="telefone" placeholder="Telefone">
-  <input type="text" id="cpf" placeholder="CPF">
-  <button onclick="fazerCadastro()">Cadastrar</button>
-</div>
+    <!-- Cadastro -->
+    <div id="cadastroForm" class="hidden">
+      <h2>Cadastro - Belcoin</h2>
+      <input type="text" id="nome" placeholder="Nome completo" required />
+      <input type="email" id="email" placeholder="E-mail" required />
+      <input type="text" id="cpf" placeholder="CPF" required />
+      <input type="tel" id="telefone" placeholder="Telefone" required />
+      <input type="password" id="senha" placeholder="Senha" required />
+      <button onclick="cadastrar()">Cadastrar</button>
+      <div class="switch">
+        <p>Já tem conta? <a href="#" onclick="mostrarLogin()">Voltar ao login</a></p>
+      </div>
+    </div>
 
-<div class="container" id="painel">
-  <h2>Bem-vindo, <span id="userName"></span></h2>
-  <div class="info"><strong>Saldo:</strong> R$ <span id="saldo"></span></div>
-  <div class="info"><strong>Trader ativo:</strong> <span id="trader"></span></div>
-  <div class="info"><strong>CPF:</strong> <span id="cpfInfo"></span></div>
-  <div class="info"><strong>Telefone:</strong> <span id="telefoneInfo"></span></div>
-  <div class="info"><strong>Status:</strong> <span id="status"></span></div>
-  <button onclick="sair()">Sair</button>
-</div>
+    <!-- Área logada -->
+    <div id="areaLogada" class="hidden">
+      <h2>Bem-vindo à Belcoin</h2>
+      <p>Saldo atual: R$ <span id="saldo">0,00</span></p>
+      <p>Escolha um trader:</p>
+      <ul>
+        <li>Trader 24h - 3% de retorno</li>
+        <li>Trader 7 dias - 20% de retorno</li>
+        <li>Trader 30 dias - 50% de retorno</li>
+      </ul>
+      <button onclick="sair()">Sair</button>
+    </div>
+  </div>
 
-<script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbwrvoXymcSI89IE7kiw0Po-xi2Sh0na8hqipLj2BFI_PGzyi1C9DSJKkW8-3TsjTef2/exec";
-
-  function fazerCadastro() {
-    const nome = document.getElementById("nome").value;
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
-    const telefone = document.getElementById("telefone").value;
-    const cpf = document.getElementById("cpf").value;
-
-    if (!nome || !email || !senha || !telefone || !cpf) {
-      alert("Preencha todos os campos.");
-      return;
+  <script>
+    function mostrarCadastro() {
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("cadastroForm").classList.remove("hidden");
     }
 
-    fetch(scriptURL + `?tipo=cadastro&nome=${nome}&email=${email}&senha=${senha}&telefone=${telefone}&cpf=${cpf}`)
-      .then(res => res.text())
-      .then(res => {
-        if (res === "Cadastro realizado com sucesso") {
-          alert("Cadastro feito! Agora faça login.");
-        } else {
-          alert("Erro: " + res);
-        }
-      });
-  }
-
-  function fazerLogin() {
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
-
-    if (!email || !senha) {
-      alert("Digite e-mail e senha.");
-      return;
+    function mostrarLogin() {
+      document.getElementById("cadastroForm").classList.add("hidden");
+      document.getElementById("loginForm").classList.remove("hidden");
     }
 
-    fetch(scriptURL + `?tipo=login&email=${email}&senha=${senha}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "sucesso") {
-          document.getElementById("auth").style.display = "none";
-          document.getElementById("painel").style.display = "block";
-          document.getElementById("userName").textContent = data.nome;
-          document.getElementById("saldo").textContent = data.saldo;
-          document.getElementById("cpfInfo").textContent = data.cpf;
-          document.getElementById("telefoneInfo").textContent = data.telefone;
-          document.getElementById("trader").textContent = data.trader || "Nenhum ativo";
-          document.getElementById("status").textContent = data.status || "Pendente";
-        } else {
-          alert("Login inválido.");
-        }
-      });
-  }
+    function login() {
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
 
-  function sair() {
-    location.reload();
-  }
-</script>
+      if (email && senha) {
+        // Aqui deveria estar a autenticação real com Firebase (não incluso agora)
+        document.getElementById("loginForm").classList.add("hidden");
+        document.getElementById("areaLogada").classList.remove("hidden");
+      } else {
+        alert("Preencha todos os campos.");
+      }
+    }
 
+    function sair() {
+      document.getElementById("areaLogada").classList.add("hidden");
+      document.getElementById("loginForm").classList.remove("hidden");
+    }
+
+    function cadastrar() {
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const cpf = document.getElementById("cpf").value;
+      const telefone = document.getElementById("telefone").value;
+      const senha = document.getElementById("senha").value;
+
+      if (nome && email && cpf && telefone && senha) {
+        const url = "https://script.google.com/macros/s/AKfycbwrvoXymcSI89IE7kiw0Po-xi2Sh0na8hqipLj2BFI_PGzyi1C9DSJKkW8-3TsjTef2/exec";
+        const formData = new FormData();
+        formData.append("Nome", nome);
+        formData.append("Email", email);
+        formData.append("CPF", cpf);
+        formData.append("Telefone", telefone);
+        formData.append("Senha", senha);
+
+        fetch(url, { method: "POST", body: formData })
+          .then(response => {
+            alert("Cadastro realizado com sucesso!");
+            mostrarLogin();
+          })
+          .catch(error => {
+            alert("Erro ao cadastrar. Tente novamente.");
+            console.error("Erro:", error);
+          });
+      } else {
+        alert("Preencha todos os campos.");
+      }
+    }
+  </script>
 </body>
 </html>
