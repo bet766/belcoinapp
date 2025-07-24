@@ -3,197 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Belcoin - Acesse sua conta</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <title>Belcoin - Login</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #e6f5ea;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #0d3b26, #31d180);
+      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
     }
+
     .container {
-      background: white;
-      padding: 2rem;
+      background-color: #ffffff10;
+      backdrop-filter: blur(10px);
+      padding: 40px;
       border-radius: 20px;
-      box-shadow: 0 0 10px #ccc;
       width: 90%;
       max-width: 400px;
       text-align: center;
+      box-shadow: 0 0 20px rgba(0, 255, 150, 0.3);
     }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
     input {
       width: 100%;
-      padding: 1rem;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-    button {
-      width: 100%;
-      padding: 1rem;
-      background: #00aa55;
-      color: white;
-      font-weight: bold;
+      padding: 12px;
+      margin: 10px 0;
       border: none;
       border-radius: 10px;
-      margin-top: 1rem;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #2aff93;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1cd072;
+    }
+
+    .link {
+      margin-top: 15px;
+      color: #c0ffd0;
       cursor: pointer;
     }
-    .toggle {
-      margin-top: 1rem;
-      color: #00aa55;
-      cursor: pointer;
+
+    .hidden {
+      display: none;
+    }
+
+    .logo {
+      font-size: 28px;
       font-weight: bold;
+      margin-bottom: 20px;
+      color: #fff;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h2 id="formTitle">Entrar na Belcoin</h2>
-    <input type="email" id="email" placeholder="E-mail" />
-    <input type="password" id="password" placeholder="Senha" />
-    <button onclick="handleAuth()">Entrar</button>
-    <p class="toggle" onclick="toggleForm()">Ainda não tem conta? Cadastre-se</p>
-  </div>
+    <div class="logo">Belcoin</div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- LOGIN -->
+    <div id="login-form">
+      <h2>Login</h2>
+      <input type="text" placeholder="CPF (somente números)" id="login-cpf">
+      <input type="password" placeholder="Senha" id="login-senha">
+      <button onclick="fazerLogin()">Entrar</button>
+      <div class="link" onclick="mostrarCadastro()">Ainda não tem conta? Cadastre-se</div>
+    </div>
+
+    <!-- CADASTRO -->
+    <div id="cadastro-form" class="hidden">
+      <h2>Cadastro</h2>
+      <input type="text" placeholder="Nome completo" id="cad-nome">
+      <input type="text" placeholder="CPF (somente números)" id="cad-cpf">
+      <input type="email" placeholder="Email" id="cad-email">
+      <input type="password" placeholder="Senha" id="cad-senha">
+      <button onclick="fazerCadastro()">Cadastrar</button>
+      <div class="link" onclick="mostrarLogin()">Já tem conta? Faça login</div>
+    </div>
+  </div>
 
   <script>
-    // 🔧 CONFIGURE AQUI com suas credenciais do Firebase (vamos fazer isso depois)
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJETO_ID",
-      storageBucket: "SEU_BUCKET.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    let isLogin = true;
-    function toggleForm() {
-      isLogin = !isLogin;
-      document.getElementById('formTitle').innerText = isLogin ? 'Entrar na Belcoin' : 'Criar conta na Belcoin';
-      document.querySelector('button').innerText = isLogin ? 'Entrar' : 'Cadastrar';
-      document.querySelector('.toggle').innerText = isLogin ? 'Ainda não tem conta? Cadastre-se' : 'Já tem conta? Entrar';
+    function mostrarCadastro() {
+      document.getElementById("login-form").classList.add("hidden");
+      document.getElementById("cadastro-form").classList.remove("hidden");
     }
 
-    function handleAuth() {
-      const email = document.getElementById('email').value;
-      const senha = document.getElementById('password').value;
+    function mostrarLogin() {
+      document.getElementById("cadastro-form").classList.add("hidden");
+      document.getElementById("login-form").classList.remove("hidden");
+    }
 
-      if (isLogin) {
-        auth.signInWithEmailAndPassword(email, senha)
-          .then(() => window.location.href = "dashboard.html")
-          .catch(e => alert("Erro: " + e.message));
-      } else {
-        auth.createUserWithEmailAndPassword(email, senha)
-          .then(() => window.location.href = "dashboard.html")
-          .catch(e => alert("Erro: " + e.message));
-      }
+    function fazerLogin() {
+      alert("Função de login será conectada ao Firebase.");
     }
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Belcoin - Painel</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: #f4fbf5;
-      color: #1e1e1e;
-    }
-    header {
-      background-color: #00cc66;
-      padding: 1.5rem;
-      text-align: center;
-      color: white;
-      font-size: 1.5rem;
-      font-weight: bold;
-      border-radius: 0 0 20px 20px;
-    }
-    .saldo {
-      text-align: center;
-      font-size: 1.8rem;
-      margin: 2rem 0;
-    }
-    .botoes {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      padding: 0 2rem;
-    }
-    .botao {
-      background: white;
-      border: 1px solid #00aa55;
-      border-radius: 15px;
-      padding: 1.2rem;
-      text-align: center;
-      font-weight: bold;
-      color: #00aa55;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .botao:hover {
-      background: #00aa55;
-      color: white;
-    }
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #999;
-    }
-  </style>
-</head>
-<body>
-  <header>Belcoin</header>
 
-  <div class="saldo">
-    Saldo disponível:<br>
-    <strong>R$ 0,00</strong>
-  </div>
-
-  <div class="botoes">
-    <div class="botao" onclick="alert('Função de depósito em breve')">Depositar</div>
-    <div class="botao" onclick="alert('Função de saque em breve')">Sacar</div>
-    <div class="botao" onclick="alert('Pagamento de boleto em breve')">Pagar Boleto</div>
-    <div class="botao" onclick="alert('Transferência via PIX em breve')">Transferir</div>
-    <div class="botao" onclick="alert('Perfil do usuário em breve')">Perfil</div>
-    <div class="botao" onclick="logout()">Sair</div>
-  </div>
-
-  <footer>Belcoin © 2025 - Todos os direitos reservados</footer>
-
-  <!-- Firebase (somente logout por enquanto) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_DOMINIO.firebaseapp.com",
-      projectId: "SEU_PROJETO_ID",
-      storageBucket: "SEU_BUCKET.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    function logout() {
-      auth.signOut().then(() => window.location.href = "login.html");
+    function fazerCadastro() {
+      alert("Função de cadastro será conectada ao Firebase.");
     }
   </script>
 </body>
