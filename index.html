@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Belbank - Acesso</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Belbank</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
       margin: 0;
       padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #4b0082, #000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
     }
     .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: #fff;
-      padding: 30px;
+      background-color: #1c1c1c;
+      padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
     h2 {
       text-align: center;
-      color: #1e2a38;
+      margin-bottom: 1rem;
+      color: #fff;
     }
-    input, select, button {
+    input, button {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 6px 0;
       border-radius: 6px;
-      font-size: 16px;
+      border: none;
+      font-size: 1rem;
+    }
+    input {
+      background: #333;
+      color: #fff;
     }
     button {
-      background-color: #6a1b9a;
+      background: #6a0dad;
       color: white;
-      border: none;
       cursor: pointer;
-      font-weight: bold;
     }
     button:hover {
-      background-color: #4a148c;
+      background: #5500aa;
     }
     .link {
       text-align: center;
       margin-top: 10px;
+      font-size: 0.9rem;
       cursor: pointer;
-      color: #6a1b9a;
-      font-size: 14px;
+      color: #ccc;
     }
     .hidden {
       display: none;
@@ -54,74 +62,77 @@
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2 id="title">Entrar no Belbank</h2>
 
-<div class="container" id="login">
-  <h2>Entrar no Belbank</h2>
-  <input type="email" placeholder="E-mail" id="loginEmail">
-  <input type="password" placeholder="Senha" id="loginSenha">
-  <button onclick="login()">Entrar</button>
-  <div class="link" onclick="mostrar('cadastro')">Criar conta</div>
-  <div class="link" onclick="mostrar('recuperar')">Esqueceu a senha?</div>
-</div>
+    <!-- LOGIN -->
+    <div id="loginForm">
+      <input type="email" id="loginEmail" placeholder="E-mail" required>
+      <input type="password" id="loginSenha" placeholder="Senha" required>
+      <button onclick="login()">Entrar</button>
+      <div class="link" onclick="mostrar('cadastroForm')">Não tem conta? Cadastre-se</div>
+      <div class="link" onclick="mostrar('recuperarForm')">Esqueceu a senha?</div>
+    </div>
 
-<div class="container hidden" id="cadastro">
-  <h2>Criar Conta Belbank</h2>
-  <input type="text" placeholder="Nome completo" id="cadNome">
-  <input type="text" placeholder="CPF (somente números)" id="cadCPF" maxlength="14" oninput="formatarCPF(this)">
-  <input type="email" placeholder="E-mail" id="cadEmail">
-  <input type="password" placeholder="Senha" id="cadSenha">
-  <input type="text" placeholder="Renda mensal (R$)" id="cadRenda">
-  <input type="tel" placeholder="Telefone/WhatsApp" id="cadTelefone" maxlength="15" oninput="formatarTelefone(this)">
-  <button onclick="cadastrar()">Cadastrar</button>
-  <div class="link" onclick="mostrar('login')">Voltar para login</div>
-</div>
+    <!-- CADASTRO -->
+    <div id="cadastroForm" class="hidden">
+      <input type="text" id="nomeCompleto" placeholder="Nome completo" required>
+      <input type="text" id="cpf" placeholder="CPF" required>
+      <input type="text" id="renda" placeholder="Renda mensal" required>
+      <input type="text" id="telefone" placeholder="Telefone WhatsApp" required>
+      <input type="email" id="emailCadastro" placeholder="E-mail" required>
+      <input type="password" id="senhaCadastro" placeholder="Senha" required>
+      <button onclick="cadastrar()">Cadastrar</button>
+      <div class="link" onclick="mostrar('loginForm')">Já tem conta? Entrar</div>
+    </div>
 
-<div class="container hidden" id="recuperar">
-  <h2>Recuperar Acesso</h2>
-  <p style="font-size:14px;text-align:center;">Preencha os dados cadastrados para recuperação.</p>
-  <input type="text" placeholder="Nome completo" id="recNome">
-  <input type="text" placeholder="CPF" id="recCPF" maxlength="14" oninput="formatarCPF(this)">
-  <input type="email" placeholder="E-mail" id="recEmail">
-  <button onclick="recuperar()">Enviar solicitação</button>
-  <div class="link" onclick="mostrar('login')">Voltar ao login</div>
-</div>
+    <!-- RECUPERAR SENHA -->
+    <div id="recuperarForm" class="hidden">
+      <input type="text" id="nomeRec" placeholder="Nome completo" required>
+      <input type="text" id="cpfRec" placeholder="CPF" required>
+      <input type="text" id="telefoneRec" placeholder="Telefone WhatsApp" required>
+      <button onclick="recuperar()">Recuperar Conta</button>
+      <div class="link" onclick="mostrar('loginForm')">Voltar</div>
+    </div>
+  </div>
 
-<script>
-  function mostrar(tela) {
-    document.getElementById("login").classList.add("hidden");
-    document.getElementById("cadastro").classList.add("hidden");
-    document.getElementById("recuperar").classList.add("hidden");
-    document.getElementById(tela).classList.remove("hidden");
-  }
+  <script>
+    function mostrar(formId) {
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("cadastroForm").classList.add("hidden");
+      document.getElementById("recuperarForm").classList.add("hidden");
+      document.getElementById(formId).classList.remove("hidden");
 
-  function formatarCPF(campo) {
-    let valor = campo.value.replace(/\D/g, '');
-    if (valor.length > 11) valor = valor.substring(0,11);
-    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-    valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-    valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    campo.value = valor;
-  }
+      const title = {
+        loginForm: "Entrar no Belbank",
+        cadastroForm: "Cadastrar no Belbank",
+        recuperarForm: "Recuperar Acesso"
+      };
+      document.getElementById("title").innerText = title[formId];
+    }
 
-  function formatarTelefone(campo) {
-    let valor = campo.value.replace(/\D/g, '');
-    valor = valor.replace(/^(\d{2})(\d)/g, "($1) $2");
-    valor = valor.replace(/(\d{5})(\d)/, "$1-$2");
-    campo.value = valor;
-  }
+    function login() {
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
+      alert("Login simulado com: " + email);
+    }
 
-  function login() {
-    alert("Login enviado! (Conectar com Firebase aqui)");
-  }
+    function cadastrar() {
+      const nome = document.getElementById("nomeCompleto").value;
+      const cpf = document.getElementById("cpf").value;
+      const renda = document.getElementById("renda").value;
+      const telefone = document.getElementById("telefone").value;
+      const email = document.getElementById("emailCadastro").value;
+      const senha = document.getElementById("senhaCadastro").value;
+      alert("Cadastro simulado para: " + nome);
+    }
 
-  function cadastrar() {
-    alert("Cadastro enviado! (Conectar com Firebase aqui)");
-  }
-
-  function recuperar() {
-    alert("Recebemos sua solicitação! Nossa equipe do Belbank vai entrar em contato pelo WhatsApp.");
-  }
-</script>
-
+    function recuperar() {
+      const nome = document.getElementById("nomeRec").value;
+      const cpf = document.getElementById("cpfRec").value;
+      const tel = document.getElementById("telefoneRec").value;
+      alert("Você será notificado via WhatsApp em breve.");
+    }
+  </script>
 </body>
 </html>
