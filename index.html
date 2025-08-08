@@ -1,88 +1,483 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Finalizar Compra</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCtMHFdGj7-CRCIJ4kt0rHeNkGB1xv0f8A",
-      authDomain: "testeapps-4440a.firebaseapp.com",
-      projectId: "testeapps-4440a",
-      storageBucket: "testeapps-4440a.appspot.com",
-      messagingSenderId: "709928238723",
-      appId: "1:709928238723:web:4cfdb7aee64faad7b2b599"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-  </script>
-</head>
-<body>
-  <h2>Finalizar Compra</h2>
-  <form onsubmit="event.preventDefault(); finalizarCompra();">
-    <label for="cpf">CPF:</label><br>
-    <input type="text" id="cpf" name="cpf"><br><br>
-    <label for="cartao">Número do Cartão:</label><br>
-    <input type="text" id="cartao" name="cartao"><br><br>
-    <label for="validade">Validade (MM/AA):</label><br>
-    <input type="text" id="validade" name="validade"><br><br>
-    <label for="cvv">CVV:</label><br>
-    <input type="text" id="cvv" name="cvv"><br><br>
-    <input type="submit" value="Finalizar Compra">
-  </form>
-
-  <p id="mensagemProcessando" style="display:none;">Processando...</p>
-  <p id="mensagemSucesso" style="display:none; color: green;">Compra finalizada com sucesso!</p>
-
-  <script>
-    // Simulação de dados anteriores salvos no navegador
-    localStorage.setItem("temp_nome", "Carlos Eduardo");
-    localStorage.setItem("temp_email", "carlos@email.com");
-
-    function clearInputs() {
-      document.getElementById('cpf').value = '';
-      document.getElementById('cartao').value = '';
-      document.getElementById('validade').value = '';
-      document.getElementById('cvv').value = '';
-    }
-
-    function finalizarCompra() {
-      const cpf = document.getElementById('cpf').value;
-      const cartao = document.getElementById('cartao').value;
-      const validade = document.getElementById('validade').value;
-      const cvv = document.getElementById('cvv').value;
-      const nome = localStorage.getItem("temp_nome");
-      const email = localStorage.getItem("temp_email");
-
-      if (!cpf || !cartao || !validade || !cvv) {
-        alert("Preencha todos os campos de pagamento.");
-        return;
-      }
-
-      document.getElementById('mensagemProcessando').style.display = 'block';
-      document.getElementById('mensagemSucesso').style.display = 'none';
-
-      firebase.firestore().collection("compras").add({
-        nome: nome,
-        email: email,
-        cpf: cpf,
-        cartao: cartao,
-        validade: validade,
-        cvv: cvv,
-        produto: "Curso Premium Online",
-        preco: "70.00",
-        data: new Date().toISOString()
-      })
-      .then(() => {
-        document.getElementById('mensagemProcessando').style.display = 'none';
-        document.getElementById('mensagemSucesso').style.display = 'block';
-        clearInputs();
-      })
-      .catch((error) => {
-        alert("Erro ao registrar a compra: " + error.message);
-        document.getElementById('mensagemProcessando').style.display = 'none';
-      });
-    }
-  </script>
-</body>
-</html>
+--- a/src/components/ScratchCardGame.jsx
++++ b/src/components/ScratchCardGame.jsx
+@@ -4,16 +4,11 @@
+ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+ import { X, Trophy, Frown, Sparkles } from 'lucide-react';
+ import { toast } from '@/components/ui/use-toast';
++import { updateDoc, doc, arrayUnion, increment } from 'firebase/firestore';
++import { db } from '../firebase';
+ 
+-const getPrizeProbabilities = (cost) => {
+-  switch (cost) {
+-    case 1:
+-      return { 2: 0.1, 1: 0.2, 0: 0.7 }; // Max prize of R$2
+-    case 5:
+-      return { 500: 0.01, 100: 0.05, 50: 0.1, 25: 0.2, 0: 0.64 }; // Max prize 500
+-    case 10:
+-      return { 500: 0.01, 100: 0.05, 50: 0.1, 20: 0.2, 0: 0.64 }; // Max prize 500
+-    case 15:
+-      return { 500: 0.01, 150: 0.05, 75: 0.1, 30: 0.2, 0: 0.64 }; // Max prize 500
+-    case 20:
+-      return { 500: 0.01, 200: 0.05, 100: 0.1, 40: 0.2, 0: 0.64 }; // Max prize 500
+-    case 30:
+-      return { 500: 0.01, 300: 0.05, 150: 0.1, 60: 0.2, 0: 0.64 }; // Max prize 500
+-    default:
+-      return { 0: 1 }; // Default to no win
+-  }
+-};
+-
+-const getRandomPrize = (cost) => {
+-  const probabilities = getPrizeProbabilities(cost);
++const getRandomPrize = (cost, playCount) => {
++  const probabilities = getPrizeProbabilities(cost, playCount);
+   const rand = Math.random();
+   let cumulativeProbability = 0;
+   for (const prize in probabilities) {
+@@ -24,11 +19,30 @@
+   return 0; // Fallback
+ };
+ 
++const getPrizeProbabilities = (cost, playCount) => {
++  if (cost === 1) {
++    return { 2.00: 1.00 }; // Always R$ 2,00
++  }
++
++  // For other cards, prize is between 0 and 500
++  // This is a simplified example. A real-world scenario would have a more complex
++  // and audited random number generation and prize distribution system.
++  const prizes = [0, 5, 10, 20, 50, 100, 500];
++  const probabilities = [0.5, 0.2, 0.15, 0.1, 0.03, 0.015, 0.005]; // Example probabilities
++  
++  // Adjust probabilities based on card cost if needed
++
++  const random = Math.random();
++  let cumulativeProbability = 0;
++  for (let i = 0; i < prizes.length; i++) {
++    cumulativeProbability += probabilities[i];
++    if (random < cumulativeProbability) {
++      return { [prizes[i]]: 1 }; // Return a probability distribution with only the winning prize
++    }
++  }
++  return { 0: 1 }; // Fallback
++};
++
+ export default function ScratchCardGame({ onClose, cardCost }) {
+   const { user, userData, updateUserData } = useAuth();
+   const [isRevealed, setIsRevealed] = useState(false);
+   const [prize, setPrize] = useState(null);
+   const canvasRef = useRef(null);
+   const isDrawing = useRef(false);
+-  const [gameSymbols, setGameSymbols] = useState([]);
+ 
+   useEffect(() => {
+     // Deduct cost immediately when the component mounts
+@@ -37,7 +51,7 @@
+       const newBalance = userData.saldo - cardCost;
+       if (newBalance < 0) {
+         toast({
+-          title: "Saldo Insuficiente",
+-          description: `Você não tem saldo suficiente para comprar este cartão de R$${cardCost.toFixed(2)}.`,
++          title: 'Saldo Insuficiente',
++          description: `Você não tem saldo suficiente para comprar este cartão de R$${cardCost.toFixed(2)}.`,
+           variant: 'destructive',
+         });
+         onClose(false); // Fecha o modal se não houver saldo
+@@ -46,7 +60,7 @@
+       const userRef = doc(db, 'users', user.uid);
+       try {
+         await updateDoc(userRef, { saldo: newBalance });
+-        updateUserData({ ...userData, saldo: newBalance });
++        updateUserData(prevData => ({ ...prevData, saldo: newBalance }));
+       } catch (error) {
+         console.error("Erro ao deduzir o custo:", error);
+         toast({ title: "Erro", description: "Não foi possível processar a compra. Tente novamente.", variant: "destructive" });
+@@ -54,23 +68,7 @@
+       }
+     };
+ 
+-    deductCost();
+-
+-    const canvas = canvasRef.current;
+-    if (!canvas) return;
+-    const ctx = canvas.getContext('2d');
+-    
+-    const rect = canvas.parentElement.getBoundingClientRect();
+-    canvas.width = rect.width;
+-    canvas.height = rect.height;
+-
+-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+-    gradient.addColorStop(0, '#bdc3c7');
+-    gradient.addColorStop(1, '#2c3e50');
+-    
+-    ctx.fillStyle = gradient;
+-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+-    
+-    ctx.globalCompositeOperation = 'destination-out';
+-  }, []); // Executa apenas na montagem inicial
++    deductCost(); // Call the async function
++  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+ 
+   const getScratchPosition = (e) => {
+     const canvas = canvasRef.current;
+@@ -95,7 +93,7 @@
+   };
+ 
+   const checkScratchCompletion = () => {
+-    const canvas = canvasRef.current;
+-    if (!canvas || isRevealed) return; // Não faz nada se já foi revelado
++    const canvas = canvasRef.current;  
++    if (!canvas || isRevealed) return;
+     const ctx = canvas.getContext('2d');
+     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+     const pixels = imageData.data;
+@@ -107,37 +105,42 @@
+ 
+     const totalPixels = canvas.width * canvas.height;
+     const scratchedPercentage = (transparentPixels / totalPixels) * 100;
+-
+-    if (scratchedPercentage > 70) {
++    
++    if (scratchedPercentage > 70) {      
+       revealResult();
+     }
+   };
+ 
+   const revealResult = async () => {
+     if (isRevealed) return;
+-    
+-    const newPrize = getRandomPrize(cardCost);
++    setIsRevealed(true);
++
++    const newPrize = getRandomPrize(cardCost);
+     setPrize(newPrize);
+-    setIsRevealed(true);
+-    
+-    const newBalance = userData.saldo + newPrize;
+-    const newGanhos = (userData.ganhos || 0) + newPrize;
+-    
+-    const resultType = newPrize > 0 ? 'win' : 'loss';
++
++    // Prepare the update object
++    const updateData = {
++      saldo: (userData.saldo || 0) + newPrize, // The cost is already deducted
++      jogos: (userData.jogos || 0) + 1,
++    };
++
++    if (newPrize > 0) {
++      updateData.ganhos = (userData.ganhos || 0) + newPrize;
++    }
++
+     const historyEntry = {
+-      type: resultType,
++      type: newPrize > 0 ? 'win' : 'loss',
+       amount: newPrize,
+       date: new Date().toISOString(),
+       cost: cardCost,
+     };
+-
++    
+     if (user) {
+       const userRef = doc(db, 'users', user.uid);
+       try {
+         await updateDoc(userRef, {
+-          saldo: newBalance,
+-          ganhos: newGanhos,
+-          jogos: (userData.jogos || 0) + 1,
++          saldo: updateData.saldo,
++          ganhos: increment(newPrize),
++          jogos: increment(1),
+           history: arrayUnion(historyEntry)
+         });
+         // Fetch a fresh copy of user data to ensure UI is in sync
+@@ -150,9 +153,9 @@
+     }
+ 
+     toast({
+-      title: resultType === 'win' ? "🎉 Parabéns! Você ganhou!" : "Que pena!",
+-      description: resultType === 'win' ? `Você ganhou R$ ${newPrize.toFixed(2)}!` : "Não foi dessa vez. Tente novamente!",
+-      variant: resultType === 'win' ? 'default' : 'destructive',
++      title: newPrize > 0 ? "🎉 Parabéns! Você ganhou!" : "Que pena!",
++      description: newPrize > 0 ? `Você ganhou R$ ${newPrize.toFixed(2)}!` : "Não foi desta vez. Tente novamente!",
++      variant: newPrize > 0 ? "success" : "destructive",
+     });
+   };
+ 
+@@ -163,9 +166,9 @@
+         exit={{ opacity: 0 }}
+         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+       >
+-        <motion.div
++        <motion.div 
+           initial={{ scale: 0.8, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+-          exit={{ scale: 0.8, opacity: 0 }}
+-          className="w-full max-w-sm"
++          exit={{ scale: 0.8, opacity: 0, transition: { duration: 0.2 } }}
++          className="w-full max-w-sm" 
+         >
+           <Card className="glass-card neon-glow">
+             <CardHeader className="flex flex-row items-center justify-between">
+@@ -183,12 +186,12 @@
+                     <Trophy className="w-16 h-16 text-yellow-400 mx-auto" />
+                     <p className="text-4xl font-bold text-yellow-400 mt-2">R$ {prize.toFixed(2)}</p>
+                   </>
+-                ) : (
++                ) : (
+                   <>
+                     <Frown className="w-16 h-16 text-gray-400 mx-auto" />
+-                    <p className="text-2xl font-bold text-white mt-2">Não foi desta vez</p>
+-                  </>
+-                )}
++                    <p className="text-2xl font-bold text-white mt-2">Não foi desta vez!</p>
++                  </> 
++                )} 
+               </div>
+             ) : (
+                <p className="text-2xl font-bold text-yellow-900">Prêmio Surpresa!</p>
+@@ -197,16 +200,16 @@
+             
+             <canvas
+               ref={canvasRef}
+-              className="absolute top-0 left-0 w-full h-full cursor-crosshair"
++              className={`absolute top-0 left-0 w-full h-full cursor-crosshair ${isRevealed ? 'pointer-events-none' : ''}`}
+               onMouseDown={startScratching}
+               onMouseUp={stopScratching}
+               onMouseLeave={stopScratching}
+               onTouchStart={startScratching}
+               onTouchEnd={stopScratching}
+               onTouchMove={scratch}
+-            />
++            ></canvas>
+           </div>
+-          
+-          {isRevealed && (
+-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-6 text-center">
++            
++            {isRevealed && (
++            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-6 text-center">
+               <Button onClick={() => onClose(true)} className="w-full bg-blue-600 hover:bg-blue-700">
+                 Jogar Novamente
+               </Button>
+@@ -217,3 +220,53 @@
+     </AnimatePresence>
+   );
+ }
++
+--- a/src/components/Roulette.jsx
++++ b/src/components/Roulette.jsx
+@@ -0,0 +1,118 @@
++import React, { useState } from 'react';
++import { Wheel } from 'react-custom-roulette'
++import { Button } from '@/components/ui/button';
++import { useAuth } from './AuthContext';
++
++const data = [
++  { option: '0', style: { backgroundColor: '#FF6384', textColor: 'white' } },
++  { option: '100' },
++  { option: '200' },
++  { option: '300' },
++  { option: '400' },
++  { option: '500' },
++  { option: '600' },
++  { option: '700' },
++  { option: '1000' },
++];
++
++const prizeMapping = {
++  0: 0,
++  1: 100,
++  2: 200,
++  3: 300,
++  4: 400,
++  5: 500,
++  6: 600,
++  7: 700,
++  8: 1000,
++};
++
++const Roulette = () => {
++  const { userData, updateUserData } = useAuth();
++  const [mustSpin, setMustSpin] = useState(false);
++  const [prizeNumber, setPrizeNumber] = useState(0);
++  const [spinning, setSpinning] = useState(false);
++
++  const handleSpinClick = async () => {
++    if (!mustSpin && userData.saldo >= 5) { // Assuming a cost of R$ 5 per spin
++      const newPrizeNumber = Math.floor(Math.random() * data.length);
++      setPrizeNumber(newPrizeNumber);
++      setMustSpin(true);
++      setSpinning(true);
++
++      // Deduct the cost of the spin
++      const newBalance = userData.saldo - 5;
++      const newUserData = { ...userData, saldo: newBalance, jogos: (userData.jogos || 0) + 1 };
++      updateUserData(newUserData);
++    }
++  };
++
++  const onStopSpinning = async () => {
++    const prizeAmount = prizeMapping[prizeNumber];
++
++    if (prizeAmount > 0) {
++      const newBalance = userData.saldo + prizeAmount;
++      const newGanhos = userData.ganhos + prizeAmount;
++      const updatedUserData = {
++        ...userData,
++        saldo: newBalance,
++        ganhos: newGanhos,
++        history: [
++          ...userData.history,
++          {
++            type: 'roulette_win',
++            amount: prizeAmount,
++            date: new Date().toISOString(),
++          },
++        ],
++      };
++      updateUserData(updatedUserData);
++    }
++
++    setMustSpin(false);
++    setSpinning(false);
++  };
++
++  return (
++    <div className="flex flex-col items-center justify-center p-4">
++      <h2 className="text-2xl font-bold text-center mb-4 text-white">Roleta da Sorte</h2>
++      <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px]">
++        <div
++          className="absolute top-0 left-1/2 -translate-x-1/2"
++          style={{
++            width: 0,
++            height: 0,
++            borderLeft: '15px solid transparent',
++            borderRight: '15px solid transparent',
++            borderTop: '25px solid #FFD700', // Gold color
++            zIndex: 10
++          }}
++        ></div>
++        <Wheel
++          mustStartSpinning={mustSpin}
++          prizeNumber={prizeNumber}
++          data={data}
++          outerBorderColor="#ccc"
++          outerBorderWidth={5}
++          innerBorderColor="#333"
++          innerBorderWidth={15}
++          radiusLineColor="transparent"
++          radiusLineWidth={1}
++          textColors={['#ffffff']}
++          fontSize={20}
++          onStopSpinning={onStopSpinning}
++          backgroundColors={['#f44336', '#9c27b0', '#3f51b5', '#03a9f4', '#4caf50', '#ffeb3b', '#ff9800', '#795548', '#607d8b']}
++        />
++      </div>
++      <Button
++        onClick={handleSpinClick}
++        disabled={mustSpin || userData.saldo < 5}
++        className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-full text-lg font-bold shadow-lg transform transition-transform hover:scale-105"
++      >
++        {spinning ? 'Girando...' : 'Girar (R$ 5,00)'}
++      </Button>
++      {!spinning && prize !== null && (
++        <p className="mt-4 text-xl font-semibold text-white">
++          Você ganhou: R$ {prize}
++        </p>
++      )}
++    </div>
++  );
++}
+--- a/src/components/ScratchCardSelection.jsx
++++ b/src/components/ScratchCardSelection.jsx
+@@ -3,15 +3,17 @@
+ import { Helmet } from 'react-helmet';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { Button } from '@/components/ui/button';
+-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+-import { ArrowLeft, Ticket } from 'lucide-react';
++import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
++import { ArrowLeft, Ticket, Disc } from 'lucide-react';
+ import ScratchCardGame from '@/components/ScratchCardGame';
++import Roulette from './Roulette'; // Importe o novo componente
+ import { toast } from '@/components/ui/use-toast';
+ 
+ const cardOptions = [
+-  { cost: 1, color: 'from-cyan-400 to-teal-500' },
+-  { cost: 5, color: 'from-green-400 to-blue-500' },
+-  { cost: 10, color: 'from-yellow-400 to-orange-500' },
+-  { cost: 15, color: 'from-pink-500 to-purple-600' },
+-  { cost: 20, color: 'from-red-500 to-yellow-500' },
+-  { cost: 30, color: 'from-indigo-500 to-purple-600' },
++  { type: 'scratch', cost: 1, color: 'from-green-400 to-green-600', prize: 'R$2', title: 'Raspadinha Bronze' },
++  { type: 'scratch', cost: 5, color: 'from-blue-400 to-blue-600', prize: 'Até R$500', title: 'Raspadinha Prata' },
++  { type: 'scratch', cost: 10, color: 'from-yellow-400 to-orange-500', prize: 'Até R$500', title: 'Raspadinha Ouro' },
++  { type: 'scratch', cost: 15, color: 'from-pink-500 to-purple-600', prize: 'Até R$500', title: 'Raspadinha Platina' },
++  { type: 'scratch', cost: 20, color: 'from-red-500 to-red-700', prize: 'Até R$500', title: 'Raspadinha Diamante' },
++  { type: 'scratch', cost: 30, color: 'from-indigo-600 to-purple-800', prize: 'Até R$500', title: 'Raspadinha Mestre' },
++  { type: 'roulette', cost: 5, color: 'from-red-500 to-yellow-500', title: 'Roleta da Sorte' },
+ ];
+ 
+ export default function ScratchCardSelection({ onBack }) {
+   const { userData } = useAuth();
+   const [selectedCardCost, setSelectedCardCost] = useState(null);
++  const [selectedGameType, setSelectedGameType] = useState(null);
+ 
+   const handleSelectCard = (cost, type) => {
+     if (userData.saldo < cost) {
+@@ -21,15 +23,21 @@
+       });
+     } else {
+       setSelectedCardCost(cost);
++      setSelectedGameType(type);
+     }
+   };
+   
+   const handleGameClose = (played) => {
+-      setSelectedCardCost(null);
+-      if(!played) { // if the user closed the game without revealing the prize
+-          onBack();
+-      }
+-  }
++    setSelectedCardCost(null);
++    setSelectedGameType(null);
++    if(!played) { // if the user closed the game without playing
++        onBack();
++    }
++  };
++
++  if (selectedGameType === 'roulette') {
++    return <Roulette onBack={() => setSelectedGameType(null)} />;
++  }
+ 
+   if (selectedCardCost !== null) {
+     return <ScratchCardGame cardCost={selectedCardCost} onClose={handleGameClose} />;
+@@ -53,15 +61,16 @@
+               transition={{ delay: index * 0.1 }}
+               whileHover={{ scale: 1.05, y: -5 }}
+               className="w-full max-w-xs"
++              onClick={() => handleSelectCard(card.cost, card.type)}
+             >
+               <Card 
+-                className={`glass-card-light overflow-hidden cursor-pointer bg-gradient-to-br ${card.color}`}
+-                onClick={() => handleSelectCard(card.cost)}
++                className={`relative overflow-hidden cursor-pointer bg-gradient-to-br ${card.color} text-white shadow-lg h-48 flex flex-col justify-between`}
+               >
+-                <CardHeader className="p-4">
+-                  <CardTitle className="text-white text-2xl md:text-3xl font-bold text-center">
+-                    R$ {card.cost.toFixed(2)}
+-                  </CardTitle>
++                <CardHeader>
++                  <CardTitle>{card.title}</CardTitle>
++                  <CardDescription className="text-gray-200">Custa R$ {card.cost.toFixed(2)}</Custo>
+                 </CardHeader>
+-                <CardContent className="flex flex-col items-center justify-center p-4">
+-                  <Ticket className="w-16 h-16 md:w-20 md:h-20 text-white opacity-80 mb-4" />
+-                  <Button className="bg-white/90 text-black font-bold w-full">
+-                    Jogar
+-                  </Button>
++                <CardContent className="flex-grow flex items-center justify-center">
++                  <p className="text-lg font-bold">{card.prize}</p>
+                 </CardContent>
+               </Card>
+             </motion.div>
+  
