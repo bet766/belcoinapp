@@ -1,15 +1,363 @@
-import 'package:flutter/material.dart';
+<!doctype html>
 
-void main() => runApp(BelcoinApp());
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Xis do Franque — Pedido Rápido</title>
+  <style>
+    :root{
+      --bg:#0f1115; --card:#141619; --muted:#9aa0a6; --accent:#ff7a18; --accent-2:#ffd166; --white:#fff;
+      --radius:12px; font-family: Inter, system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--white);min-height:100vh}
+    .app{max-width:980px;margin:18px auto;padding:16px}
+    header{display:flex;align-items:center;justify-content:space-between}
+    header h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:16px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}/* Left column */
+.card{background:var(--card);border-radius:var(--radius);padding:14px}
+.search{display:flex;gap:8px;margin-bottom:12px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{padding:8px 12px;border-radius:999px;background:#111;border:1px solid #222;cursor:pointer}
+.tab.active{background:linear-gradient(90deg,var(--accent),#ff5e3a);color:#111;font-weight:700}
 
-class BelcoinApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Belcoin', theme: ThemeData(primarySwatch: Colors.green), home: HomePage(), ); } }
+.products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (max-width:600px){.products{grid-template-columns:1fr}}
+.product{padding:12px;border-radius:10px;background:#0e0f11;border:1px solid #222}
+.product h3{margin:0 0 8px 0;font-size:16px}
+.meta{font-size:13px;color:var(--muted);margin-bottom:8px}
+.pfooter{display:flex;justify-content:space-between;align-items:center}
+.btn{background:var(--accent);color:#111;padding:8px 10px;border-radius:10px;border:none;cursor:pointer}
 
-class HomePage extends StatelessWidget { @override Widget build(BuildContext context) { return Scaffold( appBar: AppBar(title: Text('Belcoin - Investimentos')), body: InvestmentScreen(), ); } }
+/* Right column / cart */
+.cartTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.items{max-height:360px;overflow:auto;margin-bottom:12px}
+.item{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:#0d0e10;margin-bottom:8px}
+.qty{display:flex;gap:6px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
 
-class InvestmentScreen extends StatefulWidget { @override _InvestmentScreenState createState() => _InvestmentScreenState(); }
+.totalRow{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.checkout{display:flex;flex-direction:column;gap:8px}
+input, select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #222;background:#0b0b0b;color:var(--white)}
+label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
 
-class _InvestmentScreenState extends State<InvestmentScreen> { double investedAmount = 0.0; double returnRate = 0.05; // 5% exemplo bool autoLiquidation = false;
+.finalBtn{background:var(--accent-2);color:#111;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
+.link{color:var(--accent);text-decoration:underline;cursor:pointer}
 
-@override Widget build(BuildContext context) { return Padding( padding: const EdgeInsets.all(16.0), child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Text('Valor Investido:', style: TextStyle(fontSize: 18)), TextField( keyboardType: TextInputType.number, decoration: InputDecoration(hintText: 'Digite o valor em R$'), onChanged: (value) { setState(() { investedAmount = double.tryParse(value) ?? 0.0; }); }, ), SizedBox(height: 20), Row( mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [ Text('Liquidação Automática', style: TextStyle(fontSize: 16)), Switch( value: autoLiquidation, onChanged: (value) { setState(() { autoLiquidation = value; }); }, ) ], ), SizedBox(height: 20), Text( 'Rendimento Estimado: R$ ${(investedAmount * returnRate).toStringAsFixed(2)}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), ), SizedBox(height: 20), ElevatedButton( onPressed: () { double rendimento = investedAmount * returnRate; String msg = autoLiquidation ? 'Liquidação automática ativada! Você receberá R$ ${rendimento.toStringAsFixed(2)} no prazo.' : 'Investimento realizado! Seu rendimento estimado é de R$ ${rendimento.toStringAsFixed(2)}.'; ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg))); }, child: Text('Investir Agora'), ), ], ), ); } }
+footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
 
-  
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Xis do Franque — Pedido Rápido</h1>
+      <div>
+        <span id="userStub" class="small">Não cadastrado</span>
+      </div>
+    </header><div class="grid">
+  <!-- LEFT: produtos e seleção -->
+  <div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Cadastro rápido</strong>
+        <small class="small">(salvo localmente)</small>
+      </div>
+      <p class="small">Preencha seu nome e telefone — esses dados vão junto com o pedido.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <label for="name">Nome</label>
+          <input id="name" placeholder="Seu nome" />
+        </div>
+        <div>
+          <label for="phone">Telefone</label>
+          <input id="phone" placeholder="(51) 9xxxx-xxxx" />
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="saveUser" class="btn">Salvar</button>
+        <button id="clearUser" class="btn" style="background:#444;color:#fff">Limpar</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>Cardápio</strong>
+        <input id="filter" placeholder="Buscar..." style="max-width:220px" />
+      </div>
+
+      <div class="tabs" style="margin-top:12px">
+        <div class="tab active" data-key="xis">Xis</div>
+        <div class="tab" data-key="bebida">Bebidas</div>
+      </div>
+
+      <div class="products" id="products"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: carrinho e finalização -->
+  <aside>
+    <div class="card">
+      <div class="cartTitle"><strong>Carrinho</strong><small id="count">0 itens</small></div>
+      <div class="items" id="cartItems">
+        <p class="small">Seu carrinho está vazio</p>
+      </div>
+
+      <div>
+        <div class="totalRow"><span class="small">Subtotal</span><strong id="subtotal">R$ 0,00</strong></div>
+        <div class="totalRow"><span class="small">Taxa de entrega</span><strong id="delivery">R$ 6,00</strong></div>
+        <div class="totalRow"><span class="small">Total</span><strong id="total">R$ 0,00</strong></div>
+      </div>
+
+      <div style="margin-top:12px">
+        <strong>Endereço de entrega</strong>
+        <p class="small">Preencha todos os campos (obrigatório)</p>
+        <div style="display:grid;gap:8px;margin-top:8px">
+          <div>
+            <label for="city">Cidade</label>
+            <input id="city" placeholder="Ex: Porto Alegre" />
+          </div>
+          <div>
+            <label for="neighbourhood">Bairro</label>
+            <input id="neighbourhood" placeholder="Ex: Centro" />
+          </div>
+          <div>
+            <label for="street">Rua</label>
+            <input id="street" placeholder="Ex: Av. Borges de Medeiros" />
+          </div>
+          <div>
+            <label for="number">Número</label>
+            <input id="number" placeholder="Número da casa" />
+          </div>
+          <div>
+            <label for="complement">Complemento (opcional)</label>
+            <input id="complement" placeholder="Apto, bloco, referência" />
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <label>Forma de pagamento</label>
+        <select id="payment">
+          <option value="pix">PIX</option>
+          <option value="debito">Débito</option>
+          <option value="credito">Crédito</option>
+        </select>
+      </div>
+
+      <div style="margin-top:12px" class="checkout">
+        <label>Observações (opcional)</label>
+        <textarea id="notes" rows="3" placeholder="Sem cebola, sem picles..."></textarea>
+        <button id="finalize" class="finalBtn">Finalizar pedido via WhatsApp</button>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div class="card">
+      <strong>Ajuda</strong>
+      <p class="small">Ao finalizar, o pedido será aberto no WhatsApp com todos os detalhes. O número de destino é o do estabelecimento.</p>
+      <p class="small">Número: <span class="link">+55 51 99708-8974</span></p>
+    </div>
+  </aside>
+</div>
+
+<footer>Aplicativo de exemplo — sem conexão. Desenvolvido para testes locais.</footer>
+
+  </div>  <script>
+    // ====== Dados do cardápio (exemplo) ======
+    const PRODUCTS = [
+      { id: 'x1', title: 'Xis Tradicional', description: 'Carne, queijo, alface, tomate', price: 18.5, category: 'xis' },
+      { id: 'x2', title: 'Xis Duplo', description: '2 hambúrgueres, queijo e bacon', price: 25.0, category: 'xis' },
+      { id: 'x3', title: 'Xis Veggie', description: 'Livro vegetariano, alface, tomate', price: 20.0, category: 'xis' },
+      { id: 'b1', title: 'Coca-Cola 350ml', description: 'Refrigerante gelado', price: 6.5, category: 'bebida' },
+      { id: 'b2', title: 'Água Mineral 500ml', description: 'Sem gás', price: 4.0, category: 'bebida' },
+      { id: 'b3', title: 'Suco Natural', description: 'Laranja 300ml', price: 8.0, category: 'bebida' },
+    ];
+
+    // Estado simples
+    let state = {
+      currentTab: 'xis',
+      cart: [],
+      deliveryFee: 6.00
+    };
+
+    // Util helpers
+    const fmt = (v) => 'R$ ' + v.toFixed(2).replace('.',',');
+
+    // Inicialização
+    const productsEl = document.getElementById('products');
+    const cartItemsEl = document.getElementById('cartItems');
+    const subtotalEl = document.getElementById('subtotal');
+    const deliveryEl = document.getElementById('delivery');
+    const totalEl = document.getElementById('total');
+    const countEl = document.getElementById('count');
+
+    function renderProducts(filterText=''){
+      productsEl.innerHTML = '';
+      const filtered = PRODUCTS.filter(p => p.category === state.currentTab && p.title.toLowerCase().includes(filterText.toLowerCase()));
+      if(filtered.length === 0){ productsEl.innerHTML = '<p class="small">Nenhum produto encontrado</p>'; return; }
+      filtered.forEach(p => {
+        const div = document.createElement('div'); div.className = 'product';
+        div.innerHTML = `
+          <h3>${p.title}</h3>
+          <div class="meta">${p.description}</div>
+          <div class="pfooter">
+            <strong>${fmt(p.price)}</strong>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="number" min="1" value="1" style="width:68px;padding:6px;border-radius:8px;border:1px solid #222;background:#0b0b0b;color:#fff" id="qty-${p.id}" />
+              <button class="btn" data-id="${p.id}">Adicionar</button>
+            </div>
+          </div>
+        `;
+        productsEl.appendChild(div);
+      });
+
+      // vincular eventos
+      productsEl.querySelectorAll('.btn').forEach(b => b.addEventListener('click', (e)=>{
+        const id = b.dataset.id; const qty = parseInt(document.getElementById('qty-'+id).value) || 1;
+        addToCart(id, qty);
+      }));
+    }
+
+    function addToCart(id, qty){
+      const prod = PRODUCTS.find(p=>p.id===id);
+      if(!prod) return;
+      const existing = state.cart.find(i=>i.id===id);
+      if(existing){ existing.qty += qty; }
+      else state.cart.push({ id:prod.id, title:prod.title, price:prod.price, qty });
+      saveState(); renderCart();
+    }
+
+    function changeQty(id, delta){
+      const it = state.cart.find(i=>i.id===id); if(!it) return;
+      it.qty += delta; if(it.qty <=0) state.cart = state.cart.filter(x=>x.id!==id);
+      saveState(); renderCart();
+    }
+
+    function removeItem(id){ state.cart = state.cart.filter(i=>i.id!==id); saveState(); renderCart(); }
+
+    function calcSubtotal(){ return state.cart.reduce((s,i)=>s + i.price * i.qty, 0); }
+
+    function renderCart(){
+      cartItemsEl.innerHTML = '';
+      if(state.cart.length === 0){ cartItemsEl.innerHTML = '<p class="small">Seu carrinho está vazio</p>'; }
+      else{
+        state.cart.forEach(i =>{
+          const div = document.createElement('div'); div.className='item';
+          div.innerHTML = `
+            <div>
+              <div style="font-weight:700">${i.title}</div>
+              <div class="small">${fmt(i.price)} x ${i.qty} = ${fmt(i.price*i.qty)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+              <div class="qty">
+                <button onclick="changeQty('${i.id}',-1)" class="btn" style="background:#333;padding:6px">-</button>
+                <div style="padding:6px 8px;min-width:30px;text-align:center">${i.qty}</div>
+                <button onclick="changeQty('${i.id}',1)" class="btn" style="background:#333;padding:6px">+</button>
+              </div>
+              <button onclick="removeItem('${i.id}')" style="background:transparent;border:none;color:var(--accent);cursor:pointer">Remover</button>
+            </div>
+          `;
+          cartItemsEl.appendChild(div);
+        });
+      }
+
+      const subtotal = calcSubtotal();
+      subtotalEl.textContent = fmt(subtotal);
+      deliveryEl.textContent = fmt(state.deliveryFee);
+      const total = subtotal + state.deliveryFee;
+      totalEl.textContent = fmt(total);
+      countEl.textContent = state.cart.reduce((s,i)=>s+i.qty,0) + ' itens';
+
+      // atualizar botões de adicionar nos produtos (para manter lógica)
+      // salvar estado
+      saveState();
+    }
+
+    // ====== Persistência local simples ======
+    function saveState(){ localStorage.setItem('quick_order_state', JSON.stringify(state)); }
+    function loadState(){ const raw = localStorage.getItem('quick_order_state'); if(raw) state = Object.assign(state, JSON.parse(raw)); }
+
+    // ====== Cadastro do usuário (local) ======
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const userStub = document.getElementById('userStub');
+    function saveUser(){
+      const u = { name: nameInput.value.trim(), phone: phoneInput.value.trim() };
+      localStorage.setItem('quick_order_user', JSON.stringify(u));
+      updateUserStub();
+      alert('Dados salvos localmente');
+    }
+    function clearUser(){ localStorage.removeItem('quick_order_user'); nameInput.value=''; phoneInput.value=''; updateUserStub(); }
+    function loadUser(){ const raw = localStorage.getItem('quick_order_user'); if(raw){ const u = JSON.parse(raw); nameInput.value=u.name||''; phoneInput.value=u.phone||''; } updateUserStub(); }
+    function updateUserStub(){ const raw = localStorage.getItem('quick_order_user'); if(raw){ const u=JSON.parse(raw); userStub.textContent = u.name + ' • ' + u.phone } else userStub.textContent='Não cadastrado'; }
+
+    // ====== Filtrar produtos, tabs ======
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', e=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active'); state.currentTab = t.dataset.key; renderProducts(document.getElementById('filter').value);
+    }));
+
+    document.getElementById('filter').addEventListener('input', e=> renderProducts(e.target.value));
+
+    // ====== Finalizar pedido via WhatsApp ======
+    function validateAddress(){
+      const city = document.getElementById('city').value.trim();
+      const neighbourhood = document.getElementById('neighbourhood').value.trim();
+      const street = document.getElementById('street').value.trim();
+      const number = document.getElementById('number').value.trim();
+      if(!city || !neighbourhood || !street || !number) return false; return true;
+    }
+
+    function buildMessage(){
+      const userRaw = localStorage.getItem('quick_order_user');
+      const user = userRaw ? JSON.parse(userRaw) : { name: 'Cliente', phone: '' };
+      if(state.cart.length===0) return {ok:false, msg:'Carrinho vazio'};
+      if(!validateAddress()) return {ok:false, msg:'Preencha todos os campos de endereço'};
+
+      const city = document.getElementById('city').value.trim();
+      const neighbourhood = document.getElementById('neighbourhood').value.trim();
+      const street = document.getElementById('street').value.trim();
+      const number = document.getElementById('number').value.trim();
+      const complement = document.getElementById('complement').value.trim();
+      const payment = document.getElementById('payment').value;
+      const notes = document.getElementById('notes').value.trim();
+
+      let text = `*Novo Pedido*\n`;
+      text += `Nome: ${user.name || '-'}\nTelefone: ${user.phone || '-'}\n\n`;
+      text += `*Itens:*\n`;
+      state.cart.forEach(i => {
+        text += `- ${i.title} x ${i.qty} = ${fmt(i.price*i.qty)}\n`;
+      });
+      const subtotal = calcSubtotal();
+      text += `\nSubtotal: ${fmt(subtotal)}\nTaxa de entrega: ${fmt(state.deliveryFee)}\n*Total: ${fmt(subtotal + state.deliveryFee)}*\n\n`;
+      text += `*Endereço:* ${street}, ${number} ${complement ? '- ' + complement : ''} - ${neighbourhood}, ${city}\n`;
+      text += `*Pagamento:* ${payment.toUpperCase()}\n`;
+      if(notes) text += `\nObservações: ${notes}\n`;
+
+      return { ok:true, text };
+    }
+
+    document.getElementById('finalize').addEventListener('click', ()=>{
+      const result = buildMessage();
+      if(!result.ok){ alert(result.msg); return; }
+      // número do estabelecimento — sem + ou espaços: 55 51 99708-8974 -> 5551997088974
+      const phone = '5551997088974';
+      const encoded = encodeURIComponent(result.text);
+      const url = `https://wa.me/${phone}?text=${encoded}`;
+      window.open(url, '_blank');
+    });
+
+    // ====== Eventos globais simples ======
+    document.getElementById('saveUser').addEventListener('click', saveUser);
+    document.getElementById('clearUser').addEventListener('click', clearUser);
+
+    // ====== Make changeQty & removeItem available to inline onclick ======
+    window.changeQty = changeQty; window.removeItem = removeItem;
+
+    // ====== load everything ======
+    loadState(); loadUser(); renderProducts(); renderCart();
+  </script></body>
+  </html>
