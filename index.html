@@ -3,205 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BelInvest | Plataforma Profissional</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>BelInvest | Teste Local</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+<script>
+  // ---------------- Firebase ----------------
+  const firebaseConfig = {
+    apiKey: "AIzaSyBuOzmtFPWeNKJTKB-jrLxFmfn2Nswypvc",
+    authDomain: "invest-8c4e6.firebaseapp.com",
+    projectId: "invest-8c4e6",
+    storageBucket: "invest-8c4e6.appspot.com",
+    messagingSenderId: "1021993177452",
+    appId: "1:1021993177452:web:f704ca9b8127bb3ba76349"
+  };
 
-// Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBuOzmtFPWeNKJTKB-jrLxFmfn2Nswypvc",
-  authDomain: "invest-8c4e6.firebaseapp.com",
-  projectId: "invest-8c4e6",
-  storageBucket: "invest-8c4e6.appspot.com",
-  messagingSenderId: "1021993177452",
-  appId: "1:1021993177452:web:f704ca9b8127bb3ba76349"
-};
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  let currentUser = null;
+  const porcentagemRendimentoDiario = 1;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-let currentUser = null;
-const porcentagemRendimentoDiario = 1;
+  // ---------------- Funções ----------------
+  async function cadastrarUsuario(){
+    const nome = document.getElementById("nome").value;
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+    const cpf = document.getElementById("cpf").value;
+    const telefone = document.getElementById("telefone").value;
+    const uidIndicante = new URLSearchParams(window.location.search).get("indicadoPor");
+    
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
+      const user = userCredential.user;
+      await db.collection("usuarios").doc(user.uid).set({
+        nome, email, cpf, telefone, saldo:0, primeiroDeposito:false,
+        linkWhatsAppLiberado:false, linkIndicadoPor: uidIndicante
+      });
+      alert("Cadastro realizado com sucesso!");
+    } catch(e) { alert("Erro: " + e.message); }
+  }
 
-// -------------------- Funções --------------------
-async function cadastrarUsuario(nome,email,senha,cpf,telefone,uidIndicante=null){
-  try{
-    const userCredential = await createUserWithEmailAndPassword(auth,email,senha);
-    const user = userCredential.user;
-    await setDoc(doc(db,"usuarios",user.uid),{
-      nome,email,cpf,telefone,saldo:0,primeiroDeposito:false,linkWhatsAppLiberado:false,linkIndicadoPor:uidIndicante
-    });
-    alert("Cadastro realizado com sucesso!");
-  } catch(e){ alert("Erro no cadastro: "+e.message); }
-}
+  async function loginUsuario(){
+    const email = document.getElementById("loginEmail").value;
+    const senha = document.getElementById("loginSenha").value;
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, senha);
+      currentUser = userCredential.user;
+      await carregarPainel(currentUser.uid);
+    } catch(e){ alert("Erro: "+e.message); }
+  }
 
-async function loginUsuario(email,senha){
-  try{
-    const userCredential = await signInWithEmailAndPassword(auth,email,senha);
-    currentUser = userCredential.user;
-    await carregarPainel(currentUser.uid);
-  } catch(e){ alert("Erro no login: "+e.message); }
-}
+  async function registrarDeposito(){
+    const valor = parseFloat(document.getElementById("valorDeposito").value);
+    const cupom = document.getElementById("cupomDeposito").value || null;
+    if(!currentUser){ alert("Faça login!"); return; }
 
-async function registrarDeposito(uid,valor,codigoCupom=null){
-  let bonus = 0;
-  if(codigoCupom){
-    const cupomRef = doc(db,"cupons",codigoCupom);
-    const cupomSnap = await getDoc(cupomRef);
-    if(cupomSnap.exists() && !cupomSnap.data().usado){
-      bonus = cupomSnap.data().valor;
-      await updateDoc(cupomRef,{usado:true});
+    let bonus = 0;
+    if(cupom){
+      const cupomRef = db.collection("cupons").doc(cupom);
+      const cupomSnap = await cupomRef.get();
+      if(cupomSnap.exists && !cupomSnap.data().usado){
+        bonus = cupomSnap.data().valor;
+        await cupomRef.update({usado:true});
+      }
     }
-  }
-  const usuarioRef = doc(db,"usuarios",uid);
-  const usuarioSnap = await getDoc(usuarioRef);
-  let saldoAtual = usuarioSnap.data().saldo || 0;
-  saldoAtual += valor+bonus;
 
-  await updateDoc(usuarioRef,{
-    saldo:saldoAtual,
-    primeiroDeposito:true,
-    linkWhatsAppLiberado:true
-  });
+    const usuarioRef = db.collection("usuarios").doc(currentUser.uid);
+    const usuarioSnap = await usuarioRef.get();
+    let saldoAtual = usuarioSnap.data().saldo || 0;
+    saldoAtual += valor + bonus;
 
-  await addDoc(collection(db,"depositos"),{
-    usuarioId:uid,
-    valor:valor,
-    data:new Date(),
-    status:"concluido",
-    cupomUsado:codigoCupom
-  });
+    await usuarioRef.update({saldo: saldoAtual, primeiroDeposito:true, linkWhatsAppLiberado:true});
 
-  if(usuarioSnap.data().linkIndicadoPor){
-    await aplicarComissao(usuarioSnap.data().linkIndicadoPor,valor,5,uid);
-  }
-  alert("Depósito realizado com sucesso!");
-  await carregarPainel(uid);
-}
+    await db.collection("depositos").add({
+      usuarioId: currentUser.uid,
+      valor: valor,
+      data: new Date(),
+      status: "concluido",
+      cupomUsado: cupom
+    });
 
-async function aplicarComissao(uidIndicante,valorDeposito,porcentagem,uidIndicado){
-  const comissao = (valorDeposito*porcentagem)/100;
-  const indicanteRef = doc(db,"usuarios",uidIndicante);
-  const indicanteSnap = await getDoc(indicanteRef);
-  const saldoAtual = indicanteSnap.data().saldo || 0;
-  await updateDoc(indicanteRef,{saldo:saldoAtual+comissao});
-  await addDoc(collection(db,"indicacoes"),{
-    indicanteId:uidIndicante,
-    indicadoId:uidIndicado,
-    valorDeposito,
-    comissao
-  });
-}
+    if(usuarioSnap.data().linkIndicadoPor){
+      const uidIndicante = usuarioSnap.data().linkIndicadoPor;
+      const comissao = valor*0.05;
+      const indicanteRef = db.collection("usuarios").doc(uidIndicante);
+      const indicanteSnap = await indicanteRef.get();
+      const saldoInd = indicanteSnap.data().saldo || 0;
+      await indicanteRef.update({saldo: saldoInd+comissao});
+      await db.collection("indicacoes").add({
+        indicanteId: uidIndicante, indicadoId: currentUser.uid,
+        valorDeposito: valor, comissao
+      });
+    }
 
-function gerarLinkIndicacao(uid){ return `${window.location.origin}?indicadoPor=${uid}`; }
-
-async function atualizarRendimento(uid){
-  const usuarioRef = doc(db,"usuarios",uid);
-  const depositosQuery = query(collection(db,"depositos"),where("usuarioId","==",uid));
-  const depositosSnap = await getDocs(depositosQuery);
-  let saldoAtual = 0;
-  let historicoRendimento = [];
-  for(const depDoc of depositosSnap.docs){
-    const dep = depDoc.data();
-    const valor = dep.valor;
-    const dataDeposito = dep.data.toDate();
-    const hoje = new Date();
-    const diffDias = Math.floor((hoje-dataDeposito)/(1000*60*60*24));
-    const rendimento = valor*Math.pow(1+porcentagemRendimentoDiario/100,diffDias)-valor;
-    saldoAtual += valor+rendimento;
-    historicoRendimento.push({data:dataDeposito,valor:valor+rendimento});
-  }
-  await updateDoc(usuarioRef,{saldo:saldoAtual});
-  document.getElementById("saldoUsuario").innerText="R$ "+saldoAtual.toFixed(2);
-  return historicoRendimento.sort((a,b)=>a.data-b.data);
-}
-
-async function carregarPainel(uid){
-  const usuarioRef = doc(db,"usuarios",uid);
-  const usuarioSnap = await getDoc(usuarioRef);
-  const usuario = usuarioSnap.data();
-
-  document.getElementById("painel").style.display="block";
-  document.getElementById("loginCadastro").style.display="none";
-  document.getElementById("nomeUsuario").innerText=usuario.nome;
-
-  const historico = await atualizarRendimento(uid);
-
-  document.getElementById("linkIndicacao").innerText=gerarLinkIndicacao(uid);
-  document.getElementById("linkIndicacao").href=gerarLinkIndicacao(uid);
-
-  // Indicados
-  const indicadosQuery = query(collection(db,"usuarios"),where("linkIndicadoPor","==",uid));
-  const indicadosSnap = await getDocs(indicadosQuery);
-  const tabela=document.getElementById("tabelaIndicados");
-  tabela.innerHTML="";
-  for(const docSnap of indicadosSnap.docs){
-    const indicado=docSnap.data();
-    let totalDeposito = 0;
-    const depositosQuery = query(collection(db,"depositos"),where("usuarioId","==",docSnap.id));
-    const depositosSnap = await getDocs(depositosQuery);
-    depositosSnap.forEach(d=>{totalDeposito+=d.data().valor});
-    const row=document.createElement("tr");
-    row.innerHTML=`<td class="border px-4 py-2">${indicado.nome}</td><td class="border px-4 py-2">R$ ${totalDeposito.toFixed(2)}</td>`;
-    tabela.appendChild(row);
+    alert("Depósito realizado!");
+    await carregarPainel(currentUser.uid);
   }
 
-  // Depositos (histórico)
-  const tabelaDep=document.getElementById("tabelaDepositos");
-  tabelaDep.innerHTML="";
-  const depQuery=query(collection(db,"depositos"),where("usuarioId","==",uid),orderBy("data","desc"));
-  const depSnap = await getDocs(depQuery);
-  depSnap.forEach(d=>{
-    const dep=d.data();
-    const data = dep.data.toDate().toLocaleDateString();
-    const row = document.createElement("tr");
-    row.innerHTML=`<td class="border px-4 py-2">${data}</td><td class="border px-4 py-2">R$ ${dep.valor.toFixed(2)}</td><td class="border px-4 py-2">${dep.status}</td>`;
-    tabelaDep.appendChild(row);
-  });
-
-  // Gráfico de rendimento
-  const ctx = document.getElementById("graficoRendimento").getContext("2d");
-  const labels = historico.map(h=>h.data.toLocaleDateString());
-  const data = historico.map(h=>h.valor.toFixed(2));
-  if(window.grafico) window.grafico.destroy();
-  window.grafico=new Chart(ctx,{type:"line",data:{labels, datasets:[{label:"Saldo + Rendimento",data,color:"blue",borderColor:"blue",tension:0.3}]}});
-  
-  if(usuario.linkWhatsAppLiberado) document.getElementById("linkWhatsApp").style.display="block";
-}
-
-// -------------------- Eventos UI --------------------
-window.cadastrar=async()=>{
-  const nome=document.getElementById("nome").value;
-  const email=document.getElementById("email").value;
-  const senha=document.getElementById("senha").value;
-  const cpf=document.getElementById("cpf").value;
-  const telefone=document.getElementById("telefone").value;
-  const params=new URLSearchParams(window.location.search);
-  const uidIndicante=params.get("indicadoPor");
-  await cadastrarUsuario(nome,email,senha,cpf,telefone,uidIndicante);
-}
-
-window.logar=async()=>{
-  const email=document.getElementById("loginEmail").value;
-  const senha=document.getElementById("loginSenha").value;
-  await loginUsuario(email,senha);
-}
-
-window.depositar=async()=>{
-  const valor=parseFloat(document.getElementById("valorDeposito").value);
-  const cupom=document.getElementById("cupomDeposito").value||null;
-  if(!currentUser){alert("Faça login primeiro!");return;}
-  await registrarDeposito(currentUser.uid,valor,cupom);
-}
-
+  async function carregarPainel(uid){
+    const usuarioSnap = await db.collection("usuarios").doc(uid).get();
+    const usuario = usuarioSnap.data();
+    document.getElementById("loginCadastro").style.display="none";
+    document.getElementById("painel").style.display="block";
+    document.getElementById("nomeUsuario").innerText = usuario.nome;
+    document.getElementById("saldoUsuario").innerText = "R$ "+usuario.saldo.toFixed(2);
+    if(usuario.linkWhatsAppLiberado) document.getElementById("linkWhatsApp").style.display="block";
+  }
 </script>
 </head>
 <body class="bg-gray-100 p-4">
-
-<!-- Login / Cadastro -->
 <div id="loginCadastro" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-<h2 class="text-2
+<h2 class="text-2xl font-bold mb-4 text-center">BelInvest</h2>
+<input id="nome" placeholder="Nome" class="border p-2 w-full mb-2 rounded">
+<input id="email" placeholder="Email" class="border p-2 w-full mb-2 rounded">
+<input id="senha" placeholder="Senha" type="password" class="border p-2 w-full mb-2 rounded">
+<input id="cpf" placeholder="CPF" class="border p-2 w-full mb-2 rounded">
+<input id="telefone" placeholder="Telefone" class="border p-2 w-full mb-2 rounded">
+<button onclick="cadastrarUsuario()" class="bg-blue-600 text-white p-2 w-full rounded mb-4 hover:bg-blue-700">Cadastrar</button>
+<input id="loginEmail" placeholder="Email" class="border p-2 w-full mb-2 rounded">
+<input id="loginSenha" placeholder="Senha" type="password" class="border p-2 w-full mb-2 rounded">
+<button onclick="loginUsuario()" class="bg-green-600 text-white p-2 w-full rounded hover:bg-green-700">Login</button>
+</div>
+
+<div id="painel" style="display:none;" class="max-w-md mx-auto bg-white p-6 rounded shadow">
+<h2 class="text-2xl font-bold mb-4">Olá, <span id="nomeUsuario"></span></h2>
+<p class="mb-2 text-lg font-semibold">Saldo: <span id="saldoUsuario"></span></p>
+<input id="valorDeposito" placeholder="Valor" type="number" class="border p-2 w-full mb-2 rounded">
+<input id="cupomDeposito" placeholder="Cupom (opcional)" class="border p-2 w-full mb-2 rounded">
+<button onclick="registrarDeposito()" class="bg-blue-600 text-white p-2 w-full rounded mb-4 hover:bg-blue-700">Depositar</button>
+<a id="linkWhatsApp" href="https://chat.whatsapp.com/SEU_LINK_AQUI" target="_blank" class="bg-green-600 text-white p-2 w-full block text-center rounded hover:bg-green-700" style="display:none;">Acessar grupo VIP WhatsApp</a>
+</div>
+</body>
+</html>
