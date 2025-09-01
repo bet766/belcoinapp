@@ -1,268 +1,263 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invest+ | Seu Banco Digital de Investimentos</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BelInvest | Plataforma de Investimento</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBuOzmtFPWeNKJTKB-jrLxFmfn2Nswypvc",
+      authDomain: "invest-8c4e6.firebaseapp.com",
+      projectId: "invest-8c4e6",
+      storageBucket: "invest-8c4e6.appspot.com",
+      messagingSenderId: "1021993177452",
+      appId: "1:1021993177452:web:f704ca9b8127bb3ba76349"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
+
+    const porcentagemRendimentoDiario = 1; // 1% ao dia
+
+    // ------------------------ Cadastro ------------------------
+    async function cadastrarUsuario(nome, email, senha, cpf, telefone, uidIndicante = null) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+        const user = userCredential.user;
+
+        await setDoc(doc(db, "usuarios", user.uid), {
+          nome,
+          email,
+          cpf,
+          telefone,
+          saldo: 0,
+          primeiroDeposito: false,
+          linkWhatsAppLiberado: false,
+          linkIndicadoPor: uidIndicante
+        });
+
+        alert("Cadastro realizado com sucesso!");
+      } catch (error) {
+        alert("Erro no cadastro: " + error.message);
+      }
+    }
+
+    // ------------------------ Login ------------------------
+    async function loginUsuario(email, senha) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+        currentUser = userCredential.user;
+        await carregarPainel(currentUser.uid);
+      } catch (error) {
+        alert("Erro no login: " + error.message);
+      }
+    }
+
+    // ------------------------ Depósito ------------------------
+    async function registrarDeposito(uid, valor, codigoCupom = null) {
+      let bonus = 0;
+
+      if (codigoCupom) {
+        const cupomRef = doc(db, "cupons", codigoCupom);
+        const cupomSnap = await getDoc(cupomRef);
+        if (cupomSnap.exists() && !cupomSnap.data().usado) {
+          bonus = cupomSnap.data().valor;
+          await updateDoc(cupomRef, { usado: true });
         }
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .progress-bar {
-            transition: width 1s ease-in-out;
-        }
-        .modal {
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        .modal.hidden {
-            opacity: 0;
-            transform: scale(0.95);
-            pointer-events: none;
-        }
-    </style>
+      }
+
+      const usuarioRef = doc(db, "usuarios", uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+      let saldoAtual = usuarioSnap.data().saldo || 0;
+
+      // Atualizar saldo com valor do depósito
+      saldoAtual += valor + bonus;
+
+      // Primeiro depósito libera WhatsApp
+      await updateDoc(usuarioRef, {
+        saldo: saldoAtual,
+        primeiroDeposito: true,
+        linkWhatsAppLiberado: true
+      });
+
+      await addDoc(collection(db, "depositos"), {
+        usuarioId: uid,
+        valor: valor,
+        data: new Date(),
+        status: "concluido",
+        cupomUsado: codigoCupom
+      });
+
+      // Aplicar comissão para indicante
+      if (usuarioSnap.data().linkIndicadoPor) {
+        const porcentagemComissao = 5; // 5% de comissão
+        await aplicarComissao(usuarioSnap.data().linkIndicadoPor, valor, porcentagemComissao, uid);
+      }
+
+      alert("Depósito realizado com sucesso!");
+      await carregarPainel(uid);
+    }
+
+    // ------------------------ Comissão de indicação ------------------------
+    async function aplicarComissao(uidIndicante, valorDeposito, porcentagem, uidIndicado) {
+      const comissao = (valorDeposito * porcentagem) / 100;
+      const indicanteRef = doc(db, "usuarios", uidIndicante);
+      const indicanteSnap = await getDoc(indicanteRef);
+      const saldoAtual = indicanteSnap.data().saldo || 0;
+
+      await updateDoc(indicanteRef, { saldo: saldoAtual + comissao });
+
+      await addDoc(collection(db, "indicacoes"), {
+        indicanteId: uidIndicante,
+        indicadoId: uidIndicado,
+        valorDeposito,
+        comissao
+      });
+    }
+
+    // ------------------------ Link de indicação ------------------------
+    function gerarLinkIndicacao(uid) {
+      return `${window.location.origin}?indicadoPor=${uid}`;
+    }
+
+    // ------------------------ Rendimento diário ------------------------
+    async function atualizarRendimento(uid) {
+      const usuarioRef = doc(db, "usuarios", uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+
+      const depositosQuery = query(collection(db, "depositos"), where("usuarioId", "==", uid));
+      const depositosSnap = await getDocs(depositosQuery);
+
+      let saldoAtual = 0;
+
+      for (let depDoc of depositosSnap.docs) {
+        const dep = depDoc.data();
+        const valor = dep.valor;
+        const dataDeposito = dep.data.toDate();
+        const hoje = new Date();
+        const diffDias = Math.floor((hoje - dataDeposito) / (1000 * 60 * 60 * 24));
+
+        const rendimento = valor * Math.pow(1 + porcentagemRendimentoDiario / 100, diffDias) - valor;
+        saldoAtual += valor + rendimento;
+      }
+
+      await updateDoc(usuarioRef, { saldo: saldoAtual });
+      document.getElementById("saldoUsuario").innerText = "R$ " + saldoAtual.toFixed(2);
+    }
+
+    // ------------------------ Painel do usuário ------------------------
+    async function carregarPainel(uid) {
+      const usuarioRef = doc(db, "usuarios", uid);
+      const usuarioSnap = await getDoc(usuarioRef);
+      const usuario = usuarioSnap.data();
+
+      document.getElementById("painel").style.display = "block";
+      document.getElementById("loginCadastro").style.display = "none";
+      document.getElementById("nomeUsuario").innerText = usuario.nome;
+
+      // Atualizar saldo com rendimento
+      await atualizarRendimento(uid);
+
+      // Link de indicação
+      document.getElementById("linkIndicacao").innerText = gerarLinkIndicacao(uid);
+      document.getElementById("linkIndicacao").href = gerarLinkIndicacao(uid);
+
+      // Indicados e depósitos
+      const indicadosQuery = query(collection(db, "usuarios"), where("linkIndicadoPor", "==", uid));
+      const indicadosSnap = await getDocs(indicadosQuery);
+      const lista = document.getElementById("listaIndicados");
+      lista.innerHTML = "";
+
+      for (let docSnap of indicadosSnap.docs) {
+        const indicado = docSnap.data();
+        let totalDeposito = 0;
+
+        const depositosQuery = query(collection(db, "depositos"), where("usuarioId", "==", docSnap.id));
+        const depositosSnap = await getDocs(depositosQuery);
+        depositosSnap.forEach(dep => { totalDeposito += dep.data().valor; });
+
+        lista.innerHTML += `<li>${indicado.nome} - Depósito: R$ ${totalDeposito.toFixed(2)}</li>`;
+      }
+
+      // WhatsApp VIP
+      if (usuario.linkWhatsAppLiberado) {
+        document.getElementById("linkWhatsApp").style.display = "block";
+      }
+    }
+
+    // ------------------------ Funções de UI ------------------------
+    window.cadastrar = async () => {
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const cpf = document.getElementById("cpf").value;
+      const telefone = document.getElementById("telefone").value;
+
+      const params = new URLSearchParams(window.location.search);
+      const uidIndicante = params.get("indicadoPor");
+
+      await cadastrarUsuario(nome, email, senha, cpf, telefone, uidIndicante);
+    }
+
+    window.logar = async () => {
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
+      await loginUsuario(email, senha);
+    }
+
+    window.depositar = async () => {
+      const valor = parseFloat(document.getElementById("valorDeposito").value);
+      const cupom = document.getElementById("cupomDeposito").value || null;
+      if (!currentUser) { alert("Faça login primeiro!"); return; }
+      await registrarDeposito(currentUser.uid, valor, cupom);
+    }
+
+  </script>
 </head>
-<body class="min-h-screen bg-gray-50">
-    <!-- Admin Access Point (hidden) -->
-    <div id="adminPoint" class="fixed top-4 right-4 w-3 h-3 bg-gray-600 rounded-full cursor-pointer hover:bg-blue-600 transition-colors z-50"></div>
+<body class="bg-gray-100 p-4">
 
-    <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal hidden">
-        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Acesso Administrativo</h2>
-            <input type="email" id="adminEmail" placeholder="E-mail do administrador" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button onclick="adminLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Acessar</button>
-            <button onclick="hideAdminModal()" class="w-full bg-gray-300 text-gray-700 py-3 rounded-lg mt-2 hover:bg-gray-400 transition-colors">Cancelar</button>
-        </div>
-    </div>
+  <!-- Login / Cadastro -->
+  <div id="loginCadastro" class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4">Cadastro</h2>
+    <input id="nome" placeholder="Nome" class="border p-2 w-full mb-2">
+    <input id="email" placeholder="Email" class="border p-2 w-full mb-2">
+    <input id="senha" placeholder="Senha" type="password" class="border p-2 w-full mb-2">
+    <input id="cpf" placeholder="CPF" class="border p-2 w-full mb-2">
+    <input id="telefone" placeholder="Telefone" class="border p-2 w-full mb-2">
+    <button onclick="cadastrar()" class="bg-blue-500 text-white p-2 w-full mb-4">Cadastrar</button>
 
-    <!-- Main Container -->
-    <div id="app" class="min-h-screen">
-        <!-- Loading Screen -->
-        <div id="loadingScreen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
-            <div class="text-center">
-                <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p class="text-gray-600">Carregando...</p>
-            </div>
-        </div>
+    <h2 class="text-xl font-bold mb-4">Login</h2>
+    <input id="loginEmail" placeholder="Email" class="border p-2 w-full mb-2">
+    <input id="loginSenha" placeholder="Senha" type="password" class="border p-2 w-full mb-2">
+    <button onclick="logar()" class="bg-green-500 text-white p-2 w-full">Login</button>
+  </div>
 
-        <!-- Login Screen -->
-        <div id="loginScreen" class="hidden min-h-screen flex items-center justify-center p-4">
-            <div class="max-w-md w-full">
-                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div class="gradient-bg p-8 text-white text-center">
-                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/de505be6-2203-4001-a6ad-6daa58dff082.png" alt="Logo Invest+" class="mx-auto mb-4 rounded-lg">
-                        <h1 class="text-3xl font-bold mb-2">Invest+</h1>
-                        <p class="text-blue-100">Seu futuro financeiro começa aqui</p>
-                    </div>
-                    
-                    <div class="p-8">
-                        <div id="loginForm">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Acesse sua conta</h2>
-                            <div class="space-y-4">
-                                <input type="email" id="loginEmail" placeholder="E-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="password" id="loginPassword" placeholder="Senha" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors">Entrar</button>
-                            </div>
-                            <div class="mt-4 text-center">
-                                <button onclick="showRecovery()" class="text-blue-600 hover:text-blue-800">Esqueci minha senha</button>
-                            </div>
-                            <div class="mt-6 pt-4 border-t border-gray-200">
-                                <button onclick="showRegister()" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition-colors">Criar conta</button>
-                            </div>
-                        </div>
+  <!-- Painel do Usuário -->
+  <div id="painel" style="display:none;" class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-bold mb-4">Olá, <span id="nomeUsuario"></span></h2>
+    <p class="mb-2">Saldo: <span id="saldoUsuario"></span></p>
 
-                        <div id="recoveryForm" class="hidden">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Recuperar Senha</h2>
-                            <div class="space-y-4">
-                                <input type="email" id="recoveryEmail" placeholder="Seu e-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button onclick="recoverPassword()" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors">Enviar link</button>
-                            </div>
-                            <div class="mt-4 text-center">
-                                <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800">Voltar ao login</button>
-                            </div>
-                        </div>
+    <h3 class="text-lg font-bold mt-4 mb-2">Depósito</h3>
+    <input id="valorDeposito" placeholder="Valor" type="number" class="border p-2 w-full mb-2">
+    <input id="cupomDeposito" placeholder="Cupom (opcional)" class="border p-2 w-full mb-2">
+    <button onclick="depositar()" class="bg-blue-500 text-white p-2 w-full mb-4">Depositar</button>
 
-                        <div id="registerForm" class="hidden">
-                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Criar Conta</h2>
-                            <div class="space-y-4">
-                                <input type="text" id="registerName" placeholder="Nome completo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="email" id="registerEmail" placeholder="E-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="text" id="registerCpf" placeholder="CPF" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="tel" id="registerPhone" placeholder="Telefone" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="password" id="registerPassword" placeholder="Senha" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <input type="text" id="registerPix" placeholder="Chave PIX" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <button onclick="register()" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition-colors">Criar Conta</button>
-                            </div>
-                            <div class="mt-4 text-center">
-                                <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800">Já tenho conta</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <h3 class="text-lg font-bold mt-4 mb-2">Seu link de indicação</h3>
+    <a id="linkIndicacao" href="#" class="text-blue-700 underline mb-4 block"></a>
 
-        <!-- Dashboard -->
-        <div id="dashboard" class="hidden min-h-screen bg-gray-50">
-            <header class="bg-white shadow-sm">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center">
-                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/acb2eb87-71a3-4673-ae51-75e5c1aab124.png" alt="Logo Invest+" class="mr-3">
-                            <h1 class="text-xl font-bold text-gray-800">Invest+</h1>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <span class="text-gray-600">Olá, <span id="userName">Usuário</span></span>
-                            <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">Sair</button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+    <h3 class="text-lg font-bold mt-4 mb-2">Seus indicados</h3>
+    <ul id="listaIndicados" class="list-disc ml-6"></ul>
 
-            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 card-hover">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Saldo Disponível</h2>
-                    <div class="text-4xl font-bold text-green-600 mb-4">R$ <span id="userBalance">0,00</span></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <button onclick="showDepositModal()" class="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Depositar</button>
-                        <button onclick="showWithdrawModal()" class="bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors">Sacar</button>
-                    </div>
-                </div>
-            </main>
-        </div>
+    <a id="linkWhatsApp" href="https://chat.whatsapp.com/SEU_LINK_AQUI" target="_blank" class="bg-green-500 text-white p-2 w-full block mt-4 text-center rounded" style="display:none;">Acessar grupo VIP WhatsApp</a>
+  </div>
 
-        <!-- Admin Panel -->
-        <div id="adminPanel" class="hidden min-h-screen bg-gray-50">
-            <header class="bg-white shadow-sm">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div class="flex justify-between items-center">
-                        <h1 class="text-xl font-bold text-gray-800">Painel Administrativo</h1>
-                        <button onclick="adminLogout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">Sair</button>
-                    </div>
-                </div>
-            </header>
-        </div>
-    </div>
-
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDUmmT2JcHnQ8Q9pQj0q3H4Z4m4q7wX9y0",
-            authDomain: "investplus-app.firebaseapp.com",
-            projectId: "investplus-app",
-            storageBucket: "investplus-app.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
-        };
-
-        // Init Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        let currentUser = null;
-        let userData = null;
-
-        function initApp() {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    await loadUserData();
-                    if (user.email === 'cjogos339@gmail.com') {
-                        showScreen('adminPanel');
-                    } else {
-                        showScreen('dashboard');
-                        updateDashboard();
-                    }
-                } else {
-                    showScreen('loginScreen');
-                }
-                hideLoading();
-            });
-        }
-
-        async function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                alert("Erro no login: " + error.message);
-            }
-        }
-
-        async function register() {
-            const name = document.getElementById('registerName').value;
-            const email = document.getElementById('registerEmail').value;
-            const cpf = document.getElementById('registerCpf').value;
-            const phone = document.getElementById('registerPhone').value;
-            const pix = document.getElementById('registerPix').value;
-            const password = document.getElementById('registerPassword').value;
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                await db.collection("users").doc(user.uid).set({
-                    name, email, cpf, phone, pix,
-                    balance: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            } catch (error) {
-                alert("Erro no cadastro: " + error.message);
-            }
-        }
-
-        async function recoverPassword() {
-            const email = document.getElementById('recoveryEmail').value;
-            try {
-                await auth.sendPasswordResetEmail(email);
-                alert("E-mail de recuperação enviado!");
-            } catch (error) {
-                alert("Erro ao enviar e-mail: " + error.message);
-            }
-        }
-
-        function logout() {
-            auth.signOut();
-        }
-
-        async function loadUserData() {
-            const doc = await db.collection("users").doc(currentUser.uid).get();
-            if (doc.exists) {
-                userData = doc.data();
-                document.getElementById("userName").textContent = userData.name;
-                document.getElementById("userBalance").textContent = userData.balance.toFixed(2);
-            }
-        }
-
-        function updateDashboard() {
-            if (userData) {
-                document.getElementById("userName").textContent = userData.name;
-                document.getElementById("userBalance").textContent = userData.balance.toFixed(2);
-            }
-        }
-
-        function showScreen(id) {
-            document.querySelectorAll("#loginScreen, #dashboard, #adminPanel").forEach(el => el.classList.add("hidden"));
-            document.getElementById(id).classList.remove("hidden");
-        }
-
-        function hideLoading() {
-            document.getElementById("loadingScreen").classList.add("hidden");
-        }
-
-        window.onload = initApp;
-    </script>
 </body>
 </html>
