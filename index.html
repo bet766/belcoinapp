@@ -1,363 +1,268 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Xis do Franque — Pedido Rápido</title>
-  <style>
-    :root{
-      --bg:#0f1115; --card:#141619; --muted:#9aa0a6; --accent:#ff7a18; --accent-2:#ffd166; --white:#fff;
-      --radius:12px; font-family: Inter, system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--white);min-height:100vh}
-    .app{max-width:980px;margin:18px auto;padding:16px}
-    header{display:flex;align-items:center;justify-content:space-between}
-    header h1{margin:0;font-size:20px}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:16px}
-    @media (max-width:900px){.grid{grid-template-columns:1fr}}/* Left column */
-.card{background:var(--card);border-radius:var(--radius);padding:14px}
-.search{display:flex;gap:8px;margin-bottom:12px}
-.tabs{display:flex;gap:8px;margin-bottom:12px}
-.tab{padding:8px 12px;border-radius:999px;background:#111;border:1px solid #222;cursor:pointer}
-.tab.active{background:linear-gradient(90deg,var(--accent),#ff5e3a);color:#111;font-weight:700}
-
-.products{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media (max-width:600px){.products{grid-template-columns:1fr}}
-.product{padding:12px;border-radius:10px;background:#0e0f11;border:1px solid #222}
-.product h3{margin:0 0 8px 0;font-size:16px}
-.meta{font-size:13px;color:var(--muted);margin-bottom:8px}
-.pfooter{display:flex;justify-content:space-between;align-items:center}
-.btn{background:var(--accent);color:#111;padding:8px 10px;border-radius:10px;border:none;cursor:pointer}
-
-/* Right column / cart */
-.cartTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.items{max-height:360px;overflow:auto;margin-bottom:12px}
-.item{display:flex;justify-content:space-between;gap:8px;padding:8px;border-radius:8px;background:#0d0e10;margin-bottom:8px}
-.qty{display:flex;gap:6px;align-items:center}
-.small{font-size:13px;color:var(--muted)}
-
-.totalRow{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
-.checkout{display:flex;flex-direction:column;gap:8px}
-input, select, textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #222;background:#0b0b0b;color:var(--white)}
-label{font-size:13px;color:var(--muted);margin-bottom:6px;display:block}
-
-.finalBtn{background:var(--accent-2);color:#111;padding:12px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
-.link{color:var(--accent);text-decoration:underline;cursor:pointer}
-
-footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invest+ | Seu Banco Digital de Investimentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+        .modal {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+    </style>
 </head>
-<body>
-  <div class="app">
-    <header>
-      <h1>Xis do Franque — Pedido Rápido</h1>
-      <div>
-        <span id="userStub" class="small">Não cadastrado</span>
-      </div>
-    </header><div class="grid">
-  <!-- LEFT: produtos e seleção -->
-  <div>
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Cadastro rápido</strong>
-        <small class="small">(salvo localmente)</small>
-      </div>
-      <p class="small">Preencha seu nome e telefone — esses dados vão junto com o pedido.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-        <div>
-          <label for="name">Nome</label>
-          <input id="name" placeholder="Seu nome" />
+<body class="min-h-screen bg-gray-50">
+    <!-- Admin Access Point (hidden) -->
+    <div id="adminPoint" class="fixed top-4 right-4 w-3 h-3 bg-gray-600 rounded-full cursor-pointer hover:bg-blue-600 transition-colors z-50"></div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal hidden">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Acesso Administrativo</h2>
+            <input type="email" id="adminEmail" placeholder="E-mail do administrador" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button onclick="adminLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Acessar</button>
+            <button onclick="hideAdminModal()" class="w-full bg-gray-300 text-gray-700 py-3 rounded-lg mt-2 hover:bg-gray-400 transition-colors">Cancelar</button>
         </div>
-        <div>
-          <label for="phone">Telefone</label>
-          <input id="phone" placeholder="(51) 9xxxx-xxxx" />
+    </div>
+
+    <!-- Main Container -->
+    <div id="app" class="min-h-screen">
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+            <div class="text-center">
+                <div class="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p class="text-gray-600">Carregando...</p>
+            </div>
         </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button id="saveUser" class="btn">Salvar</button>
-        <button id="clearUser" class="btn" style="background:#444;color:#fff">Limpar</button>
-      </div>
-    </div>
 
-    <div class="card" style="margin-top:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <strong>Cardápio</strong>
-        <input id="filter" placeholder="Buscar..." style="max-width:220px" />
-      </div>
+        <!-- Login Screen -->
+        <div id="loginScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+            <div class="max-w-md w-full">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="gradient-bg p-8 text-white text-center">
+                        <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/de505be6-2203-4001-a6ad-6daa58dff082.png" alt="Logo Invest+" class="mx-auto mb-4 rounded-lg">
+                        <h1 class="text-3xl font-bold mb-2">Invest+</h1>
+                        <p class="text-blue-100">Seu futuro financeiro começa aqui</p>
+                    </div>
+                    
+                    <div class="p-8">
+                        <div id="loginForm">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Acesse sua conta</h2>
+                            <div class="space-y-4">
+                                <input type="email" id="loginEmail" placeholder="E-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="password" id="loginPassword" placeholder="Senha" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors">Entrar</button>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button onclick="showRecovery()" class="text-blue-600 hover:text-blue-800">Esqueci minha senha</button>
+                            </div>
+                            <div class="mt-6 pt-4 border-t border-gray-200">
+                                <button onclick="showRegister()" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition-colors">Criar conta</button>
+                            </div>
+                        </div>
 
-      <div class="tabs" style="margin-top:12px">
-        <div class="tab active" data-key="xis">Xis</div>
-        <div class="tab" data-key="bebida">Bebidas</div>
-      </div>
+                        <div id="recoveryForm" class="hidden">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Recuperar Senha</h2>
+                            <div class="space-y-4">
+                                <input type="email" id="recoveryEmail" placeholder="Seu e-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="recoverPassword()" class="w-full bg-blue-600 text-white py-4 rounded-lg hover:bg-blue-700 transition-colors">Enviar link</button>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800">Voltar ao login</button>
+                            </div>
+                        </div>
 
-      <div class="products" id="products"></div>
-    </div>
-  </div>
-
-  <!-- RIGHT: carrinho e finalização -->
-  <aside>
-    <div class="card">
-      <div class="cartTitle"><strong>Carrinho</strong><small id="count">0 itens</small></div>
-      <div class="items" id="cartItems">
-        <p class="small">Seu carrinho está vazio</p>
-      </div>
-
-      <div>
-        <div class="totalRow"><span class="small">Subtotal</span><strong id="subtotal">R$ 0,00</strong></div>
-        <div class="totalRow"><span class="small">Taxa de entrega</span><strong id="delivery">R$ 6,00</strong></div>
-        <div class="totalRow"><span class="small">Total</span><strong id="total">R$ 0,00</strong></div>
-      </div>
-
-      <div style="margin-top:12px">
-        <strong>Endereço de entrega</strong>
-        <p class="small">Preencha todos os campos (obrigatório)</p>
-        <div style="display:grid;gap:8px;margin-top:8px">
-          <div>
-            <label for="city">Cidade</label>
-            <input id="city" placeholder="Ex: Porto Alegre" />
-          </div>
-          <div>
-            <label for="neighbourhood">Bairro</label>
-            <input id="neighbourhood" placeholder="Ex: Centro" />
-          </div>
-          <div>
-            <label for="street">Rua</label>
-            <input id="street" placeholder="Ex: Av. Borges de Medeiros" />
-          </div>
-          <div>
-            <label for="number">Número</label>
-            <input id="number" placeholder="Número da casa" />
-          </div>
-          <div>
-            <label for="complement">Complemento (opcional)</label>
-            <input id="complement" placeholder="Apto, bloco, referência" />
-          </div>
+                        <div id="registerForm" class="hidden">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-6">Criar Conta</h2>
+                            <div class="space-y-4">
+                                <input type="text" id="registerName" placeholder="Nome completo" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="email" id="registerEmail" placeholder="E-mail" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="registerCpf" placeholder="CPF" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="tel" id="registerPhone" placeholder="Telefone" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="password" id="registerPassword" placeholder="Senha" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="registerPix" placeholder="Chave PIX" class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="register()" class="w-full bg-green-600 text-white py-4 rounded-lg hover:bg-green-700 transition-colors">Criar Conta</button>
+                            </div>
+                            <div class="mt-4 text-center">
+                                <button onclick="showLogin()" class="text-blue-600 hover:text-blue-800">Já tenho conta</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <div style="margin-top:12px">
-        <label>Forma de pagamento</label>
-        <select id="payment">
-          <option value="pix">PIX</option>
-          <option value="debito">Débito</option>
-          <option value="credito">Crédito</option>
-        </select>
-      </div>
+        <!-- Dashboard -->
+        <div id="dashboard" class="hidden min-h-screen bg-gray-50">
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/acb2eb87-71a3-4673-ae51-75e5c1aab124.png" alt="Logo Invest+" class="mr-3">
+                            <h1 class="text-xl font-bold text-gray-800">Invest+</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-gray-600">Olá, <span id="userName">Usuário</span></span>
+                            <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">Sair</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-      <div style="margin-top:12px" class="checkout">
-        <label>Observações (opcional)</label>
-        <textarea id="notes" rows="3" placeholder="Sem cebola, sem picles..."></textarea>
-        <button id="finalize" class="finalBtn">Finalizar pedido via WhatsApp</button>
-      </div>
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 card-hover">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Saldo Disponível</h2>
+                    <div class="text-4xl font-bold text-green-600 mb-4">R$ <span id="userBalance">0,00</span></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="showDepositModal()" class="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors">Depositar</button>
+                        <button onclick="showWithdrawModal()" class="bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition-colors">Sacar</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="hidden min-h-screen bg-gray-50">
+            <header class="bg-white shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <h1 class="text-xl font-bold text-gray-800">Painel Administrativo</h1>
+                        <button onclick="adminLogout()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">Sair</button>
+                    </div>
+                </div>
+            </header>
+        </div>
     </div>
 
-    <div style="height:12px"></div>
-    <div class="card">
-      <strong>Ajuda</strong>
-      <p class="small">Ao finalizar, o pedido será aberto no WhatsApp com todos os detalhes. O número de destino é o do estabelecimento.</p>
-      <p class="small">Número: <span class="link">+55 51 99708-8974</span></p>
-    </div>
-  </aside>
-</div>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDUmmT2JcHnQ8Q9pQj0q3H4Z4m4q7wX9y0",
+            authDomain: "investplus-app.firebaseapp.com",
+            projectId: "investplus-app",
+            storageBucket: "investplus-app.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
 
-<footer>Aplicativo de exemplo — sem conexão. Desenvolvido para testes locais.</footer>
+        // Init Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-  </div>  <script>
-    // ====== Dados do cardápio (exemplo) ======
-    const PRODUCTS = [
-      { id: 'x1', title: 'Xis Tradicional', description: 'Carne, queijo, alface, tomate', price: 18.5, category: 'xis' },
-      { id: 'x2', title: 'Xis Duplo', description: '2 hambúrgueres, queijo e bacon', price: 25.0, category: 'xis' },
-      { id: 'x3', title: 'Xis Veggie', description: 'Livro vegetariano, alface, tomate', price: 20.0, category: 'xis' },
-      { id: 'b1', title: 'Coca-Cola 350ml', description: 'Refrigerante gelado', price: 6.5, category: 'bebida' },
-      { id: 'b2', title: 'Água Mineral 500ml', description: 'Sem gás', price: 4.0, category: 'bebida' },
-      { id: 'b3', title: 'Suco Natural', description: 'Laranja 300ml', price: 8.0, category: 'bebida' },
-    ];
+        let currentUser = null;
+        let userData = null;
 
-    // Estado simples
-    let state = {
-      currentTab: 'xis',
-      cart: [],
-      deliveryFee: 6.00
-    };
+        function initApp() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await loadUserData();
+                    if (user.email === 'cjogos339@gmail.com') {
+                        showScreen('adminPanel');
+                    } else {
+                        showScreen('dashboard');
+                        updateDashboard();
+                    }
+                } else {
+                    showScreen('loginScreen');
+                }
+                hideLoading();
+            });
+        }
 
-    // Util helpers
-    const fmt = (v) => 'R$ ' + v.toFixed(2).replace('.',',');
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                alert("Erro no login: " + error.message);
+            }
+        }
 
-    // Inicialização
-    const productsEl = document.getElementById('products');
-    const cartItemsEl = document.getElementById('cartItems');
-    const subtotalEl = document.getElementById('subtotal');
-    const deliveryEl = document.getElementById('delivery');
-    const totalEl = document.getElementById('total');
-    const countEl = document.getElementById('count');
+        async function register() {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const cpf = document.getElementById('registerCpf').value;
+            const phone = document.getElementById('registerPhone').value;
+            const pix = document.getElementById('registerPix').value;
+            const password = document.getElementById('registerPassword').value;
 
-    function renderProducts(filterText=''){
-      productsEl.innerHTML = '';
-      const filtered = PRODUCTS.filter(p => p.category === state.currentTab && p.title.toLowerCase().includes(filterText.toLowerCase()));
-      if(filtered.length === 0){ productsEl.innerHTML = '<p class="small">Nenhum produto encontrado</p>'; return; }
-      filtered.forEach(p => {
-        const div = document.createElement('div'); div.className = 'product';
-        div.innerHTML = `
-          <h3>${p.title}</h3>
-          <div class="meta">${p.description}</div>
-          <div class="pfooter">
-            <strong>${fmt(p.price)}</strong>
-            <div style="display:flex;gap:8px;align-items:center">
-              <input type="number" min="1" value="1" style="width:68px;padding:6px;border-radius:8px;border:1px solid #222;background:#0b0b0b;color:#fff" id="qty-${p.id}" />
-              <button class="btn" data-id="${p.id}">Adicionar</button>
-            </div>
-          </div>
-        `;
-        productsEl.appendChild(div);
-      });
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                await db.collection("users").doc(user.uid).set({
+                    name, email, cpf, phone, pix,
+                    balance: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                alert("Erro no cadastro: " + error.message);
+            }
+        }
 
-      // vincular eventos
-      productsEl.querySelectorAll('.btn').forEach(b => b.addEventListener('click', (e)=>{
-        const id = b.dataset.id; const qty = parseInt(document.getElementById('qty-'+id).value) || 1;
-        addToCart(id, qty);
-      }));
-    }
+        async function recoverPassword() {
+            const email = document.getElementById('recoveryEmail').value;
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert("E-mail de recuperação enviado!");
+            } catch (error) {
+                alert("Erro ao enviar e-mail: " + error.message);
+            }
+        }
 
-    function addToCart(id, qty){
-      const prod = PRODUCTS.find(p=>p.id===id);
-      if(!prod) return;
-      const existing = state.cart.find(i=>i.id===id);
-      if(existing){ existing.qty += qty; }
-      else state.cart.push({ id:prod.id, title:prod.title, price:prod.price, qty });
-      saveState(); renderCart();
-    }
+        function logout() {
+            auth.signOut();
+        }
 
-    function changeQty(id, delta){
-      const it = state.cart.find(i=>i.id===id); if(!it) return;
-      it.qty += delta; if(it.qty <=0) state.cart = state.cart.filter(x=>x.id!==id);
-      saveState(); renderCart();
-    }
+        async function loadUserData() {
+            const doc = await db.collection("users").doc(currentUser.uid).get();
+            if (doc.exists) {
+                userData = doc.data();
+                document.getElementById("userName").textContent = userData.name;
+                document.getElementById("userBalance").textContent = userData.balance.toFixed(2);
+            }
+        }
 
-    function removeItem(id){ state.cart = state.cart.filter(i=>i.id!==id); saveState(); renderCart(); }
+        function updateDashboard() {
+            if (userData) {
+                document.getElementById("userName").textContent = userData.name;
+                document.getElementById("userBalance").textContent = userData.balance.toFixed(2);
+            }
+        }
 
-    function calcSubtotal(){ return state.cart.reduce((s,i)=>s + i.price * i.qty, 0); }
+        function showScreen(id) {
+            document.querySelectorAll("#loginScreen, #dashboard, #adminPanel").forEach(el => el.classList.add("hidden"));
+            document.getElementById(id).classList.remove("hidden");
+        }
 
-    function renderCart(){
-      cartItemsEl.innerHTML = '';
-      if(state.cart.length === 0){ cartItemsEl.innerHTML = '<p class="small">Seu carrinho está vazio</p>'; }
-      else{
-        state.cart.forEach(i =>{
-          const div = document.createElement('div'); div.className='item';
-          div.innerHTML = `
-            <div>
-              <div style="font-weight:700">${i.title}</div>
-              <div class="small">${fmt(i.price)} x ${i.qty} = ${fmt(i.price*i.qty)}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-              <div class="qty">
-                <button onclick="changeQty('${i.id}',-1)" class="btn" style="background:#333;padding:6px">-</button>
-                <div style="padding:6px 8px;min-width:30px;text-align:center">${i.qty}</div>
-                <button onclick="changeQty('${i.id}',1)" class="btn" style="background:#333;padding:6px">+</button>
-              </div>
-              <button onclick="removeItem('${i.id}')" style="background:transparent;border:none;color:var(--accent);cursor:pointer">Remover</button>
-            </div>
-          `;
-          cartItemsEl.appendChild(div);
-        });
-      }
+        function hideLoading() {
+            document.getElementById("loadingScreen").classList.add("hidden");
+        }
 
-      const subtotal = calcSubtotal();
-      subtotalEl.textContent = fmt(subtotal);
-      deliveryEl.textContent = fmt(state.deliveryFee);
-      const total = subtotal + state.deliveryFee;
-      totalEl.textContent = fmt(total);
-      countEl.textContent = state.cart.reduce((s,i)=>s+i.qty,0) + ' itens';
-
-      // atualizar botões de adicionar nos produtos (para manter lógica)
-      // salvar estado
-      saveState();
-    }
-
-    // ====== Persistência local simples ======
-    function saveState(){ localStorage.setItem('quick_order_state', JSON.stringify(state)); }
-    function loadState(){ const raw = localStorage.getItem('quick_order_state'); if(raw) state = Object.assign(state, JSON.parse(raw)); }
-
-    // ====== Cadastro do usuário (local) ======
-    const nameInput = document.getElementById('name');
-    const phoneInput = document.getElementById('phone');
-    const userStub = document.getElementById('userStub');
-    function saveUser(){
-      const u = { name: nameInput.value.trim(), phone: phoneInput.value.trim() };
-      localStorage.setItem('quick_order_user', JSON.stringify(u));
-      updateUserStub();
-      alert('Dados salvos localmente');
-    }
-    function clearUser(){ localStorage.removeItem('quick_order_user'); nameInput.value=''; phoneInput.value=''; updateUserStub(); }
-    function loadUser(){ const raw = localStorage.getItem('quick_order_user'); if(raw){ const u = JSON.parse(raw); nameInput.value=u.name||''; phoneInput.value=u.phone||''; } updateUserStub(); }
-    function updateUserStub(){ const raw = localStorage.getItem('quick_order_user'); if(raw){ const u=JSON.parse(raw); userStub.textContent = u.name + ' • ' + u.phone } else userStub.textContent='Não cadastrado'; }
-
-    // ====== Filtrar produtos, tabs ======
-    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', e=>{
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      t.classList.add('active'); state.currentTab = t.dataset.key; renderProducts(document.getElementById('filter').value);
-    }));
-
-    document.getElementById('filter').addEventListener('input', e=> renderProducts(e.target.value));
-
-    // ====== Finalizar pedido via WhatsApp ======
-    function validateAddress(){
-      const city = document.getElementById('city').value.trim();
-      const neighbourhood = document.getElementById('neighbourhood').value.trim();
-      const street = document.getElementById('street').value.trim();
-      const number = document.getElementById('number').value.trim();
-      if(!city || !neighbourhood || !street || !number) return false; return true;
-    }
-
-    function buildMessage(){
-      const userRaw = localStorage.getItem('quick_order_user');
-      const user = userRaw ? JSON.parse(userRaw) : { name: 'Cliente', phone: '' };
-      if(state.cart.length===0) return {ok:false, msg:'Carrinho vazio'};
-      if(!validateAddress()) return {ok:false, msg:'Preencha todos os campos de endereço'};
-
-      const city = document.getElementById('city').value.trim();
-      const neighbourhood = document.getElementById('neighbourhood').value.trim();
-      const street = document.getElementById('street').value.trim();
-      const number = document.getElementById('number').value.trim();
-      const complement = document.getElementById('complement').value.trim();
-      const payment = document.getElementById('payment').value;
-      const notes = document.getElementById('notes').value.trim();
-
-      let text = `*Novo Pedido*\n`;
-      text += `Nome: ${user.name || '-'}\nTelefone: ${user.phone || '-'}\n\n`;
-      text += `*Itens:*\n`;
-      state.cart.forEach(i => {
-        text += `- ${i.title} x ${i.qty} = ${fmt(i.price*i.qty)}\n`;
-      });
-      const subtotal = calcSubtotal();
-      text += `\nSubtotal: ${fmt(subtotal)}\nTaxa de entrega: ${fmt(state.deliveryFee)}\n*Total: ${fmt(subtotal + state.deliveryFee)}*\n\n`;
-      text += `*Endereço:* ${street}, ${number} ${complement ? '- ' + complement : ''} - ${neighbourhood}, ${city}\n`;
-      text += `*Pagamento:* ${payment.toUpperCase()}\n`;
-      if(notes) text += `\nObservações: ${notes}\n`;
-
-      return { ok:true, text };
-    }
-
-    document.getElementById('finalize').addEventListener('click', ()=>{
-      const result = buildMessage();
-      if(!result.ok){ alert(result.msg); return; }
-      // número do estabelecimento — sem + ou espaços: 55 51 99708-8974 -> 5551997088974
-      const phone = '5551997088974';
-      const encoded = encodeURIComponent(result.text);
-      const url = `https://wa.me/${phone}?text=${encoded}`;
-      window.open(url, '_blank');
-    });
-
-    // ====== Eventos globais simples ======
-    document.getElementById('saveUser').addEventListener('click', saveUser);
-    document.getElementById('clearUser').addEventListener('click', clearUser);
-
-    // ====== Make changeQty & removeItem available to inline onclick ======
-    window.changeQty = changeQty; window.removeItem = removeItem;
-
-    // ====== load everything ======
-    loadState(); loadUser(); renderProducts(); renderCart();
-  </script></body>
-  </html>
+        window.onload = initApp;
+    </script>
+</body>
+</html>
