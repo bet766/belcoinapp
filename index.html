@@ -1,5 +1,5 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from tinydb import TinyDB, Query
 from datetime import datetime
 
@@ -8,24 +8,17 @@ db = TinyDB("db.json")
 users = db.table("users")
 investments = db.table("investments")
 
-# /start com menu de botões
+# /start - Cadastro
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if not users.search(Query().id == user_id):
         users.insert({"id": user_id, "name": update.effective_user.first_name, "saldo": 0})
-
-    buttons = [
-        [InlineKeyboardButton("Criar Conta", callback_data="criar_conta")],
-        [InlineKeyboardButton("Ver Saldo", callback_data="ver_saldo")],
-        [InlineKeyboardButton("Investir", callback_data="investir")],
-        [InlineKeyboardButton("Sacar", callback_data="sacar")],
-        [InlineKeyboardButton("Depositar", callback_data="depositar")]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
-    await update.message.reply_text("Escolha uma opção:", reply_markup=keyboard)
+        await update.message.reply_text(f"Bem-vindo {update.effective_user.first_name}! Sua conta foi criada.")
+    else:
+        await update.message.reply_text("Você já possui uma conta.")
 
 # /investir <valor>
-async def investir_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def investir(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if len(context.args) != 1:
         await update.message.reply_text("Use /investir <valor>, ex: /investir 5")
@@ -38,8 +31,20 @@ async def investir_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     })
     await update.message.reply_text(f"Investimento de R${valor:.2f} realizado!")
 
+# /saldo
+async def saldo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user = users.get(Query().id == user_id)
+    total = user["saldo"]
+    for inv in investments.search(Query().user_id == user_id):
+        inicio = datetime.fromisoformat(inv["inicio"])
+        horas = (datetime.now() - inicio).total_seconds() / 3600
+        rendimento = inv["valor"] * 0.01 * horas
+        total += rendimento
+    await update.message.reply_text(f"Seu saldo atual é: R${total:.2f}")
+
 # /sacar <valor>
-async def sacar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sacar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if len(context.args) != 1:
         await update.message.reply_text("Use /sacar <valor>, ex: /sacar 1.50")
@@ -58,47 +63,11 @@ async def sacar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         users.update({"saldo": total - valor}, Query().id == user_id)
         await update.message.reply_text(f"Saque de R${valor:.2f} realizado!")
 
-# /depositar <valor>
-async def depositar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    if len(context.args) != 1:
-        await update.message.reply_text("Use /depositar <valor>, ex: /depositar 5")
-        return
-    valor = float(context.args[0])
-    user = users.get(Query().id == user_id)
-    users.update({"saldo": user["saldo"] + valor}, Query().id == user_id)
-    await update.message.reply_text(f"Depósito de R${valor:.2f} realizado!")
-
-# Callback de botões
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = query.from_user.id
-
-    if query.data == "criar_conta":
-        await query.edit_message_text("Sua conta já foi criada automaticamente no /start.")
-    elif query.data == "ver_saldo":
-        user = users.get(Query().id == user_id)
-        total = user["saldo"]
-        for inv in investments.search(Query().user_id == user_id):
-            inicio = datetime.fromisoformat(inv["inicio"])
-            horas = (datetime.now() - inicio).total_seconds() / 3600
-            rendimento = inv["valor"] * 0.01 * horas
-            total += rendimento
-        await query.edit_message_text(f"Seu saldo atual é: R${total:.2f}")
-    elif query.data == "investir":
-        await query.edit_message_text("Para investir, use o comando /investir <valor>")
-    elif query.data == "sacar":
-        await query.edit_message_text("Para sacar, use o comando /sacar <valor>")
-    elif query.data == "depositar":
-        await query.edit_message_text("Para depositar, use o comando /depositar <valor>")
-
 # Configuração do bot
 app = ApplicationBuilder().token("7370719597:AAHNU1L6fpCg91_FxJ4UyRWYfkfKEduM_Ac").build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("investir", investir_cmd))
-app.add_handler(CommandHandler("sacar", sacar_cmd))
-app.add_handler(CommandHandler("depositar", depositar_cmd))
-app.add_handler(CallbackQueryHandler(button))
+app.add_handler(CommandHandler("investir", investir))
+app.add_handler(CommandHandler("saldo", saldo))
+app.add_handler(CommandHandler("sacar", sacar))
 
 app.run_polling()
