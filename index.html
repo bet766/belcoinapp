@@ -1,139 +1,104 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BelInvest | Teste Local</title>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  // ---------------- Firebase ----------------
-  const firebaseConfig = {
-    apiKey: "AIzaSyBuOzmtFPWeNKJTKB-jrLxFmfn2Nswypvc",
-    authDomain: "invest-8c4e6.firebaseapp.com",
-    projectId: "invest-8c4e6",
-    storageBucket: "invest-8c4e6.appspot.com",
-    messagingSenderId: "1021993177452",
-    appId: "1:1021993177452:web:f704ca9b8127bb3ba76349"
-  };
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackQueryHandler
+from tinydb import TinyDB, Query
+from datetime import datetime
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  let currentUser = null;
-  const porcentagemRendimentoDiario = 1;
+# Banco de dados
+db = TinyDB("db.json")
+users = db.table("users")
+investments = db.table("investments")
 
-  // ---------------- Funções ----------------
-  async function cadastrarUsuario(){
-    const nome = document.getElementById("nome").value;
-    const email = document.getElementById("email").value;
-    const senha = document.getElementById("senha").value;
-    const cpf = document.getElementById("cpf").value;
-    const telefone = document.getElementById("telefone").value;
-    const uidIndicante = new URLSearchParams(window.location.search).get("indicadoPor");
-    
-    try {
-      const userCredential = await auth.createUserWithEmailAndPassword(email, senha);
-      const user = userCredential.user;
-      await db.collection("usuarios").doc(user.uid).set({
-        nome, email, cpf, telefone, saldo:0, primeiroDeposito:false,
-        linkWhatsAppLiberado:false, linkIndicadoPor: uidIndicante
-      });
-      alert("Cadastro realizado com sucesso!");
-    } catch(e) { alert("Erro: " + e.message); }
-  }
+# /start com menu de botões
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not users.search(Query().id == user_id):
+        users.insert({"id": user_id, "name": update.effective_user.first_name, "saldo": 0})
 
-  async function loginUsuario(){
-    const email = document.getElementById("loginEmail").value;
-    const senha = document.getElementById("loginSenha").value;
-    try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, senha);
-      currentUser = userCredential.user;
-      await carregarPainel(currentUser.uid);
-    } catch(e){ alert("Erro: "+e.message); }
-  }
+    buttons = [
+        [InlineKeyboardButton("Criar Conta", callback_data="criar_conta")],
+        [InlineKeyboardButton("Ver Saldo", callback_data="ver_saldo")],
+        [InlineKeyboardButton("Investir", callback_data="investir")],
+        [InlineKeyboardButton("Sacar", callback_data="sacar")],
+        [InlineKeyboardButton("Depositar", callback_data="depositar")]
+    ]
+    keyboard = InlineKeyboardMarkup(buttons)
+    await update.message.reply_text("Escolha uma opção:", reply_markup=keyboard)
 
-  async function registrarDeposito(){
-    const valor = parseFloat(document.getElementById("valorDeposito").value);
-    const cupom = document.getElementById("cupomDeposito").value || null;
-    if(!currentUser){ alert("Faça login!"); return; }
+# /investir <valor>
+async def investir_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if len(context.args) != 1:
+        await update.message.reply_text("Use /investir <valor>, ex: /investir 5")
+        return
+    valor = float(context.args[0])
+    investments.insert({
+        "user_id": user_id,
+        "valor": valor,
+        "inicio": datetime.now().isoformat()
+    })
+    await update.message.reply_text(f"Investimento de R${valor:.2f} realizado!")
 
-    let bonus = 0;
-    if(cupom){
-      const cupomRef = db.collection("cupons").doc(cupom);
-      const cupomSnap = await cupomRef.get();
-      if(cupomSnap.exists && !cupomSnap.data().usado){
-        bonus = cupomSnap.data().valor;
-        await cupomRef.update({usado:true});
-      }
-    }
+# /sacar <valor>
+async def sacar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if len(context.args) != 1:
+        await update.message.reply_text("Use /sacar <valor>, ex: /sacar 1.50")
+        return
+    valor = float(context.args[0])
+    user = users.get(Query().id == user_id)
+    total = user["saldo"]
+    for inv in investments.search(Query().user_id == user_id):
+        inicio = datetime.fromisoformat(inv["inicio"])
+        horas = (datetime.now() - inicio).total_seconds() / 3600
+        rendimento = inv["valor"] * 0.01 * horas
+        total += rendimento
+    if valor > total:
+        await update.message.reply_text("Saldo insuficiente.")
+    else:
+        users.update({"saldo": total - valor}, Query().id == user_id)
+        await update.message.reply_text(f"Saque de R${valor:.2f} realizado!")
 
-    const usuarioRef = db.collection("usuarios").doc(currentUser.uid);
-    const usuarioSnap = await usuarioRef.get();
-    let saldoAtual = usuarioSnap.data().saldo || 0;
-    saldoAtual += valor + bonus;
+# /depositar <valor>
+async def depositar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if len(context.args) != 1:
+        await update.message.reply_text("Use /depositar <valor>, ex: /depositar 5")
+        return
+    valor = float(context.args[0])
+    user = users.get(Query().id == user_id)
+    users.update({"saldo": user["saldo"] + valor}, Query().id == user_id)
+    await update.message.reply_text(f"Depósito de R${valor:.2f} realizado!")
 
-    await usuarioRef.update({saldo: saldoAtual, primeiroDeposito:true, linkWhatsAppLiberado:true});
+# Callback de botões
+async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
 
-    await db.collection("depositos").add({
-      usuarioId: currentUser.uid,
-      valor: valor,
-      data: new Date(),
-      status: "concluido",
-      cupomUsado: cupom
-    });
+    if query.data == "criar_conta":
+        await query.edit_message_text("Sua conta já foi criada automaticamente no /start.")
+    elif query.data == "ver_saldo":
+        user = users.get(Query().id == user_id)
+        total = user["saldo"]
+        for inv in investments.search(Query().user_id == user_id):
+            inicio = datetime.fromisoformat(inv["inicio"])
+            horas = (datetime.now() - inicio).total_seconds() / 3600
+            rendimento = inv["valor"] * 0.01 * horas
+            total += rendimento
+        await query.edit_message_text(f"Seu saldo atual é: R${total:.2f}")
+    elif query.data == "investir":
+        await query.edit_message_text("Para investir, use o comando /investir <valor>")
+    elif query.data == "sacar":
+        await query.edit_message_text("Para sacar, use o comando /sacar <valor>")
+    elif query.data == "depositar":
+        await query.edit_message_text("Para depositar, use o comando /depositar <valor>")
 
-    if(usuarioSnap.data().linkIndicadoPor){
-      const uidIndicante = usuarioSnap.data().linkIndicadoPor;
-      const comissao = valor*0.05;
-      const indicanteRef = db.collection("usuarios").doc(uidIndicante);
-      const indicanteSnap = await indicanteRef.get();
-      const saldoInd = indicanteSnap.data().saldo || 0;
-      await indicanteRef.update({saldo: saldoInd+comissao});
-      await db.collection("indicacoes").add({
-        indicanteId: uidIndicante, indicadoId: currentUser.uid,
-        valorDeposito: valor, comissao
-      });
-    }
+# Configuração do bot
+app = ApplicationBuilder().token("7370719597:AAHNU1L6fpCg91_FxJ4UyRWYfkfKEduM_Ac").build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("investir", investir_cmd))
+app.add_handler(CommandHandler("sacar", sacar_cmd))
+app.add_handler(CommandHandler("depositar", depositar_cmd))
+app.add_handler(CallbackQueryHandler(button))
 
-    alert("Depósito realizado!");
-    await carregarPainel(currentUser.uid);
-  }
-
-  async function carregarPainel(uid){
-    const usuarioSnap = await db.collection("usuarios").doc(uid).get();
-    const usuario = usuarioSnap.data();
-    document.getElementById("loginCadastro").style.display="none";
-    document.getElementById("painel").style.display="block";
-    document.getElementById("nomeUsuario").innerText = usuario.nome;
-    document.getElementById("saldoUsuario").innerText = "R$ "+usuario.saldo.toFixed(2);
-    if(usuario.linkWhatsAppLiberado) document.getElementById("linkWhatsApp").style.display="block";
-  }
-</script>
-</head>
-<body class="bg-gray-100 p-4">
-<div id="loginCadastro" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-<h2 class="text-2xl font-bold mb-4 text-center">BelInvest</h2>
-<input id="nome" placeholder="Nome" class="border p-2 w-full mb-2 rounded">
-<input id="email" placeholder="Email" class="border p-2 w-full mb-2 rounded">
-<input id="senha" placeholder="Senha" type="password" class="border p-2 w-full mb-2 rounded">
-<input id="cpf" placeholder="CPF" class="border p-2 w-full mb-2 rounded">
-<input id="telefone" placeholder="Telefone" class="border p-2 w-full mb-2 rounded">
-<button onclick="cadastrarUsuario()" class="bg-blue-600 text-white p-2 w-full rounded mb-4 hover:bg-blue-700">Cadastrar</button>
-<input id="loginEmail" placeholder="Email" class="border p-2 w-full mb-2 rounded">
-<input id="loginSenha" placeholder="Senha" type="password" class="border p-2 w-full mb-2 rounded">
-<button onclick="loginUsuario()" class="bg-green-600 text-white p-2 w-full rounded hover:bg-green-700">Login</button>
-</div>
-
-<div id="painel" style="display:none;" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-<h2 class="text-2xl font-bold mb-4">Olá, <span id="nomeUsuario"></span></h2>
-<p class="mb-2 text-lg font-semibold">Saldo: <span id="saldoUsuario"></span></p>
-<input id="valorDeposito" placeholder="Valor" type="number" class="border p-2 w-full mb-2 rounded">
-<input id="cupomDeposito" placeholder="Cupom (opcional)" class="border p-2 w-full mb-2 rounded">
-<button onclick="registrarDeposito()" class="bg-blue-600 text-white p-2 w-full rounded mb-4 hover:bg-blue-700">Depositar</button>
-<a id="linkWhatsApp" href="https://chat.whatsapp.com/SEU_LINK_AQUI" target="_blank" class="bg-green-600 text-white p-2 w-full block text-center rounded hover:bg-green-700" style="display:none;">Acessar grupo VIP WhatsApp</a>
-</div>
-</body>
-</html>
+app.run_polling()
