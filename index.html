@@ -5,196 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WiFi Tool</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #0f0f23, #1a1a2e);
             color: #fff;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
         }
-        
-        .container {
-            background: rgba(0,0,0,0.8);
-            padding: 40px;
-            border-radius: 15px;
+        .container, .main-app {
+            background: rgba(0,0,0,0.85);
+            padding: 40px; border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
+            width: 90%; max-width: 400px;
         }
-        
-        h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #00ff41;
-            font-size: 28px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #aaa;
-            font-size: 14px;
-        }
-        
+        h2 { text-align: center; margin-bottom: 30px; color: #00ff41; font-size: 28px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #aaa; font-size: 14px; }
         input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            transition: all 0.3s;
+            width: 100%; padding: 12px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px; color: #fff; font-size: 16px;
         }
-        
-        input:focus {
-            outline: none;
-            border-color: #00ff41;
-            box-shadow: 0 0 10px rgba(0,255,65,0.3);
-        }
-        
+        input:focus { outline: none; border-color: #00ff41; box-shadow: 0 0 10px rgba(0,255,65,0.3); }
         button {
-            width: 100%;
-            padding: 14px;
+            width: 100%; padding: 14px;
             background: linear-gradient(45deg, #00ff41, #00cc33);
-            border: none;
-            border-radius: 8px;
-            color: #000;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
+            border: none; border-radius: 8px; color: #000;
+            font-size: 16px; font-weight: bold; cursor: pointer;
         }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,255,65,0.4);
-        }
-        
-        .switch-form {
-            text-align: center;
-            margin-top: 20px;
-            color: #aaa;
-        }
-        
-        .switch-form a {
-            color: #00ff41;
-            text-decoration: none;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .main-app {
-            background: rgba(0,0,0,0.9);
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-        }
-        
-        .wifi-list {
-            margin-top: 20px;
-        }
-        
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,255,65,0.4); }
+        .switch-form { text-align: center; margin-top: 20px; color: #aaa; }
+        .switch-form a { color: #00ff41; text-decoration: none; }
+        .hidden { display: none; }
+        .main-app { max-width: 600px; }
+        .wifi-list { margin-top: 20px; }
         .wifi-item {
             background: rgba(255,255,255,0.1);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
+            padding: 15px; margin-bottom: 10px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        
-        .wifi-item:hover {
-            background: rgba(255,255,255,0.15);
-        }
-        
-        .wifi-name {
-            font-weight: bold;
-            color: #00ff41;
-        }
-        
-        .wifi-signal {
-            font-size: 12px;
-            color: #aaa;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s;
-        }
-        
-        .btn-crack {
-            background: #ff6b00;
-            color: #fff;
-        }
-        
-        .btn-kick {
-            background: #ff0040;
-            color: #fff;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        
-        .progress {
-            height: 100%;
-            background: linear-gradient(90deg, #00ff41, #00cc33);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        
-        .status {
-            text-align: center;
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .status.success {
-            background: rgba(0,255,65,0.2);
-            color: #00ff41;
-        }
-        
-        .status.error {
-            background: rgba(255,0,64,0.2);
-            color: #ff0040;
-        }
+        .wifi-name { font-weight: bold; color: #00ff41; }
+        .wifi-signal { font-size: 12px; color: #aaa; }
+        .action-buttons { display: flex; gap: 10px; }
+        .btn-small { padding: 8px 15px; font-size: 12px; border-radius: 5px; cursor: pointer; border: none; }
+        .btn-crack { background: #ff6b00; color: #fff; }
+        .btn-kick { background: #ff0040; color: #fff; }
+        .progress-bar { width: 100%; height: 20px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        .progress { height: 100%; background: linear-gradient(90deg, #00ff41, #00cc33);
+            width: 0%; transition: width 0.3s; }
+        .status { text-align: center; margin-top: 20px; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .status.success { background: rgba(0,255,65,0.2); color: #00ff41; }
+        .status.error { background: rgba(255,0,64,0.2); color: #ff0040; }
     </style>
 </head>
 <body>
+    <!-- LOGIN -->
     <div id="loginForm" class="container">
         <h2>🔐 LOGIN</h2>
         <form onsubmit="handleLogin(event)">
@@ -208,52 +75,34 @@
             </div>
             <button type="submit">ENTRAR</button>
         </form>
-        <div class="switch-form">
-            Não tem conta? <a href="#" onclick="switchForm('register')">Cadastre-se</a>
-        </div>
+        <div class="switch-form">Não tem conta? <a href="#" onclick="switchForm('register')">Cadastre-se</a></div>
     </div>
-    
+
+    <!-- REGISTER -->
     <div id="registerForm" class="container hidden">
         <h2>📝 CADASTRO</h2>
         <form onsubmit="handleRegister(event)">
-            <div class="form-group">
-                <label>Usuário</label>
-                <input type="text" id="regUser" required>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="regEmail" required>
-            </div>
-            <div class="form-group">
-                <label>Senha</label>
-                <input type="password" id="regPass" required>
-            </div>
-            <div class="form-group">
-                <label>Confirmar Senha</label>
-                <input type="password" id="regPass2" required>
-            </div>
+            <div class="form-group"><label>Usuário</label><input type="text" id="regUser" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>
+            <div class="form-group"><label>Senha</label><input type="password" id="regPass" required></div>
+            <div class="form-group"><label>Confirmar Senha</label><input type="password" id="regPass2" required></div>
             <button type="submit">CADASTRAR</button>
         </form>
-        <div class="switch-form">
-            Já tem conta? <a href="#" onclick="switchForm('login')">Faça login</a>
-        </div>
+        <div class="switch-form">Já tem conta? <a href="#" onclick="switchForm('login')">Faça login</a></div>
     </div>
-    
+
+    <!-- MAIN APP -->
     <div id="mainApp" class="main-app hidden">
         <h2>📡 WiFi TOOL</h2>
         <button onclick="scanWifi()" style="margin-bottom: 20px;">🔍 ESCANEAR REDES</button>
-        
         <div id="wifiList" class="wifi-list"></div>
-        
         <div id="status" class="status hidden"></div>
-        
-        <div class="progress-bar hidden" id="progressBar">
-            <div class="progress" id="progress"></div>
-        </div>
+        <div class="progress-bar hidden" id="progressBar"><div class="progress" id="progress"></div></div>
     </div>
-    
+
     <script>
         let currentUser = null;
+        let users = []; // armazenamento fake
         let wifiNetworks = [
             {name: "NET_12345", signal: -45, security: "WPA2"},
             {name: "VIVO-98765", signal: -67, security: "WEP"},
@@ -261,27 +110,88 @@
             {name: "OI_WIFI_2G", signal: -78, security: "WPA2"},
             {name: "TP-LINK_789", signal: -34, security: "WEP"}
         ];
-        
+
         function switchForm(form) {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('registerForm').classList.add('hidden');
             document.getElementById(form + 'Form').classList.remove('hidden');
         }
-        
+
         function handleLogin(event) {
             event.preventDefault();
             const user = document.getElementById('loginUser').value;
             const pass = document.getElementById('loginPass').value;
-            
-            if(user && pass) {
+            let found = users.find(u => u.user === user && u.pass === pass);
+            if(found) {
                 currentUser = user;
                 document.getElementById('loginForm').classList.add('hidden');
                 document.getElementById('mainApp').classList.remove('hidden');
+            } else {
+                alert("Usuário ou senha incorretos!");
             }
         }
-        
+
         function handleRegister(event) {
             event.preventDefault();
             const user = document.getElementById('regUser').value;
             const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById
+            const pass = document.getElementById('regPass').value;
+            const pass2 = document.getElementById('regPass2').value;
+
+            if(pass !== pass2) { alert("As senhas não coincidem!"); return; }
+            users.push({user, email, pass});
+            alert("Cadastro realizado com sucesso!");
+            switchForm("login");
+        }
+
+        function scanWifi() {
+            let list = document.getElementById('wifiList');
+            list.innerHTML = "";
+            wifiNetworks.forEach(net => {
+                let div = document.createElement("div");
+                div.className = "wifi-item";
+                div.innerHTML = `
+                    <div>
+                        <div class="wifi-name">${net.name}</div>
+                        <div class="wifi-signal">Sinal: ${net.signal}dBm | Segurança: ${net.security}</div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn-small btn-crack" onclick="crackWifi('${net.name}')">Crack</button>
+                        <button class="btn-small btn-kick" onclick="kickUser('${net.name}')">Kick</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function crackWifi(name) {
+            showStatus("Tentando quebrar senha de " + name + "...", "success");
+            let progress = 0;
+            document.getElementById("progressBar").classList.remove("hidden");
+            let bar = document.getElementById("progress");
+            let interval = setInterval(() => {
+                progress += 10;
+                bar.style.width = progress + "%";
+                if(progress >= 100) {
+                    clearInterval(interval);
+                    showStatus("Senha de " + name + " quebrada com sucesso! 🔓", "success");
+                    bar.style.width = "0%";
+                    document.getElementById("progressBar").classList.add("hidden");
+                }
+            }, 300);
+        }
+
+        function kickUser(name) {
+            showStatus("Usuário da rede " + name + " foi expulso 🚫", "error");
+        }
+
+        function showStatus(msg, type) {
+            let status = document.getElementById("status");
+            status.className = "status " + type;
+            status.textContent = msg;
+            status.classList.remove("hidden");
+            setTimeout(() => { status.classList.add("hidden"); }, 4000);
+        }
+    </script>
+</body>
+</html>
