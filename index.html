@@ -1,205 +1,408 @@
 <!doctype html>
+
 <html lang="pt-BR">
+
 <head>
+
   <meta charset="utf-8" />
+
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <title>Crédito Real — Simulação de Empréstimos</title>
+
   <meta name="description" content="Solicite simulação de adiantamento de FGTS e outros créditos.">
+
   <style>
+
     :root{
+
       --accent:#e2902b;
+
       --dark:#222;
+
       --muted:#6b6b6b;
+
       --card:#ffffff;
+
       --bg:#f3f4f6;
+
       font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
     }
+
     *{box-sizing:border-box}
+
     body{margin:0;background:var(--bg);color:var(--dark);-webkit-font-smoothing:antialiased}
+
     .container{max-width:1100px;margin:28px auto;padding:20px}
+
     header{display:flex;gap:20px;align-items:center;margin-bottom:18px}
+
     .logo{
+
       display:flex;align-items:center;gap:12px;
+
     }
+
     .logo img{height:66px;object-fit:contain;border-radius:6px}
+
     .brand{line-height:1}
+
     .brand h1{margin:0;font-size:20px;letter-spacing:0.2px}
+
     .brand p{margin:2px 0 0 0;color:var(--muted);font-size:13px}
+
     .hero{
+
       background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.9));
+
       border-radius:10px;padding:18px;display:flex;gap:18px;align-items:center;box-shadow:0 4px 18px rgba(16,24,40,0.06)
+
     }
+
     .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+
     @media(max-width:920px){.grid{grid-template-columns:1fr} .logo img{height:56px}}
+
     .sim-list{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+
     .sim-list h2{margin:0 0 8px 0;font-size:18px}
+
     .sim-item{display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:8px;margin-bottom:6px;border:1px solid rgba(16,24,40,0.03)}
+
     .sim-item:last-child{margin-bottom:0}
+
     .sim-item .num{background:var(--bg);width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;color:var(--muted)}
+
     .sim-item .text{font-size:14px}
+
     /* Form */
+
     .card-form{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 20px rgba(16,24,40,0.04)}
+
     label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+
     input[type="text"], input[type="tel"], textarea, select{
+
       width:100%;padding:10px;border-radius:8px;border:1px solid #e6e6e9;font-size:14px;margin-bottom:12px;
+
       background:#fff;
+
     }
+
     textarea{min-height:100px;resize:vertical}
+
     .btn{
+
       display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:white;font-weight:600;cursor:pointer;
+
       text-decoration:none;
+
     }
+
     .btn.secondary{background:transparent;border:1px solid #ddd;color:var(--dark);font-weight:600}
+
     .whatsapp-small{display:inline-flex;gap:8px;align-items:center;font-weight:600}
+
     .small-note{font-size:13px;color:var(--muted);margin-top:8px}
+
     footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
+
     .flex-row{display:flex;gap:8px;align-items:center}
+
   </style>
+
 </head>
+
 <body>
+
   <div class="container">
+
     <header>
+
       <div class="logo">
+
         <!-- Substitua src pela URL do seu logo -->
+
         <img src="https://via.placeholder.com/240x80?text=Logo+Crédito+Real" alt="Crédito Real">
+
         <div class="brand">
+
           <h1>Crédito Real</h1>
+
           <p>Soluções Financeiras — Simulações e Atendimento</p>
+
         </div>
+
       </div>
+
     </header>
 
+
+
     <main class="hero">
+
       <div style="flex:1">
+
         <div class="grid">
+
           <section class="sim-list" aria-labelledby="sim-title">
+
             <h2 id="sim-title">Modelos para Solicitação de Simulação</h2>
 
+
+
             <!-- Lista gerada -->
+
             <div id="listaSim">
+
               <div class="sim-item"><div class="num">1</div><div class="text">Simulação INSS / SIAPE</div></div>
+
               <div class="sim-item"><div class="num">2</div><div class="text">Simulação Servidores (Prefeituras / Estados)</div></div>
+
               <div class="sim-item"><div class="num">3</div><div class="text">Simulação Exército / Marinha / Aeronáutica</div></div>
+
               <div class="sim-item"><div class="num">4</div><div class="text">Simulação FGTS (Adiantamento)</div></div>
+
               <div class="sim-item"><div class="num">5</div><div class="text">Simulação Crédito Trabalhador</div></div>
+
               <div class="sim-item"><div class="num">6</div><div class="text">Simulação Crédito Pessoal (Boleto / Conta Luz)</div></div>
+
               <div class="sim-item"><div class="num">7</div><div class="text">Simulação Empréstimo Bolsa Família</div></div>
+
               <div class="sim-item"><div class="num">8</div><div class="text">Simulação Crédito com Garantia (Veículos / Imóveis)</div></div>
+
               <div class="sim-item"><div class="num">9</div><div class="text">Simulação Crédito RURAL (SC / RS)</div></div>
+
               <div class="sim-item"><div class="num">10</div><div class="text">Simulação Crédito GYROO para MEI (mínimo 1 ano)</div></div>
+
               <div class="sim-item"><div class="num">11</div><div class="text">Simulação Crédito PJ Empresas (mínimo 3 anos)</div></div>
+
               <div class="sim-item"><div class="num">12</div><div class="text">Simulação Proteção e Seguros (Auto / Residencial / Empresarial)</div></div>
+
               <div class="sim-item"><div class="num">13</div><div class="text">Simulação Consórcios e Cartas Contempladas</div></div>
+
               <div class="sim-item"><div class="num">14</div><div class="text">Suporte no Atendimento</div></div>
+
               <div class="sim-item"><div class="num">15</div><div class="text">Dúvidas / Comissões</div></div>
+
             </div>
+
+
 
             <p class="small-note">Escolha o tipo de simulação ao lado, preencha seus dados e solicite sua simulação via WhatsApp.</p>
+
           </section>
 
+
+
           <!-- Formulário -->
+
           <aside class="card-form" aria-labelledby="form-title">
+
             <h3 id="form-title">Solicitar Simulação</h3>
+
             <label for="tipo">Tipo de Simulação</label>
+
             <select id="tipo" name="tipo" aria-label="Tipo de Simulação">
+
               <option value="Simulação INSS/SIAPE">1 - Simulação INSS/SIAPE</option>
+
               <option value="Simulação Servidores">2 - Simulação Servidores Prefeituras/Estados</option>
+
               <option value="Simulação Forças Armadas">3 - Simulação Exército/Marinha/Aeronáutica</option>
+
               <option value="Simulação FGTS">4 - Simulação FGTS</option>
+
               <option value="Simulação Crédito Trabalhador">5 - Simulação Crédito Trabalhador</option>
+
               <option value="Simulação Crédito Pessoal">6 - Simulação Crédito Pessoal (Boleto/Conta Luz)</option>
+
               <option value="Simulação Bolsa Família">7 - Simulação Empréstimo Bolsa Família</option>
+
               <option value="Simulação Garantia">8 - Simulação Crédito com Garantia (Veículos/Imóveis)</option>
+
               <option value="Simulação RURAL">9 - Simulação Crédito RURAL (SC/RS)</option>
+
               <option value="Simulação GYROO para MEI">10 - Simulação Crédito GYROO para MEI</option>
+
               <option value="Simulação PJ Empresas">11 - Simulação Crédito PJ Empresas</option>
+
               <option value="Simulação Proteção e Seguros">12 - Simulação Proteção e Seguros</option>
+
               <option value="Simulação Consorcios">13 - Simulação Consórcios e Cartas Contempladas</option>
+
               <option value="Suporte Atendimento">14 - Suporte no Atendimento</option>
+
               <option value="Duvidas Comissoes">15 - Dúvidas / Comissões</option>
+
             </select>
 
+
+
             <label for="nome">Nome completo</label>
+
             <input id="nome" type="text" placeholder="Seu nome" />
 
+
+
             <label for="telefone">Telefone (WhatsApp)</label>
+
             <input id="telefone" type="tel" placeholder="(51) 9 9999-9999" />
 
+
+
             <label for="valor">Valor solicitado / Observações</label>
+
             <input id="valor" type="text" placeholder="Ex: R$ 10.000, ou informações adicionais" />
 
+
+
             <label for="obs">Mensagem adicional (opcional)</label>
+
             <textarea id="obs" placeholder="Ex: melhor horário para contato, documentação disponível..."></textarea>
 
+
+
             <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+
               <button id="btnWhats" class="btn" type="button" title="Enviar no WhatsApp">
+
                 <span style="display:inline-block;width:18px;height:18px">
+
                   <!-- ícone WhatsApp (SVG) -->
+
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="white" aria-hidden="true">
+
                     <path d="M20.5 3.5A11.9 11.9 0 0 0 12 1C6 1 1.3 5.6 1 11.5c0 2 .5 3.9 1.5 5.6L1 23l6.2-1.6A11.5 11.5 0 0 0 12 23c6 0 10.5-4.6 10.5-10.5 0-1.9-.6-3.7-2-5.1zM12 20.4c-1.5 0-3-.4-4.3-1.1l-.3-.2-3.7.9.9-3.6-.2-.3A8.8 8.8 0 0 1 3.5 11.5C3.5 6.8 7.3 3 12 3c2.1 0 4.1.6 5.8 1.9 1.5 1.2 2.4 3 2.4 4.7 0 5.7-4.3 10.8-8.4 10.8z"/>
+
                     <path d="M17.6 14.2c-.2-.1-1.2-.6-1.4-.7-.2-.1-.4-.1-.6.1-.2.2-.8.7-1 1-.1.2-.1.3.1.5.2.2.6.7 1.2 1.1.8.6 1.4 1 2 1.1.6.1 1 .1 1.4.1.4 0 .8-.1 1-.3.2-.2.7-.7 1-1.7.2-.9.2-1.7-.2-2.4-.3-.6-.9-1-1.1-1.2z"/>
+
                   </svg>
+
                 </span>
+
                 Enviar via WhatsApp
+
               </button>
 
+
+
               <a class="btn secondary" id="copyBtn" href="#" onclick="copyLink(event)" title="Copiar link da simulação">Copiar link</a>
+
             </div>
 
+
+
             <p class="small-note">Ao enviar, o atendimento será iniciado pelo WhatsApp no número: <strong>+55 51 99708-8974</strong>. Não armazene dados sensíveis neste formulário.</p>
+
           </aside>
+
         </div>
+
       </div>
+
     </main>
 
+
+
     <footer>
+
       <div>© <strong>Crédito Real</strong> — Soluções Financeiras</div>
+
       <div style="margin-top:6px;color:var(--muted)">Contato direto: <a href="https://wa.me/551997088974" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none">WhatsApp +55 51 99708-8974</a></div>
+
     </footer>
+
   </div>
 
+
+
   <script>
+
     // Número do WhatsApp (formato: 5551997088974)
+
     const WA_NUMBER = "5551997088974";
 
+
+
     function urlEncode(text){
+
       return encodeURIComponent(text).replace(/%20/g, "+");
+
     }
+
+
 
     document.getElementById("btnWhats").addEventListener("click", function(){
+
       const tipo = document.getElementById("tipo").value.trim();
+
       const nome = document.getElementById("nome").value.trim();
+
       const telefone = document.getElementById("telefone").value.trim();
+
       const valor = document.getElementById("valor").value.trim();
+
       const obs = document.getElementById("obs").value.trim();
+
+
 
       // Monta mensagem
+
       let msg = `Olá, gostaria de solicitar uma *simulação*.\n\nTipo: ${tipo}\nNome: ${nome || "-"}\nTelefone: ${telefone || "-"}\nValor/Observações: ${valor || "-"}\nInformações adicionais: ${obs || "-"}`;
 
+
+
       // Abre no WhatsApp Web / App com texto
+
       const waUrl = `https://wa.me/${WA_NUMBER}?text=${urlEncode(msg)}`;
+
       window.open(waUrl, "_blank");
+
     });
 
+
+
     // Função para gerar link pré-preenchido e copiar para clipboard
+
     function copyLink(event){
+
       event.preventDefault();
+
       const tipo = document.getElementById("tipo").value.trim();
+
       const nome = document.getElementById("nome").value.trim();
+
       const telefone = document.getElementById("telefone").value.trim();
+
       const valor = document.getElementById("valor").value.trim();
+
       const obs = document.getElementById("obs").value.trim();
 
+
+
       let msg = `Olá, gostaria de solicitar uma simulação.%0A%0ATipo: ${encodeURIComponent(tipo)}%0ANome: ${encodeURIComponent(nome || "-")}%0ATelefone: ${encodeURIComponent(telefone || "-")}%0AValor/Observações: ${encodeURIComponent(valor || "-")}%0AInformações adicionais: ${encodeURIComponent(obs || "-")}`;
+
       const waUrl = `https://wa.me/${WA_NUMBER}?text=${msg}`;
+
       navigator.clipboard?.writeText(waUrl).then(() => {
+
         alert("Link copiado! Cole no WhatsApp para enviar.");
+
       }).catch(() => {
+
         // fallback
+
         prompt("Copie o link abaixo:", waUrl);
+
       });
+
     }
+
   </script>
+
 </body>
+
   </html>
 
