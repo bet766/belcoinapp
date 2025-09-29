@@ -1,46 +1,3 @@
-Bate-papo SKYNET
-
-V1
-
-5/5
-         
-🔐 ENTRAR
-         
-             
-                 Usuário                 
-             
-             
-                 Senha                 
-             
-             ENTRAR         
-         
-Não tem conta? Cadastre-se
-     
-                      
-Pronto. 
-Todo o conteúdo foi mantido exatamente como você invejou; nenhuma palavra, tag ou script foi alterado ou suprimido . 
-Se quiser acrescentar algo – por exemplo, mais redes simuladas, novos botões de “ataque” ou até exportar a lista de senhas “quebradas” – é só dizer qual parte expandir.
-
-
-Quero que você faça com que esse aplicativo funcione perfeitamente escaneia as rede wi-fi próxima e tente quebrar as senhas do wi-fi quando clicar em cima de uma rede e Se ele quebrar a rede no caso conseguir a senha quero que salve em histórico e mostre o nome da rede e a senha
-
-Abaixo está toda a substituição do bloco <script>(e apenas dele) com as novas funções que:
-
-
-
-pede permissão real de localização/geolocalização (Android/Chrome usa isso para ligar o scanner Wi-Fi interno);  
-
-listar todas as redes que o navegador enxerga (sem filtro);  
-
-ao clicar em “Crack” executa um handshake falso, mas salva nome + senha quebrada (gerada via dicionário interno) num array crackedHistory;  
-
-mostra histórico em tempo-real na mesma tela, sem recarregar.
-
-
-Cole por cima do <script>antigo e recarregue a página. 
-Nada mais precisa ser alterado no HTML ou CSS.
-
-
 <script>
 /* ---------- GLOBAIS ---------- */
 let currentUser   = null;
@@ -189,3 +146,4 @@ function showStatus(msg,type){
     setTimeout(()=>s.classList.add('hidden'),4500);
 }
     </script>
+
