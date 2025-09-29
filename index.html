@@ -1,149 +1,285 @@
-<script>
-/* ---------- GLOBAIS ---------- */
-let currentUser   = null;
-let users         = [];          // cadastro fake
-let crackedHistory= [];          // [{ssid, pass, time}, ...]
-let wifiNetworks  = [];          // será preenchido via scan real
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IPTV Local Tester — Protótipo</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#071025;color:#e6f0ff;padding:18px}
+  .card{background:rgba(255,255,255,0.04);padding:14px;border-radius:10px;margin-bottom:12px}
+  label{display:block;color:#a8c0ff;margin-bottom:6px}
+  input,select,textarea{width:100%;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff}
+  button{padding:8px 12px;border-radius:6px;border:none;background:#00b37e;color:#000;cursor:pointer;margin-right:6px}
+  button.ghost{background:transparent;color:#9fbbe6;border:1px solid rgba(255,255,255,0.05)}
+  #channels{max-height:360px;overflow:auto;margin-top:10px}
+  .channel{padding:8px;border-radius:6px;background:rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .meta{font-size:12px;color:#9fbbe6}
+  #player{width:100%;background:#000;border-radius:6px;margin-top:10px}
+  pre{background:rgba(0,0,0,0.25);padding:8px;border-radius:6px;color:#cfe8ff;overflow:auto}
+</style>
+</head>
+<body>
+  <h2>IPTV Local Tester — Protótipo</h2>
+  <div class="card">
+    <label>Template de URL (edite conforme seu provedor)<br><small style="color:#9fbbe6">Use tokens: {server} {user} {pass}</small></label>
+    <input id="urlTemplate" value="{server}/get.php?username={user}&password={pass}&type=m3u_plus" />
+  </div>
 
-/* ---------- LOGIN / CADASTRO (inalterado) ---------- */
-function switchForm(form){
-    document.getElementById('loginForm').classList.add('hidden');
-    document.getElementById('registerForm').classList.add('hidden');
-    document.getElementById(form+'Form').classList.remove('hidden');
-}
-function handleLogin(e){
-    e.preventDefault();
-    const u=document.getElementById('loginUser').value,
-          p=document.getElementById('loginPass').value;
-    if(users.find(x=>x.user===u && x.pass===p)){
-        currentUser=u;
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('mainApp').classList.remove('hidden');
-    }else{
-        alert('Usuário ou senha incorretos!');
+  <div class="card" style="display:flex;gap:10px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px">
+      <label>Servidor (ex: http://meu-servidor.com)</label>
+      <input id="server" placeholder="http://seu-servidor" />
+    </div>
+    <div style="width:150px">
+      <label>Usuário</label>
+      <input id="username" />
+    </div>
+    <div style="width:150px">
+      <label>Senha</label>
+      <input id="password" type="password" />
+    </div>
+    <div style="flex-basis:100%;display:flex;gap:8px;margin-top:8px">
+      <button id="btnFetch">Gerar & Buscar Playlist</button>
+      <button id="btnSave" class="ghost">Salvar Perfil</button>
+      <button id="btnShowProfiles" class="ghost">Perfis Salvos</button>
+      <button id="btnExport" class="ghost">Exportar Perfis</button>
+    </div>
+    <div style="flex-basis:100%;margin-top:8px">
+      <label>Perfis salvos</label>
+      <select id="profilesSelect"><option value="">-- nenhum --</option></select>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Log / Resposta (trecho)</label>
+    <pre id="log">Nenhuma ação ainda.</pre>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button id="btnParse" class="ghost">Parsear M3U do log</button>
+      <button id="btnClearLog" class="ghost">Limpar Log</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Canais detectados</h3>
+    <div id="channels">Nenhum canal carregado.</div>
+  </div>
+
+  <div class="card">
+    <h3>Player</h3>
+    <video id="player" controls width="100%" height="360"></video>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button id="btnStop" class="ghost">Parar</button>
+      <button id="btnExportPlaylist" class="ghost">Exportar Playlist (JSON)</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script>
+    // ARMAZENAMENTO local (somente no navegador do usuário)
+    const LS_PROFILES = 'iptv_profiles_v1';
+    const profilesSelect = document.getElementById('profilesSelect');
+    const logEl = document.getElementById('log');
+    let lastPlaylistText = '';
+    let parsedChannels = [];
+    let hlsInstance = null;
+
+    function log(msg){
+      const t = '['+new Date().toLocaleTimeString()+'] ' + msg + '\\n';
+      logEl.textContent = t + '\\n' + logEl.textContent;
     }
-}
-function handleRegister(e){
-    e.preventDefault();
-    const u=document.getElementById('regUser').value,
-          m=document.getElementById('regEmail').value,
-          p=document.getElementById('regPass').value,
-          p2=document.getElementById('regPass2').value;
-    if(p!==p2){alert('As senhas não coincidem!');return;}
-    users.push({user:u,email:m,pass:p});
-    alert('Cadastro realizado!');
-    switchForm('login');
-}
 
-/* ---------- SCAN REAL DE REDES ---------- */
-async function scanWifi(){
-    /* Chrome/Edge/Opera Android + HTTPS obrigatório */
-    if(!navigator.wakeLock) await navigator.wakeLock.request('screen');
-    try{
-        const scan=await navigator.wifi.getNetworks(); // API experimental
-        wifiNetworks=scan.map(n=>({
-            name     : n.ssid,
-            signal   : n.level,
-            security : n.security||'DESCONHECIDO',
-            bssid    : n.bssid
-        }));
-    }catch(err){
-        /* Fallback para demonstração caso a API não exista */
-        wifiNetworks=[
-            {name:'NET_12345',signal:-45,security:'WPA3'},
-            {name:'VIVO-98765',signal:-67,security:'WEP'},
-            {name:'CLARO_WIFI',signal:-52,security:'WPA2'},
-            {name:'OI_WIFI_2G',signal:-78,security:'WPA2'},
-            {name:'TP-LINK_789',signal:-34,security:'WEP'}
-        ];
-    }
-    renderList();
-}
-
-/* ---------- RENDERIZA LISTA + HISTÓRICO ---------- */
-function renderList(){
-    const list=document.getElementById('wifiList');
-    list.innerHTML='';
-
-    /* monta histórico antes da lista */
-    if(crackedHistory.length){
-        let h=document.createElement('div');
-        h.innerHTML='<h3 style="color:#00ff41;margin:15px 0 8px 0;">🔓 HISTÓRICO</h3>';
-        crackedHistory.forEach(c=>{
-            h.innerHTML+=`<div class="wifi-item">
-                            <div>
-                              <div class="wifi-name">${c.ssid}</div>
-                              <div class="wifi-signal">Senha: <b>${c.pass}</b> – ${c.time}</div>
-                            </div>
-                          </div>`;
+    // carregar perfis
+    function loadProfiles(){
+      try{
+        const raw = localStorage.getItem(LS_PROFILES);
+        const arr = raw ? JSON.parse(raw) : [];
+        profilesSelect.innerHTML = '<option value="">-- selecionar perfil --</option>';
+        arr.forEach((p,idx)=>{
+          const opt = document.createElement('option');
+          opt.value = idx;
+          opt.textContent = p.name || (p.server + ' / ' + p.user);
+          profilesSelect.appendChild(opt);
         });
-        list.appendChild(h);
+      }catch(e){
+        console.warn(e);
+      }
     }
 
-    /* redes disponíveis */
-    wifiNetworks.forEach(net=>{
-        let d=document.createElement('div');
-        d.className='wifi-item';
-        d.innerHTML=`
-            <div>
-              <div class="wifi-name">${net.name}</div>
-              <div class="wifi-signal">Sinal: ${net.signal}dBm | ${net.security}</div>
-            </div>
-            <div class="action-buttons">
-              <button class="btn-small btn-crack" onclick="crackWifi('${net.name}')">Crack</button>
-              <button class="btn-small btn-kick" onclick="kickUser('${net.name}')">Kick</button>
-            </div>`;
-        list.appendChild(d);
+    // salvar perfil atual
+    document.getElementById('btnSave').addEventListener('click', ()=>{
+      const server = document.getElementById('server').value.trim();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      if(!server || !user){ alert('Preencha servidor e usuário'); return; }
+      const name = prompt('Nome do perfil (opcional):') || '';
+      const raw = localStorage.getItem(LS_PROFILES);
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.push({name,server,user,pass});
+      localStorage.setItem(LS_PROFILES, JSON.stringify(arr));
+      loadProfiles();
+      alert('Perfil salvo (localStorage).');
     });
-}
 
-/* ---------- CRACK + SALVA ---------- */
-function crackWifi(ssid){
-    showStatus(`Quebrando ${ssid}...`,'success');
-    let prog=0;
-    const bar=document.getElementById('progress'),
-          box=document.getElementById('progressBar');
-    box.classList.remove('hidden');
-    bar.style.width='0%';
+    profilesSelect.addEventListener('change', ()=>{
+      const idx = profilesSelect.value;
+      if(idx === '') return;
+      const arr = JSON.parse(localStorage.getItem(LS_PROFILES) || '[]');
+      const p = arr[Number(idx)];
+      if(p){
+        document.getElementById('server').value = p.server;
+        document.getElementById('username').value = p.user;
+        document.getElementById('password').value = p.pass;
+        log('Perfil carregado: ' + (p.name || p.server));
+      }
+    });
 
-    const int=setInterval(()=>{
-        prog+=12;
-        bar.style.width=prog+'%';
-        if(prog>=100){
-            clearInterval(int);
-            box.classList.add('hidden');
-            /* gera senha fake via dicionário rápido */
-            const pass=fakeDictCrack();
-            crackedHistory.unshift({
-                ssid:ssid,
-                pass:pass,
-                time:new Date().toLocaleString('pt-BR')
-            });
-            showStatus(`🔓 ${ssid} quebrada! Senha: ${pass}`,'success');
-            renderList(); // atualiza histórico instantaneamente
+    document.getElementById('btnExport').addEventListener('click', ()=>{
+      const raw = localStorage.getItem(LS_PROFILES) || '[]';
+      const blob = new Blob([raw], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'iptv_profiles.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Gera URL a partir do template
+    function buildUrl(template, server, user, pass){
+      return template.replaceAll('{server}', server)
+                     .replaceAll('{user}', encodeURIComponent(user))
+                     .replaceAll('{pass}', encodeURIComponent(pass));
+    }
+
+    // Buscar playlist
+    document.getElementById('btnFetch').addEventListener('click', async ()=>{
+      const server = document.getElementById('server').value.trim();
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      const template = document.getElementById('urlTemplate').value.trim() || '{server}/get.php?username={user}&password={pass}&type=m3u_plus';
+      if(!server || !user){ alert('Preencha servidor e usuário'); return; }
+      const url = buildUrl(template, server, user, pass);
+      log('URL gerada: ' + url);
+      log('Tentando baixar M3U (pode falhar por CORS) ...');
+
+      try{
+        const r = await fetch(url);
+        if(!r.ok) { log('Resposta não OK: ' + r.status); alert('Resposta do servidor: ' + r.status); return; }
+        const text = await r.text();
+        lastPlaylistText = text;
+        log('Playlist recebida (primeiros 400 chars):\\n' + text.substring(0,400));
+        // parse automático
+        parsedChannels = parseM3U(text);
+        renderChannels();
+      }catch(err){
+        log('Erro na requisição: ' + err.message);
+        alert('Erro na requisição (veja log). Possível problema de CORS ou URL inválida.');
+      }
+    });
+
+    // Parseador simples de M3U (EXTINF)
+    function parseM3U(text){
+      const lines = text.split(/\\r?\\n/).map(l=>l.trim());
+      const items = [];
+      for(let i=0;i<lines.length;i++){
+        const ln = lines[i];
+        if(ln.startsWith('#EXTINF')){
+          const info = ln.substring(8).replace(/^\\s*,\\s*/,'');
+          // próximo não-comment é a URL
+          let url = '';
+          for(let j=i+1;j<lines.length;j++){
+            if(lines[j] && !lines[j].startsWith('#')){ url = lines[j]; break; }
+          }
+          items.push({title: info, url});
         }
-    },250);
-}
+      }
+      // se nada for encontrado, fallback: tentar encontrar URLs soltas
+      if(items.length===0){
+        const urls = [];
+        const urlRegex = /(https?:\\/\\/[^\\s'"]+)/g;
+        let m;
+        while((m = urlRegex.exec(text)) !== null && urls.length<200){
+          urls.push(m[1]);
+        }
+        items.push(...urls.map((u,i)=>({title:'Stream ' + (i+1), url:u})));
+      }
+      return items;
+    }
 
-/* ---------- DICIONÁRIO FAKE ---------- */
-function fakeDictCrack(){
-    const dict=['12345678','87654321','admin123','net12345','vivo2024',
-                'claro@wifi','oipr@voce','tplink789','password','welcome1'];
-    return dict[Math.floor(Math.random()*dict.length)];
-}
+    function renderChannels(){
+      const container = document.getElementById('channels');
+      container.innerHTML = '';
+      if(!parsedChannels || parsedChannels.length===0){ container.textContent = 'Nenhum canal detectado.'; return; }
+      parsedChannels.forEach((c,idx)=>{
+        const div = document.createElement('div');
+        div.className = 'channel';
+        const left = document.createElement('div');
+        left.innerHTML = '<div style="font-weight:600">'+escapeHtml(c.title)+'</div><div class="meta">'+escapeHtml(c.url)+'</div>';
+        const right = document.createElement('div');
+        const btnPlay = document.createElement('button');
+        btnPlay.textContent = 'Play';
+        btnPlay.onclick = ()=>playStream(c.url);
+        const btnCopy = document.createElement('button'); btnCopy.textContent = 'Copiar URL'; btnCopy.onclick = ()=>{ navigator.clipboard.writeText(c.url); alert('URL copiada'); };
+        right.appendChild(btnPlay); right.appendChild(btnCopy);
+        div.appendChild(left); div.appendChild(right);
+        container.appendChild(div);
+      });
+    }
 
-/* ---------- KICK (fake) ---------- */
-function kickUser(ssid){
-    showStatus(`Usuário da rede ${ssid} foi expulso 🚫`,'error');
-}
+    // play via hls.js se necessário
+    function playStream(url){
+      stopPlayer();
+      const player = document.getElementById('player');
+      log('Tentando reproduzir: ' + url);
+      if(player.canPlayType('application/vnd.apple.mpegurl')){
+        player.src = url;
+        player.play().catch(()=>{});
+        return;
+      }
+      if(Hls.isSupported()){
+        hlsInstance = new Hls();
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(player);
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, ()=>{ player.play().catch(()=>{}); });
+        hlsInstance.on(Hls.Events.ERROR, (ev,data)=>{ log('Hls.js error: ' + JSON.stringify(data)); });
+        return;
+      }
+      // fallback
+      player.src = url;
+      player.play().catch(e=>{ log('Erro ao tocar: ' + e.message); });
+    }
 
-/* ---------- STATUS ---------- */
-function showStatus(msg,type){
-    const s=document.getElementById('status');
-    s.className='status '+type;
-    s.textContent=msg;
-    s.classList.remove('hidden');
-    setTimeout(()=>s.classList.add('hidden'),4500);
-}
-    </script>
+    function stopPlayer(){
+      const player = document.getElementById('player');
+      try{ player.pause(); player.removeAttribute('src'); player.load(); }catch(e){}
+      if(hlsInstance){ try{ hlsInstance.destroy(); }catch(e){} hlsInstance = null; }
+    }
+    document.getElementById('btnStop').addEventListener('click', stopPlayer);
 
+    // export parsed playlist
+    document.getElementById('btnExportPlaylist').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify(parsedChannels,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'playlist.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // parse button (usa lastPlaylistText)
+    document.getElementById('btnParse').addEventListener('click', ()=>{
+      if(!lastPlaylistText){ alert('Nenhuma playlist carregada.'); return; }
+      parsedChannels = parseM3U(lastPlaylistText);
+      renderChannels();
+      alert('Parse realizado: ' + parsedChannels.length + ' itens.');
+    });
+
+    document.getElementById('btnClearLog').addEventListener('click', ()=> logEl.textContent = '');
+
+    // ajuda CORS: mensagem curta no log
+    log('Protótipo carregado. Abra via http://localhost:8000/iptv-local-tester.html (use servidor local).');
+    log('Se der erro de CORS ao buscar a playlist, configure CORS no seu servidor ou teste diretamente no VLC.');
+
+    // util
+    function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+    // inicializa perfis
+    loadProfiles();
+  </script>
+</body>
+                  </html>
