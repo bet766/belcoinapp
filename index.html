@@ -1,490 +1,108 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>IPTV WebPlayer — Protótipo</title>
-
-<!-- hls.js -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-
-<style>
-  :root{--bg:#071025;--card:rgba(255,255,255,0.03);--accent:#00c46b;--muted:#9fbbe6}
-  body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#e9f2ff}
-  header{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;align-items:center;gap:16px}
-  h1{font-size:18px;margin:0;color:var(--accent)}
-  .container{display:flex;gap:16px;padding:18px;flex-wrap:wrap}
-  .col{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
-  .left{flex:1 1 360px;min-width:320px;max-width:520px}
-  .right{flex:1 1 420px;min-width:300px}
-  label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-  input,select,textarea{width:100%;padding:8px;border-radius:7px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
-  button{background:var(--accent);border:none;color:#002;border-radius:8px;padding:8px 12px;cursor:pointer;margin-right:6px}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.05);color:var(--muted)}
-  .row{display:flex;gap:8px;align-items:center}
-  .small{padding:6px 10px;font-size:13px;border-radius:6px}
-  #log{white-space:pre-wrap;max-height:180px;overflow:auto;padding:8px;background:rgba(0,0,0,0.4);border-radius:6px;color:#cfe8ff}
-  #channels{max-height:520px;overflow:auto}
-  .channel{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02)}
-  .meta{font-size:12px;color:var(--muted)}
-  .filters{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-  .tag{background:rgba(0,0,0,0.4);padding:6px 8px;border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer}
-  .tag.active{background:var(--accent);color:#002}
-  footer{padding:10px 18px;color:var(--muted);font-size:13px;text-align:center;border-top:1px solid rgba(255,255,255,0.02)}
-  .player-wrap{background:#000;border-radius:8px;overflow:hidden}
-  video{width:100%;height:360px;background:#000;display:block}
-  .controls{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
-  .search{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;width:100%}
-  .fav{border:1px dashed rgba(255,255,255,0.06);padding:6px;border-radius:6px;color:var(--muted)}
-  .pin-box{display:flex;gap:8px;align-items:center}
-  .note{font-size:12px;color:var(--muted);margin-top:8px}
-  .profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-  .logo{width:56px;height:36px;object-fit:contain;border-radius:4px;background:rgba(255,255,255,0.02);margin-right:8px}
-  .channel-left{display:flex;align-items:center;gap:8px}
-  @media(max-width:900px){ .container{flex-direction:column} video{height:240px} }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trabalhos Espirituais & Cartas Ciganas</title>
+  <style>
+    :root{
+      --gold:#c9a95c;
+      --black:#111;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
+    body{background:var(--black);color:#fff;line-height:1.6;}
+    header{background:url('https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1350&q=80') center/cover;height:60vh;display:flex;align-items:center;justify-content:center;position:relative;}
+    header::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.65);}
+    header h1{position:relative;z-index:2;font-size:2.5rem;text-align:center;color:var(--gold);}
+    .container{max-width:1000px;margin:auto;padding:20px;}
+    section{margin-bottom:40px;}
+    h2{color:var(--gold);margin-bottom:15px;}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
+    .card{background:#1a1a1a;border:1px solid var(--gold);border-radius:8px;overflow:hidden;}
+    .card img{width:100%;display:block;}
+    .card p{padding:15px;text-align:center;}
+    .cta{background:#1a1a1a;border:1px solid var(--gold);border-radius:8px;padding:25px;text-align:center;}
+    .cta a{background:var(--gold);color:var(--black);padding:12px 25px;border:none;border-radius:4px;font-size:1.1rem;cursor:pointer;text-decoration:none;display:inline-block;margin-top:10px;}
+    form{display:flex;flex-direction:column;gap:15px;max-width:400px;margin:auto;}
+    input,button{padding:12px;border-radius:4px;border:1px solid var(--gold);font-size:1rem;}
+    input{background:#222;color:#fff;}
+    button{background:var(--gold);color:var(--black);cursor:pointer;font-weight:bold;}
+    footer{background:#0a0a0a;text-align:center;padding:20px;font-size:.9rem;color:#666;}
+    @media(max-width:600px){
+      header h1{font-size:2rem;}
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>IPTV WebPlayer — Protótipo</h1>
-    <div style="margin-left:auto;color:var(--muted)">Teste local • Não compartilhe credenciais</div>
-  </header>
 
-  <div class="container">
-    <!-- LEFT: configurações, log, canais -->
-    <div class="col left">
-      <div style="display:flex;gap:10px;align-items:start">
-        <div style="flex:1">
-          <label>Template de URL (use {server} {user} {pass})</label>
-          <input id="urlTemplate" value="{server}/get.php?username={user}&password={pass}&type=m3u_plus" />
-        </div>
-        <div style="width:220px">
-          <label>Perfil / Nome (opcional)</label>
-          <input id="profileName" placeholder="Nome do perfil (ex: Cliente A)" />
-        </div>
-      </div>
+<header>
+  <h1>Trabalhos Espirituais & Cartas Ciganas</h1>
+</header>
 
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <div style="flex:1;min-width:160px">
-          <label>Servidor (ex: http://stvc.lat:80)</label>
-          <input id="server" placeholder="http://seu-servidor" />
-        </div>
-        <div style="width:160px">
-          <label>Usuário</label>
-          <input id="username" placeholder="usuario" />
-        </div>
-        <div style="width:140px">
-          <label>Senha</label>
-          <input id="password" type="password" placeholder="senha" />
-        </div>
-        <div style="width:120px">
-          <label>PIN Adulto (local)</label>
-          <input id="adultPin" placeholder="0000" />
-        </div>
-      </div>
+<div class="container">
 
-      <div class="row" style="margin-top:10px">
-        <button id="btnFetch" class="small">🔄 Buscar Playlist</button>
-        <button id="btnParseLog" class="small ghost">🔎 Parsear M3U (log)</button>
-        <button id="btnSaveProfile" class="small ghost">💾 Salvar Perfil</button>
-        <button id="btnLoadProfiles" class="small ghost">📂 Perfis</button>
-        <button id="btnExportProfiles" class="small ghost">⬇ Exportar Perfis</button>
-      </div>
-
-      <div style="margin-top:10px">
-        <label>Perfis salvos</label>
-        <select id="profilesSelect"><option value="">-- nenhum --</option></select>
-      </div>
-
-      <div style="margin-top:10px">
-        <label>Log / Resposta (trecho)</label>
-        <div id="log">Pronto. Clique em "Buscar Playlist" para iniciar.</div>
-      </div>
-
-      <div style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <label style="margin:0">Filtros / Busca</label>
-          <div class="note">Filtre por categoria, pesquisa por nome ou marque favoritos.</div>
-        </div>
-        <div class="filters" id="groupTags"></div>
-        <input id="searchInput" class="search" placeholder="Pesquisar canal por nome..." />
-      </div>
-
-      <div style="margin-top:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <label style="margin:0">Canais detectados</label>
-          <div class="row">
-            <button id="btnShowFavs" class="ghost small">⭐ Favoritos</button>
-            <button id="btnExportPlaylistJson" class="ghost small">⬇ Exportar Playlist</button>
-          </div>
-        </div>
-        <div id="channels" style="margin-top:8px">Nenhum canal carregado.</div>
+  <section>
+    <h2>Amarração Amorosa</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=800&q=60" alt="Amarração">
+        <p>União definitiva, sem volta.</p>
       </div>
     </div>
+  </section>
 
-    <!-- RIGHT: player + info -->
-    <div class="col right">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div style="font-weight:600" id="infoTitle">Preview / Player</div>
-          <div class="meta" id="infoMeta">Nenhum stream selecionado</div>
-        </div>
-        <div style="text-align:right">
-          <div class="meta">Vencimento: <span id="expDate">—</span></div>
-          <div class="meta">Plano: <span id="planInfo">—</span></div>
-        </div>
-      </div>
-
-      <div class="player-wrap" style="margin-top:12px">
-        <video id="player" playsinline controls></video>
-      </div>
-
-      <div class="controls">
-        <button id="btnStop" class="ghost small">⏹ Parar</button>
-        <button id="btnMute" class="ghost small">🔇 Mudo</button>
-        <button id="btnToggleAdult" class="ghost small">🔞 Bloquear Adulto</button>
-        <button id="btnClear" class="ghost small">🧹 Limpar canais</button>
-      </div>
-
-      <div style="margin-top:12px">
-        <label>Export / Import</label>
-        <div style="display:flex;gap:8px">
-          <button id="btnExportPlaylist" class="ghost">Exportar JSON</button>
-          <button id="btnImportPlaylist" class="ghost">Importar JSON</button>
-          <input id="fileImport" type="file" accept=".json" style="display:none" />
-        </div>
-      </div>
-
-      <div class="note" style="margin-top:12px">
-        <strong>Atenção CORS:</strong> se o fetch da playlist falhar por CORS, ajuste o servidor para
-        enviar <code>Access-Control-Allow-Origin: *</code> (apenas para teste) ou rode via servidor local e ajuste CORS no backend.
+  <section>
+    <h2>Jogo de Cartas Ciganas</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1518292600344-5e5ac8f0c5ca?auto=format&fit=crop&w=800&q=60" alt="Cartas">
+        <p>Consulta completa: amor, dinheiro, saúde.</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <footer>
-    Rodar localmente: abra via servidor (ex: <code>python -m http.server 8000</code>) e acesse
-    <code>http://localhost:8000/iptv-webplayer.html</code>. Não coloque credenciais em chats públicos.
-  </footer>
+  <section>
+    <h2>Separação & Limpeza</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&w=800&q=60" alt="Limpeza">
+        <p>Afasta rivais e energias negativas.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Entre em contato agora</h2>
+    <p>WhatsApp: <strong>+55 (51) 99708-8974</strong></p>
+    <a href="https://wa.me/5551997088974" target="_blank">Chamar no WhatsApp</a>
+  </section>
+
+  <section>
+    <h2>Pré-Consulta</h2>
+    <form id="preForm">
+      <input type="text" id="nome" placeholder="Nome completo" required>
+      <input type="date" id="nascimento" required>
+      <button type="submit">Enviar e abrir WhatsApp</button>
+    </form>
+  </section>
+
+</div>
+
+<footer>
+  © 2024 Trabalhos Espirituais – Todos os direitos reservados.
+</footer>
 
 <script>
-/* -------------------- Variáveis -------------------- */
-const LS_PROFILES = 'iptv_web_profiles_v1';
-const LS_FAVS = 'iptv_web_favs_v1';
-let lastPlaylistText = '';
-let parsedChannels = []; // {title, url, logo, group}
-let favs = new Set();
-let hlsInstance = null;
-let adultPinLocal = null;
-let adultBlocked = true;
-
-/* -------------------- Util / Log -------------------- */
-const logEl = document.getElementById('log');
-function log(msg){
-  const stamp = new Date().toLocaleTimeString();
-  logEl.textContent = '['+stamp+'] ' + msg + '\\n' + logEl.textContent;
-}
-
-/* Escapes */
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-/* -------------------- Perfis -------------------- */
-function loadProfiles(){
-  try{
-    const raw = localStorage.getItem(LS_PROFILES);
-    const arr = raw ? JSON.parse(raw) : [];
-    const sel = document.getElementById('profilesSelect');
-    sel.innerHTML = '<option value="">-- nenhum --</option>';
-    arr.forEach((p,i) => {
-      const opt = document.createElement('option');
-      opt.value = i;
-      opt.textContent = p.name || (p.server + ' / ' + p.user);
-      sel.appendChild(opt);
-    });
-  }catch(e){ console.warn(e); }
-}
-function saveCurrentProfile(){
-  const server = document.getElementById('server').value.trim();
-  const user = document.getElementById('username').value.trim();
-  const pass = document.getElementById('password').value;
-  const name = document.getElementById('profileName').value.trim();
-  if(!server || !user){ alert('Preencha servidor e usuário'); return; }
-  const raw = localStorage.getItem(LS_PROFILES);
-  const arr = raw ? JSON.parse(raw) : [];
-  arr.push({name,server,user,pass});
-  localStorage.setItem(LS_PROFILES, JSON.stringify(arr));
-  loadProfiles();
-  alert('Perfil salvo localmente (somente seu navegador).');
-}
-document.getElementById('btnSaveProfile').addEventListener('click', saveCurrentProfile);
-document.getElementById('btnLoadProfiles').addEventListener('click', loadProfiles);
-
-document.getElementById('profilesSelect').addEventListener('change', ()=>{
-  const idx = document.getElementById('profilesSelect').value;
-  if(idx === '') return;
-  const arr = JSON.parse(localStorage.getItem(LS_PROFILES) || '[]');
-  const p = arr[Number(idx)];
-  if(p){
-    document.getElementById('server').value = p.server;
-    document.getElementById('username').value = p.user;
-    document.getElementById('password').value = p.pass;
-    document.getElementById('profileName').value = p.name || '';
-    log('Perfil carregado: ' + (p.name || p.server));
-  }
-});
-
-/* Export perfis */
-document.getElementById('btnExportProfiles').addEventListener('click', ()=>{
-  const raw = localStorage.getItem(LS_PROFILES) || '[]';
-  const blob = new Blob([raw], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'iptv_profiles.json'; a.click();
-  URL.revokeObjectURL(url);
-});
-
-/* -------------------- Favoritos -------------------- */
-function loadFavs(){
-  try{
-    const raw = localStorage.getItem(LS_FAVS) || '[]';
-    favs = new Set(JSON.parse(raw));
-  }catch(e){ favs = new Set(); }
-}
-function toggleFav(url){
-  if(favs.has(url)) favs.delete(url); else favs.add(url);
-  localStorage.setItem(LS_FAVS, JSON.stringify(Array.from(favs)));
-  renderChannels();
-}
-document.getElementById('btnShowFavs').addEventListener('click', ()=>{
-  const onlyFavs = parsedChannels.filter(c => favs.has(c.url));
-  renderChannels(onlyFavs);
-});
-
-/* -------------------- Construir URL -------------------- */
-function buildUrl(template, server, user, pass){
-  return template.replaceAll('{server}', server.replace(/\\/$/, ''))
-                 .replaceAll('{user}', encodeURIComponent(user))
-                 .replaceAll('{pass}', encodeURIComponent(pass));
-}
-
-/* -------------------- Buscar Playlist -------------------- */
-document.getElementById('btnFetch').addEventListener('click', async ()=>{
-  const server = document.getElementById('server').value.trim();
-  const user = document.getElementById('username').value.trim();
-  const pass = document.getElementById('password').value;
-  const template = document.getElementById('urlTemplate').value.trim() || '{server}/get.php?username={user}&password={pass}&type=m3u_plus';
-  if(!server || !user){ alert('Preencha servidor e usuário'); return; }
-  const url = buildUrl(template, server, user, pass);
-  log('URL gerada: ' + url);
-  log('Baixando playlist (pode falhar por CORS)...');
-
-  try{
-    const r = await fetch(url);
-    if(!r.ok){ log('Resposta não OK: ' + r.status); alert('Resposta do servidor: ' + r.status); return; }
-    const text = await r.text();
-    lastPlaylistText = text;
-    log('Playlist recebida (primeiros 1000 chars):\\n' + text.substring(0,1000));
-    parsedChannels = parseM3U(text);
-    renderChannels();
-    log('Parse concluído: ' + parsedChannels.length + ' itens.');
-  }catch(err){
-    log('Erro na requisição: ' + err.message);
-    alert('Erro na requisição (CORS ou URL inválida). Veja o log.');
-  }
-});
-
-/* -------------------- Parse M3U -------------------- */
-function parseM3U(text){
-  const lines = text.split(/\\r?\\n/).map(l=>l.trim());
-  const items = [];
-  for(let i=0;i<lines.length;i++){
-    const ln = lines[i];
-    if(ln.startsWith('#EXTINF')){
-      // extrai atributos como tvg-logo, group-title e o nome após a vírgula
-      const meta = ln.substring(8);
-      const tvgLogoMatch = meta.match(/tvg-logo=["']?([^"']+)["']?/i);
-      const groupMatch = meta.match(/group-title=["']?([^"']+)["']?/i);
-      const nameMatch = meta.match(/,\\s*(.*)$/);
-      const title = nameMatch ? nameMatch[1] : meta;
-      let url = '';
-      for(let j=i+1;j<lines.length;j++){
-        if(lines[j] && !lines[j].startsWith('#')){ url = lines[j]; break; }
-      }
-      items.push({
-        title: title || 'Sem título',
-        url: url || '',
-        logo: tvgLogoMatch ? tvgLogoMatch[1] : '',
-        group: groupMatch ? groupMatch[1] : 'Sem categoria'
-      });
+  document.getElementById('preForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const nome = document.getElementById('nome').value.trim();
+    const nasc = document.getElementById('nascimento').value;
+    if(nome && nasc){
+      const texto = `Olá, meu nome é ${nome}, nasci em ${nasc}. Gostaria de agendar uma consulta.`;
+      window.open(`https://wa.me/5551997088974?text=${encodeURIComponent(texto)}`, '_blank');
     }
-  }
-  // fallback: se nada, tenta extrair URLs
-  if(items.length === 0){
-    const urlRegex = /(https?:\\/\\/[^\\s'"]+)/g;
-    let m; let idx=1;
-    while((m = urlRegex.exec(text)) !== null && idx<500){
-      items.push({title:'Stream ' + (idx++), url: m[1], logo:'', group:'Sem categoria'});
-    }
-  }
-  return items;
-}
-
-/* -------------------- Render canais -------------------- */
-function renderChannels(list = parsedChannels){
-  loadFavs();
-  const container = document.getElementById('channels');
-  container.innerHTML = '';
-  if(!list || list.length === 0){ container.textContent = 'Nenhum canal carregado.'; return; }
-
-  // obter grupos únicos para tags
-  const groups = Array.from(new Set(parsedChannels.map(c => c.group || 'Sem categoria')));
-  const tagWrap = document.getElementById('groupTags');
-  tagWrap.innerHTML = '';
-  groups.forEach(g => {
-    const el = document.createElement('div'); el.className = 'tag'; el.textContent = g;
-    el.onclick = ()=> {
-      // filtra por grupo
-      if(el.classList.contains('active')){ el.classList.remove('active'); renderChannels(); return; }
-      Array.from(tagWrap.children).forEach(x=>x.classList.remove('active'));
-      el.classList.add('active');
-      renderChannels(parsedChannels.filter(c => c.group === g));
-    };
-    tagWrap.appendChild(el);
   });
-
-  const search = document.getElementById('searchInput').value.trim().toLowerCase();
-  const filtered = list.filter(c => !search || c.title.toLowerCase().includes(search) || (c.group||'').toLowerCase().includes(search));
-  if(filtered.length === 0){ container.textContent = 'Nenhum canal corresponde ao filtro.'; return; }
-
-  filtered.forEach(c => {
-    const div = document.createElement('div'); div.className = 'channel';
-    const left = document.createElement('div'); left.className = 'channel-left';
-    const img = document.createElement('img'); img.className = 'logo'; img.src = c.logo || '';
-    img.onerror = ()=>{ img.style.display = 'none'; };
-    const txt = document.createElement('div'); txt.innerHTML = '<div style="font-weight:600">'+escapeHtml(c.title)+'</div><div class="meta">'+escapeHtml(c.group)+'</div>';
-    left.appendChild(img); left.appendChild(txt);
-
-    const right = document.createElement('div');
-    const btnPlay = document.createElement('button'); btnPlay.textContent = '▶ Play'; btnPlay.onclick = ()=> onPlayClick(c);
-    const btnFav = document.createElement('button'); btnFav.textContent = favs.has(c.url)?'★':'☆'; btnFav.onclick = ()=> { toggleFav(c.url); btnFav.textContent = favs.has(c.url)?'★':'☆'; };
-    const btnCopy = document.createElement('button'); btnCopy.textContent = '🔗 URL'; btnCopy.onclick = ()=>{ navigator.clipboard.writeText(c.url); alert('URL copiada'); };
-
-    right.appendChild(btnPlay); right.appendChild(btnFav); right.appendChild(btnCopy);
-    div.appendChild(left); div.appendChild(right);
-    container.appendChild(div);
-  });
-}
-
-/* search input */
-document.getElementById('searchInput').addEventListener('input', ()=> renderChannels());
-
-/* -------------------- Play / Player -------------------- */
-function stopPlayer(){
-  const player = document.getElementById('player');
-  try{ player.pause(); player.removeAttribute('src'); player.load(); }catch(e){}
-  if(hlsInstance){ try{ hlsInstance.destroy(); }catch(e){} hlsInstance = null; }
-}
-document.getElementById('btnStop').addEventListener('click', stopPlayer);
-document.getElementById('btnMute').addEventListener('click', ()=>{
-  const p = document.getElementById('player'); p.muted = !p.muted; document.getElementById('btnMute').textContent = p.muted ? '🔊' : '🔇';
-});
-
-document.getElementById('btnClear').addEventListener('click', ()=>{
-  parsedChannels = []; document.getElementById('channels').innerHTML = 'Nenhum canal carregado.'; stopPlayer();
-});
-
-/* play click with adult check */
-function onPlayClick(channel){
-  // check adult by group or title (basic heuristic)
-  const isAdult = /adult|xxx|18\+|adulto|porn/i.test((channel.group || '') + ' ' + (channel.title || ''));
-  if(isAdult && adultBlocked){
-    const pin = document.getElementById('adultPin').value || '';
-    if(!pin){ alert('PIN adulto não configurado. Configure no campo "PIN Adulto" para acessar.'); return; }
-    // ask for pin
-    const attempt = prompt('Conteúdo adulto. Insira o PIN para prosseguir:');
-    if(attempt === null) return;
-    if(attempt !== pin){ alert('PIN incorreto.'); return; }
-  }
-  playUrl(channel.url, channel.title);
-  document.getElementById('infoTitle').textContent = channel.title;
-  document.getElementById('infoMeta').textContent = channel.url;
-}
-
-/* play implementation */
-function playUrl(url, title){
-  stopPlayer();
-  const player = document.getElementById('player');
-  if(player.canPlayType('application/vnd.apple.mpegurl')){
-    player.src = url;
-    player.play().catch(()=>{});
-    return;
-  }
-  if(Hls.isSupported()){
-    hlsInstance = new Hls();
-    hlsInstance.loadSource(url);
-    hlsInstance.attachMedia(player);
-    hlsInstance.on(Hls.Events.MANIFEST_PARSED, ()=>{ player.play().catch(()=>{}); });
-    hlsInstance.on(Hls.Events.ERROR, (ev,data)=>{ log('Hls.js error: ' + JSON.stringify(data)); });
-    return;
-  }
-  player.src = url;
-  player.play().catch(e=>{ log('Erro ao tocar: ' + e.message); });
-}
-
-/* -------------------- Export / Import Playlist -------------------- */
-document.getElementById('btnExportPlaylist').addEventListener('click', ()=>{
-  if(!parsedChannels || parsedChannels.length===0){ alert('Nenhuma playlist para exportar'); return; }
-  const blob = new Blob([JSON.stringify(parsedChannels,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'playlist.json'; a.click();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById('btnImportPlaylist').addEventListener('click', ()=> document.getElementById('fileImport').click());
-document.getElementById('fileImport').addEventListener('change', (ev)=>{
-  const f = ev.target.files[0];
-  if(!f) return;
-  const reader = new FileReader();
-  reader.onload = ()=> {
-    try{
-      const data = JSON.parse(reader.result);
-      parsedChannels = data;
-      lastPlaylistText = ''; renderChannels();
-      alert('Playlist JSON importada.');
-    }catch(e){ alert('Erro ao importar: arquivo inválido.'); }
-  };
-  reader.readAsText(f);
-});
-
-/* -------------------- Parse log button (use lastPlaylistText) -------------------- */
-document.getElementById('btnParseLog').addEventListener('click', ()=>{
-  if(!lastPlaylistText){ alert('Nenhuma playlist carregada ainda.'); return; }
-  parsedChannels = parseM3U(lastPlaylistText);
-  renderChannels();
-  alert('Parse realizado: ' + parsedChannels.length + ' itens.');
-});
-
-/* -------------------- Export playlist (parsed) quick -------------------- */
-document.getElementById('btnExportPlaylistJson').addEventListener('click', ()=>{
-  if(!parsedChannels || parsedChannels.length===0){ alert('Nenhum canal para exportar'); return; }
-  const blob = new Blob([JSON.stringify(parsedChannels,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'channels.json'; a.click();
-  URL.revokeObjectURL(url);
-});
-
-/* -------------------- Init -------------------- */
-(function init(){
-  loadProfiles();
-  loadFavs();
-  const exp = document.getElementById('expDate'); exp.textContent = '—';
-  const plan = document.getElementById('planInfo'); plan.textContent = '—';
-  adultPinLocal = document.getElementById('adultPin').value || null;
-  log('WebPlayer pronto. Use "Buscar Playlist" para iniciar.');
-})();
-
-/* -------------------- Extra: permitir colar M3U manual no log (opcional) -------------------- */
-/* (Se quiser colar uma M3U manualmente: cole no log e clique em Parsear M3U) */
-
 </script>
+
 </body>
-  </html>
+</html>
