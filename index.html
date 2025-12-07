@@ -1,108 +1,354 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trabalhos Espirituais & Cartas Ciganas</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pedido de Copos</title>
   <style>
-    :root{
-      --gold:#c9a95c;
-      --black:#111;
-    }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif;}
-    body{background:var(--black);color:#fff;line-height:1.6;}
-    header{background:url('https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=1350&q=80') center/cover;height:60vh;display:flex;align-items:center;justify-content:center;position:relative;}
-    header::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.65);}
-    header h1{position:relative;z-index:2;font-size:2.5rem;text-align:center;color:var(--gold);}
-    .container{max-width:1000px;margin:auto;padding:20px;}
-    section{margin-bottom:40px;}
-    h2{color:var(--gold);margin-bottom:15px;}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
-    .card{background:#1a1a1a;border:1px solid var(--gold);border-radius:8px;overflow:hidden;}
-    .card img{width:100%;display:block;}
-    .card p{padding:15px;text-align:center;}
-    .cta{background:#1a1a1a;border:1px solid var(--gold);border-radius:8px;padding:25px;text-align:center;}
-    .cta a{background:var(--gold);color:var(--black);padding:12px 25px;border:none;border-radius:4px;font-size:1.1rem;cursor:pointer;text-decoration:none;display:inline-block;margin-top:10px;}
-    form{display:flex;flex-direction:column;gap:15px;max-width:400px;margin:auto;}
-    input,button{padding:12px;border-radius:4px;border:1px solid var(--gold);font-size:1rem;}
-    input{background:#222;color:#fff;}
-    button{background:var(--gold);color:var(--black);cursor:pointer;font-weight:bold;}
-    footer{background:#0a0a0a;text-align:center;padding:20px;font-size:.9rem;color:#666;}
-    @media(max-width:600px){
-      header h1{font-size:2rem;}
-    }
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--glass: rgba(255,255,255,0.03);--text:#e6eef6}
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+    body{margin:0;background:linear-gradient(180deg,#071025 0%, #052033 100%);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .app{width:100%;max-width:1100px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:20px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;background:var(--glass);display:flex;align-items:center;justify-content:center;border-radius:8px}
+    .logo svg{width:38px;height:38px}
+    h1{margin:0;font-size:18px}
+    .auth{display:flex;gap:8px}
+    button{background:var(--accent);color:#022;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+    main{display:grid;grid-template-columns:1fr 380px;gap:20px;margin-top:18px}
+    @media(max-width:900px){main{grid-template-columns:1fr} .sidebar{order:2}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:10px}
+    .section-title{font-weight:700;margin-bottom:8px}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .flavors{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .flavor{padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer}
+    .flavor.selected{outline:2px solid rgba(6,182,212,0.25);background:rgba(6,182,212,0.06)}
+    label{display:block}
+    input[type=number], input[type=text]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
+    .extras{display:flex;gap:8px;flex-wrap:wrap}
+    .extras label{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02)}
+    .cart{display:flex;flex-direction:column;gap:10px}
+    .cart-item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01)}
+    .totals{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px}
+    .small{font-size:13px;color:rgba(230,238,246,0.8)}
+    .login-wrap{display:flex;flex-direction:column;gap:8px}
+    .inline{display:flex;gap:8px}
+    .btn-primary{background:var(--accent);color:#042; padding:10px;border-radius:8px;border:none;font-weight:700}
+    footer{margin-top:12px;text-align:center;color:rgba(230,238,246,0.6);font-size:13px}
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:40}
+    .modal.show{display:flex}
+    .modal .box{width:100%;max-width:520px;background:#071225;padding:18px;border-radius:10px}
+    .field{margin-bottom:8px}
+    .link-like{background:none;border:none;color:var(--accent);cursor:pointer}
   </style>
 </head>
 <body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden>
+          <!-- simple svg logo -->
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="14" width="52" height="36" rx="6" fill="white" opacity="0.06"/>
+            <path d="M14 40c4-6 8-10 12-10s8 4 12 10" stroke="white" stroke-opacity="0.9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="44" cy="22" r="6" fill="white" opacity="0.9"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Pedido de Copos</h1>
+          <div class="small">Rápido — Responsivo — Envia para WhatsApp</div>
+        </div>
+      </div>
+      <div class="auth" id="authArea">
+        <div class="small" id="welcomeText">Não conectado</div>
+        <button id="openLogin">Entrar / Cadastrar</button>
+      </div>
+    </header>
 
-<header>
-  <h1>Trabalhos Espirituais & Cartas Ciganas</h1>
-</header>
+    <main>
+      <section class="card">
+        <div class="section-title">Monte seu pedido</div>
 
-<div class="container">
+        <div class="card" style="margin-bottom:12px">
+          <div class="small">Tamanho do copo</div>
+          <div class="row" id="sizesRow" style="margin-top:8px">
+            <!-- sizes rendered by JS -->
+          </div>
+        </div>
 
-  <section>
-    <h2>Amarração Amorosa</h2>
-    <div class="cards">
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?auto=format&fit=crop&w=800&q=60" alt="Amarração">
-        <p>União definitiva, sem volta.</p>
+        <div class="card" style="margin-bottom:12px">
+          <div class="small">Sabor</div>
+          <div class="flavors" id="flavorsRow" style="margin-top:8px">
+            <!-- flavors by JS -->
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="small">Adicionais / Extras</div>
+          <div class="extras" id="extrasRow" style="margin-top:8px">
+          </div>
+        </div>
+
+        <div class="card inline" style="align-items:center">
+          <div style="flex:1">
+            <label class="small">Quantidade</label>
+            <input type="number" id="qty" min="1" value="1" />
+          </div>
+          <div style="width:200px">
+            <label class="small">Observação (opcional)</label>
+            <input type="text" id="obs" placeholder="Ex: sem açúcar" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn-primary" id="addToCart">Adicionar ao carrinho</button>
+          <button class="ghost" id="clearCart">Limpar carrinho</button>
+        </div>
+
+        <div style="margin-top:16px">
+          <div class="section-title">Carrinho</div>
+          <div class="cart" id="cartList"></div>
+        </div>
+
+      </section>
+
+      <aside class="sidebar card">
+        <div class="section-title">Resumo do pedido</div>
+        <div class="totals" style="margin-bottom:8px">
+          <div class="row" style="justify-content:space-between"><div class="small">Subtotal</div><div id="subtotal">R$ 0,00</div></div>
+          <div class="row" style="justify-content:space-between"><div class="small">Entrega</div><div id="deliveryFee">R$ 5,00</div></div>
+          <div class="row" style="justify-content:space-between;font-weight:700;margin-top:8px"><div>Total</div><div id="total">R$ 0,00</div></div>
+        </div>
+        <div class="small">Ao finalizar, o pedido será aberto no WhatsApp com o resumo e o endereço.</div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn-primary" id="checkout">Finalizar pedido</button>
+          <button class="ghost" id="saveOrder">Salvar pedido (local)</button>
+        </div>
+      </aside>
+    </main>
+
+    <footer>Feito com ♥ — teste em celular e notebook. Entrega fixa R$5 (ajuste no código).</footer>
+  </div>
+
+  <!-- login modal -->
+  <div class="modal" id="loginModal">
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Entrar / Cadastrar</strong>
+        <button class="link-like" id="closeLogin">Fechar</button>
+      </div>
+      <div class="login-wrap">
+        <input id="email" placeholder="E‑mail" />
+        <input id="password" placeholder="Senha" type="password" />
+        <div class="inline">
+          <button id="btnLogin" class="btn-primary">Entrar</button>
+          <button id="btnRegister" class="ghost">Criar conta</button>
+        </div>
+        <div class="small" style="margin-top:8px">Usuários ficam salvos no seu navegador (localStorage). Sem backend.</div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section>
-    <h2>Jogo de Cartas Ciganas</h2>
-    <div class="cards">
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1518292600344-5e5ac8f0c5ca?auto=format&fit=crop&w=800&q=60" alt="Cartas">
-        <p>Consulta completa: amor, dinheiro, saúde.</p>
+  <!-- checkout modal (address) -->
+  <div class="modal" id="checkoutModal">
+    <div class="box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Confirme o endereço e seus dados</strong>
+        <button class="link-like" id="closeCheckout">Fechar</button>
+      </div>
+      <div>
+        <div class="field"><label>Nome completo *</label><input id="fullname" required /></div>
+        <div class="field"><label>Rua / Logradouro *</label><input id="street" required /></div>
+        <div class="field inline"><div style="flex:1"><label>Número *</label><input id="number" required /></div><div style="flex:1;margin-left:8px"><label>Complemento / Referência (opcional)</label><input id="ref" /></div></div>
+        <div class="field inline"><div style="flex:1"><label>Cidade *</label><input id="city" required /></div><div style="flex:1;margin-left:8px"><label>CEP *</label><input id="cep" required placeholder="00000-000" /></div></div>
+        <div class="field"><label>Telefone (opcional)</label><input id="phone" placeholder="(xx) 9xxxx-xxxx" /></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+          <button id="sendWhatsapp" class="btn-primary">Enviar para WhatsApp</button>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <section>
-    <h2>Separação & Limpeza</h2>
-    <div class="cards">
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1519750783826-e2420f4d687f?auto=format&fit=crop&w=800&q=60" alt="Limpeza">
-        <p>Afasta rivais e energias negativas.</p>
-      </div>
-    </div>
-  </section>
+  <script>
+    // ====== CONFIG ======
+    const DELIVERY_FEE = 5.00; // ajuste aqui
 
-  <section class="cta">
-    <h2>Entre em contato agora</h2>
-    <p>WhatsApp: <strong>+55 (51) 99708-8974</strong></p>
-    <a href="https://wa.me/5551997088974" target="_blank">Chamar no WhatsApp</a>
-  </section>
+    // sample data
+    const SIZES = [
+      {id:'p',name:'Pequeno (300ml)',price:6.00},
+      {id:'m',name:'Médio (500ml)',price:9.00},
+      {id:'g',name:'Grande (700ml)',price:12.00}
+    ];
+    const FLAVORS = [
+      'Morango','Chocolate','Baunilha','Maracujá','Açaí','Coco'
+    ];
+    const EXTRAS = [
+      {id:'bala',name:'Bala por cima',price:1.50},
+      {id:'calda',name:'Calda especial',price:2.00},
+      {id:'creme',name:'Creme extra',price:2.50}
+    ];
 
-  <section>
-    <h2>Pré-Consulta</h2>
-    <form id="preForm">
-      <input type="text" id="nome" placeholder="Nome completo" required>
-      <input type="date" id="nascimento" required>
-      <button type="submit">Enviar e abrir WhatsApp</button>
-    </form>
-  </section>
+    // app state
+    let selectedSize = SIZES[1].id;
+    let selectedFlavor = FLAVORS[0];
+    let selectedExtras = new Set();
+    let cart = JSON.parse(localStorage.getItem('cart_v1')||'[]');
+    let currentUser = JSON.parse(localStorage.getItem('user_v1')||'null');
 
-</div>
+    // utils
+    const fmt = v => 'R$ '+v.toFixed(2).replace('.',',');
 
-<footer>
-  © 2024 Trabalhos Espirituais – Todos os direitos reservados.
-</footer>
-
-<script>
-  document.getElementById('preForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const nome = document.getElementById('nome').value.trim();
-    const nasc = document.getElementById('nascimento').value;
-    if(nome && nasc){
-      const texto = `Olá, meu nome é ${nome}, nasci em ${nasc}. Gostaria de agendar uma consulta.`;
-      window.open(`https://wa.me/5551997088974?text=${encodeURIComponent(texto)}`, '_blank');
+    // render UI
+    function renderSizes(){
+      const row = document.getElementById('sizesRow'); row.innerHTML='';
+      SIZES.forEach(s=>{
+        const btn = document.createElement('div'); btn.className='flavor'; btn.innerHTML=`<div style="font-weight:700">${s.name}</div><div class="small">${fmt(s.price)}</div>`;
+        if(selectedSize===s.id) btn.classList.add('selected');
+        btn.onclick = ()=>{selectedSize=s.id; renderSizes();}
+        row.appendChild(btn);
+      })
     }
-  });
-</script>
+    function renderFlavors(){
+      const row = document.getElementById('flavorsRow'); row.innerHTML='';
+      FLAVORS.forEach(f=>{
+        const el=document.createElement('div'); el.className='flavor'; el.textContent=f; if(selectedFlavor===f) el.classList.add('selected'); el.onclick=()=>{selectedFlavor=f; renderFlavors();}
+        row.appendChild(el);
+      })
+    }
+    function renderExtras(){
+      const row = document.getElementById('extrasRow'); row.innerHTML='';
+      EXTRAS.forEach(ex=>{
+        const id = 'ex_'+ex.id;
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" id="${id}" /> <span style="font-weight:700">${ex.name}</span> <div class="small">${fmt(ex.price)}</div>`;
+        row.appendChild(label);
+        document.addEventListener('click',()=>{});
+        setTimeout(()=>{ // attach after added
+          const cb = document.getElementById(id);
+          cb.checked = selectedExtras.has(ex.id);
+          cb.onchange = ()=>{ if(cb.checked) selectedExtras.add(ex.id); else selectedExtras.delete(ex.id); }
+        },0)
+      })
+    }
+    function getSizeObj(){ return SIZES.find(s=>s.id===selectedSize) }
+    function calcItemPrice(sizeObj, extrasArr){
+      let v = sizeObj.price; extrasArr.forEach(e=> v+=e.price); return v;
+    }
+    function renderCart(){
+      const list = document.getElementById('cartList'); list.innerHTML='';
+      cart.forEach((it,idx)=>{
+        const div=document.createElement('div'); div.className='cart-item';
+        div.innerHTML = `<div style="flex:1"><div style="font-weight:700">${it.sizeName} - ${it.flavor} x${it.qty}</div><div class="small">${it.extras.map(e=>e.name).join(', ')||'Sem extras'}${it.obs?` • ${it.obs}`:''}</div></div><div style="text-align:right"><div>${fmt(it.lineTotal)}</div><div style="margin-top:6px"><button class="ghost" data-idx="${idx}">Remover</button></div></div>`;
+        list.appendChild(div);
+      })
+      // attach remove
+      document.querySelectorAll('#cartList button').forEach(b=>b.onclick=()=>{ cart.splice(parseInt(b.dataset.idx),1); saveCart(); renderAll(); })
+      updateTotals();
+    }
+    function updateTotals(){
+      const subtotal = cart.reduce((s,it)=>s+it.lineTotal,0);
+      document.getElementById('subtotal').textContent = fmt(subtotal);
+      document.getElementById('deliveryFee').textContent = fmt(cart.length?DELIVERY_FEE:0);
+      const total = subtotal + (cart.length?DELIVERY_FEE:0);
+      document.getElementById('total').textContent = fmt(total);
+    }
+    function saveCart(){ localStorage.setItem('cart_v1', JSON.stringify(cart)) }
 
+    // add to cart
+    document.getElementById('addToCart').onclick = ()=>{
+      const qty = Math.max(1, parseInt(document.getElementById('qty').value||1));
+      const obs = document.getElementById('obs').value||'';
+      const sizeObj = getSizeObj();
+      const extrasArr = EXTRAS.filter(e=>selectedExtras.has(e.id));
+      const priceSingle = calcItemPrice(sizeObj, extrasArr);
+      const item = {size:selectedSize,sizeName:sizeObj.name,flavor:selectedFlavor,extras:extrasArr,qty:qty,obs:obs,lineTotal:priceSingle*qty};
+      cart.push(item); saveCart(); renderAll();
+      alert('Item adicionado ao carrinho')
+    }
+    document.getElementById('clearCart').onclick = ()=>{ if(confirm('Limpar todo o carrinho?')){ cart=[]; saveCart(); renderAll(); } }
+
+    // checkout flow
+    document.getElementById('checkout').onclick = ()=>{
+      if(cart.length===0){ alert('Carrinho vazio'); return }
+      document.getElementById('checkoutModal').classList.add('show');
+    }
+    document.getElementById('closeCheckout').onclick = ()=>document.getElementById('checkoutModal').classList.remove('show');
+
+    document.getElementById('sendWhatsapp').onclick = ()=>{
+      // validate required fields
+      const full = document.getElementById('fullname').value.trim();
+      const street = document.getElementById('street').value.trim();
+      const number = document.getElementById('number').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const cep = document.getElementById('cep').value.trim();
+      if(!full||!street||!number||!city||!cep){ alert('Preencha todos os campos obrigatórios (*)'); return }
+
+      // build message
+      let msg = `Pedido de Copos - ${new Date().toLocaleString()}\n\n`;
+      cart.forEach((it,idx)=>{
+        msg += `${idx+1}) ${it.sizeName} - ${it.flavor} x${it.qty} = ${fmt(it.lineTotal)}\n`;
+        if(it.extras.length) msg += `   Extras: ${it.extras.map(e=>e.name).join(', ')}\n`;
+        if(it.obs) msg += `   Obs: ${it.obs}\n`;
+      })
+      const subtotal = cart.reduce((s,it)=>s+it.lineTotal,0);
+      const delivery = cart.length?DELIVERY_FEE:0;
+      const total = subtotal + delivery;
+      msg += `\nSubtotal: ${fmt(subtotal)}\nEntrega: ${fmt(delivery)}\nTotal: ${fmt(total)}\n\n`;
+      msg += `Nome: ${full}\nEndereço: ${street}, ${number}${document.getElementById('ref').value?(' • '+document.getElementById('ref').value):''}\nCidade: ${city} • CEP: ${cep}\nTelefone: ${document.getElementById('phone').value||'Não informado'}`;
+
+      // open WhatsApp (generic share link to choose contact)
+      const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+      window.open(url,'_blank');
+      // optionally clear cart
+      // cart=[]; saveCart(); renderAll();
+    }
+
+    // save order local
+    document.getElementById('saveOrder').onclick = ()=>{
+      if(cart.length===0){ alert('Sem itens para salvar'); return }
+      const orders = JSON.parse(localStorage.getItem('orders_v1')||'[]');
+      orders.push({cart:cart,created:new Date().toISOString()});
+      localStorage.setItem('orders_v1', JSON.stringify(orders));
+      alert('Pedido salvo localmente')
+    }
+
+    // login modal
+    const loginModal = document.getElementById('loginModal');
+    document.getElementById('openLogin').onclick = ()=>{ loginModal.classList.add('show'); }
+    document.getElementById('closeLogin').onclick = ()=>{ loginModal.classList.remove('show'); }
+
+    // simple auth using localStorage
+    document.getElementById('btnRegister').onclick = ()=>{
+      const email = document.getElementById('email').value.trim(); const pw = document.getElementById('password').value;
+      if(!email||!pw){ alert('Preencha e-mail e senha'); return }
+      const users = JSON.parse(localStorage.getItem('users_v1')||'[]');
+      if(users.find(u=>u.email===email)){ alert('E-mail já cadastrado'); return }
+      users.push({email, pw, name:email.split('@')[0]});
+      localStorage.setItem('users_v1', JSON.stringify(users));
+      alert('Conta criada. Faça login.');
+    }
+    document.getElementById('btnLogin').onclick = ()=>{
+      const email = document.getElementById('email').value.trim(); const pw = document.getElementById('password').value;
+      const users = JSON.parse(localStorage.getItem('users_v1')||'[]');
+      const u = users.find(u=>u.email===email && u.pw===pw);
+      if(!u){ alert('Credenciais inválidas'); return }
+      currentUser = u; localStorage.setItem('user_v1', JSON.stringify(u)); renderUser(); loginModal.classList.remove('show');
+    }
+
+    function renderUser(){
+      const area = document.getElementById('authArea');
+      const welcome = document.getElementById('welcomeText');
+      if(currentUser){ welcome.textContent = 'Olá, '+(currentUser.name||currentUser.email); area.querySelector('#openLogin').textContent='Sair'; area.querySelector('#openLogin').onclick = ()=>{ if(confirm('Deseja sair?')){ localStorage.removeItem('user_v1'); currentUser=null; renderUser(); } } }
+      else{ welcome.textContent='Não conectado'; area.querySelector('#openLogin').textContent='Entrar / Cadastrar'; area.querySelector('#openLogin').onclick = ()=>{ loginModal.classList.add('show'); } }
+    }
+
+    // initialize
+    function renderAll(){ renderSizes(); renderFlavors(); renderExtras(); renderCart(); renderUser(); }
+    renderAll();
+
+  </script>
 </body>
 </html>
