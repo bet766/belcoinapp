@@ -1,130 +1,148 @@
 <!DOCTYPE html><html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GatoPlay Demo</title>
-  <style>
-    :root{
-      --roxo:#4b1fa6;
-      --roxo-escuro:#2e0f6e;
-      --amarelo:#ffe600;
-    }
-    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    body{
-      margin:0;
-      background:linear-gradient(180deg,var(--roxo-escuro),var(--roxo));
-      color:#fff;
-    }
-    .hidden{display:none}
-    header{
-      background:#3b178f;
-      padding:12px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .saldo{background:#2a0d66;padding:6px 12px;border-radius:20px}
-    .pix{background:var(--amarelo);color:#000;padding:6px 10px;border-radius:10px;font-weight:bold}
-    .container{padding:16px}
-    .card{background:#4b1fa6;border-radius:16px;padding:16px;margin-bottom:16px}
-    .btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--amarelo);color:#000;font-weight:bold;font-size:16px}
-    input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:10px}
-    footer{position:fixed;bottom:0;left:0;right:0;background:#3b178f;display:flex;justify-content:space-around;padding:10px 0}
-    footer button{background:none;border:none;color:#fff}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GatoPlay — Core HTML</title>
+<style>
+:root{--roxo:#4b1fa6;--roxo2:#2e0f6e;--amarelo:#ffe600}
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
+body{margin:0;background:linear-gradient(180deg,var(--roxo2),var(--roxo));color:#fff}
+.hidden{display:none}
+header{background:#3b178f;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.badge{background:#2a0d66;padding:6px 12px;border-radius:20px}
+.pix{background:var(--amarelo);color:#000;padding:6px 10px;border-radius:10px;font-weight:bold}
+.container{padding:16px}
+.card{background:#4b1fa6;border-radius:16px;padding:16px;margin-bottom:16px}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--amarelo);color:#000;font-weight:bold;font-size:16px;cursor:pointer}
+.btn-sec{background:#3b178f;color:#fff}
+input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:10px}
+footer{position:fixed;bottom:0;left:0;right:0;background:#3b178f;display:flex;justify-content:space-around;padding:10px 0}
+footer button{background:none;border:none;color:#fff;font-size:12px;cursor:pointer}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.center{text-align:center}
+</style>
 </head>
 <body><!-- LOGIN --><div id="login" class="container">
   <div class="card">
     <h2>Login</h2>
-    <input id="loginUser" placeholder="Usuário">
-    <input id="loginPass" type="password" placeholder="Senha">
-    <button class="btn" onclick="login()">Entrar</button>
-    <p onclick="show('register')">Criar conta</p>
+    <input id="lUser" placeholder="Usuário" />
+    <input id="lPass" type="password" placeholder="Senha" />
+    <button class="btn" onclick="doLogin()">Entrar</button>
+    <p class="center" onclick="show('register')">Criar conta</p>
   </div>
 </div><!-- CADASTRO --><div id="register" class="container hidden">
   <div class="card">
     <h2>Cadastro</h2>
-    <input id="regUser" placeholder="Usuário">
-    <input id="regPass" type="password" placeholder="Senha">
-    <button class="btn" onclick="register()">Cadastrar</button>
-    <p onclick="show('login')">Voltar</p>
+    <input id="rUser" placeholder="Usuário" />
+    <input id="rPass" type="password" placeholder="Senha" />
+    <button class="btn" onclick="doRegister()">Cadastrar</button>
+    <p class="center" onclick="show('login')">Voltar</p>
   </div>
 </div><!-- HOME --><div id="home" class="hidden">
 <header>
   <strong>GatoPlay</strong>
-  <div><span class="saldo" id="saldo">R$ 100</span> <span class="pix">PIX+</span></div>
-</header><div class="container">
+  <div><span class="badge" id="saldoBadge">R$ 0</span> <span class="pix">PIX+</span></div>
+</header>
+<div class="container">
+  <div class="card">
+    <h3 id="hello"></h3>
+    <p>Plano Gratuito • Nível Não ranqueado</p>
+  </div>
   <div class="card">
     <h3>Jogos</h3>
-    <button class="btn" onclick="show('slot')">🎰 Slot</button><br><br>
-    <button class="btn" onclick="show('crash')">🚀 Crash</button>
+    <div class="row">
+      <button class="btn" onclick="show('slot')">🎰 Slot</button>
+      <button class="btn" onclick="show('crash')">🚀 Crash</button>
+    </div>
   </div>
-</div><footer>
+  <div class="card">
+    <h3>Depósito (simulado)</h3>
+    <div class="row">
+      <button class="btn-sec" onclick="deposit(50)">+ R$50</button>
+      <button class="btn-sec" onclick="deposit(100)">+ R$100</button>
+    </div>
+  </div>
+</div>
+<footer>
   <button onclick="show('home')">Home</button>
   <button onclick="show('slot')">Slot</button>
   <button onclick="show('crash')">Crash</button>
+  <button onclick="logout()">Sair</button>
 </footer>
-</div><!-- SLOT GAME --><div id="slot" class="container hidden">
-  <div class="card">
+</div><!-- SLOT --><div id="slot" class="container hidden">
+  <div class="card center">
     <h2>🎰 Slot</h2>
-    <p id="slotResult">🍒 🍒 🍒</p>
+    <h1 id="slotRes">🍒 🍒 🍒</h1>
+    <p>Custo: R$10 • Prêmio: R$50</p>
     <button class="btn" onclick="spin()">Girar</button>
-    <button onclick="show('home')">Voltar</button>
+    <button class="btn-sec" onclick="show('home')">Voltar</button>
   </div>
-</div><!-- CRASH GAME --><div id="crash" class="container hidden">
-  <div class="card">
+</div><!-- CRASH --><div id="crash" class="container hidden">
+  <div class="card center">
     <h2>🚀 Crash</h2>
-    <p id="mult">1.00x</p>
+    <h1 id="mult">1.00x</h1>
+    <p>Aposta: R$10</p>
     <button class="btn" onclick="startCrash()">Iniciar</button>
-    <button onclick="cashout()">Sacar</button>
-    <button onclick="show('home')">Voltar</button>
+    <button class="btn-sec" onclick="cashout()">Sacar</button>
+    <button class="btn-sec" onclick="show('home')">Voltar</button>
   </div>
 </div><script>
-let users = JSON.parse(localStorage.getItem('users')||'{}');
-let currentUser=null;
-let saldo=100;
-let crashInterval, crashMult=1;
+// ======= CORE =======
+const DB_KEY='gp_users_v1';
+let users=JSON.parse(localStorage.getItem(DB_KEY)||'{}');
+let current=null;
+let crashTimer=null, mult=1;
 
-function show(id){
-  document.querySelectorAll('body > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+function save(){localStorage.setItem(DB_KEY,JSON.stringify(users));}
+function show(id){document.querySelectorAll('body>div').forEach(d=>d.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function updateUI(){document.getElementById('hello').innerText='Olá, '+current;document.getElementById('saldoBadge').innerText='R$ '+users[current].saldo;}
+
+// ======= AUTH =======
+function doRegister(){
+  const u=rUser.value.trim(), p=rPass.value;
+  if(!u||!p) return alert('Preencha tudo');
+  if(users[u]) return alert('Usuário existe');
+  users[u]={pass:p,saldo:100}; save(); alert('Conta criada! Bônus R$100'); show('login');
 }
-
-function register(){
-  users[regUser.value]={pass:regPass.value};
-  localStorage.setItem('users',JSON.stringify(users));
-  alert('Conta criada'); show('login');
+function doLogin(){
+  const u=lUser.value.trim(), p=lPass.value;
+  if(users[u]?.pass!==p) return alert('Login inválido');
+  current=u; show('home'); updateUI();
 }
+function logout(){current=null; location.reload();}
 
-function login(){
-  if(users[loginUser.value]?.pass===loginPass.value){
-    currentUser=loginUser.value; show('home');
-  } else alert('Login inválido');
-}
+// ======= MONEY =======
+function deposit(v){users[current].saldo+=v; save(); updateUI();}
+function canPay(v){if(users[current].saldo<v){alert('Saldo insuficiente');return false;} return true;}
 
-function updateSaldo(){document.getElementById('saldo').innerText='R$ '+saldo}
-
+// ======= SLOT =======
 function spin(){
-  let icons=['🍒','🍋','💎'];
-  let r=[0,1,2].map(()=>icons[Math.floor(Math.random()*3)]);
-  slotResult.innerText=r.join(' ');
-  if(r[0]==r[1]&&r[1]==r[2]){saldo+=50;alert('Ganhou!')}else saldo-=10;
-  updateSaldo();
+  if(!canPay(10)) return;
+  users[current].saldo-=10;
+  const icons=['🍒','🍋','💎'];
+  const r=[0,1,2].map(()=>icons[Math.floor(Math.random()*3)]);
+  slotRes.innerText=r.join(' ');
+  if(r[0]===r[1] && r[1]===r[2]) users[current].saldo+=50;
+  save(); updateUI();
 }
 
+// ======= CRASH =======
 function startCrash(){
-  crashMult=1; mult.innerText='1.00x';
-  crashInterval=setInterval(()=>{
-    crashMult+=0.1;
-    mult.innerText=crashMult.toFixed(2)+'x';
-    if(Math.random()<0.05){clearInterval(crashInterval);alert('Crash!')}
+  if(!canPay(10)) return;
+  users[current].saldo-=10; save(); updateUI();
+  mult=1; multEl();
+  clearInterval(crashTimer);
+  crashTimer=setInterval(()=>{
+    mult+=0.1; multEl();
+    if(Math.random()<0.06){ clearInterval(crashTimer); alert('Crash!'); }
   },300);
 }
-
 function cashout(){
-  clearInterval(crashInterval);
-  saldo+=Math.floor(crashMult*10);
-  updateSaldo();
+  if(!crashTimer) return;
+  clearInterval(crashTimer);
+  users[current].saldo+=Math.floor(mult*10);
+  save(); updateUI();
 }
+function multEl(){document.getElementById('mult').innerText=mult.toFixed(2)+'x';}
 </script></body>
 </html>
