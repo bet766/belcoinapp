@@ -1,148 +1,230 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GatoPlay — Core HTML</title>
+<meta charset="UTF-8">
+<title>Chat Firebase</title>
+
+<!-- Firebase COMPAT -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
-:root{--roxo:#4b1fa6;--roxo2:#2e0f6e;--amarelo:#ffe600}
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:linear-gradient(180deg,var(--roxo2),var(--roxo));color:#fff}
-.hidden{display:none}
-header{background:#3b178f;padding:12px;display:flex;justify-content:space-between;align-items:center}
-.badge{background:#2a0d66;padding:6px 12px;border-radius:20px}
-.pix{background:var(--amarelo);color:#000;padding:6px 10px;border-radius:10px;font-weight:bold}
-.container{padding:16px}
-.card{background:#4b1fa6;border-radius:16px;padding:16px;margin-bottom:16px}
-.btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--amarelo);color:#000;font-weight:bold;font-size:16px;cursor:pointer}
-.btn-sec{background:#3b178f;color:#fff}
-input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:10px}
-footer{position:fixed;bottom:0;left:0;right:0;background:#3b178f;display:flex;justify-content:space-around;padding:10px 0}
-footer button{background:none;border:none;color:#fff;font-size:12px;cursor:pointer}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.center{text-align:center}
+body { font-family: Arial; background:#ece5dd; margin:0 }
+.container { max-width:400px; margin:auto; padding:15px }
+
+.tabs { display:flex }
+.tab {
+  flex:1;
+  padding:10px;
+  background:#ccc;
+  text-align:center;
+  cursor:pointer;
+}
+.tab.active { background:#25d366; color:#fff }
+
+input, button { width:100%; padding:10px; margin:5px 0 }
+button { background:#25d366; color:#fff; border:none; cursor:pointer }
+
+.section { display:none }
+.section.active { display:block }
+
+.chat-box { background:#fff; height:300px; overflow-y:auto; padding:10px }
+.msg { margin:5px 0; max-width:80% }
+.me { text-align:right; margin-left:auto; background:#dcf8c6; padding:5px; border-radius:5px }
+.other { text-align:left; background:#f1f0f0; padding:5px; border-radius:5px }
 </style>
 </head>
-<body><!-- LOGIN --><div id="login" class="container">
-  <div class="card">
-    <h2>Login</h2>
-    <input id="lUser" placeholder="Usuário" />
-    <input id="lPass" type="password" placeholder="Senha" />
-    <button class="btn" onclick="doLogin()">Entrar</button>
-    <p class="center" onclick="show('register')">Criar conta</p>
+
+<body>
+
+<!-- AUTH -->
+<div id="auth" class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('login')">Login</div>
+    <div class="tab" onclick="showTab('register')">Cadastro</div>
   </div>
-</div><!-- CADASTRO --><div id="register" class="container hidden">
-  <div class="card">
-    <h2>Cadastro</h2>
-    <input id="rUser" placeholder="Usuário" />
-    <input id="rPass" type="password" placeholder="Senha" />
-    <button class="btn" onclick="doRegister()">Cadastrar</button>
-    <p class="center" onclick="show('login')">Voltar</p>
+
+  <!-- LOGIN -->
+  <div id="loginTab" class="section active">
+    <h2>Entrar</h2>
+    <input id="emailLogin" placeholder="Email">
+    <input id="passwordLogin" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
   </div>
-</div><!-- HOME --><div id="home" class="hidden">
-<header>
-  <strong>GatoPlay</strong>
-  <div><span class="badge" id="saldoBadge">R$ 0</span> <span class="pix">PIX+</span></div>
-</header>
-<div class="container">
-  <div class="card">
-    <h3 id="hello"></h3>
-    <p>Plano Gratuito • Nível Não ranqueado</p>
+
+  <!-- CADASTRO -->
+  <div id="registerTab" class="section">
+    <h2>Criar conta</h2>
+    <input id="name" placeholder="Nome">
+    <input id="emailInput" placeholder="Email">
+    <input id="password" type="password" placeholder="Senha">
+    <button onclick="register()">Cadastrar</button>
   </div>
-  <div class="card">
-    <h3>Jogos</h3>
-    <div class="row">
-      <button class="btn" onclick="show('slot')">🎰 Slot</button>
-      <button class="btn" onclick="show('crash')">🚀 Crash</button>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Depósito (simulado)</h3>
-    <div class="row">
-      <button class="btn-sec" onclick="deposit(50)">+ R$50</button>
-      <button class="btn-sec" onclick="deposit(100)">+ R$100</button>
-    </div>
-  </div>
+
 </div>
-<footer>
-  <button onclick="show('home')">Home</button>
-  <button onclick="show('slot')">Slot</button>
-  <button onclick="show('crash')">Crash</button>
-  <button onclick="logout()">Sair</button>
-</footer>
-</div><!-- SLOT --><div id="slot" class="container hidden">
-  <div class="card center">
-    <h2>🎰 Slot</h2>
-    <h1 id="slotRes">🍒 🍒 🍒</h1>
-    <p>Custo: R$10 • Prêmio: R$50</p>
-    <button class="btn" onclick="spin()">Girar</button>
-    <button class="btn-sec" onclick="show('home')">Voltar</button>
-  </div>
-</div><!-- CRASH --><div id="crash" class="container hidden">
-  <div class="card center">
-    <h2>🚀 Crash</h2>
-    <h1 id="mult">1.00x</h1>
-    <p>Aposta: R$10</p>
-    <button class="btn" onclick="startCrash()">Iniciar</button>
-    <button class="btn-sec" onclick="cashout()">Sacar</button>
-    <button class="btn-sec" onclick="show('home')">Voltar</button>
-  </div>
-</div><script>
-// ======= CORE =======
-const DB_KEY='gp_users_v1';
-let users=JSON.parse(localStorage.getItem(DB_KEY)||'{}');
-let current=null;
-let crashTimer=null, mult=1;
 
-function save(){localStorage.setItem(DB_KEY,JSON.stringify(users));}
-function show(id){document.querySelectorAll('body>div').forEach(d=>d.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
-function updateUI(){document.getElementById('hello').innerText='Olá, '+current;document.getElementById('saldoBadge').innerText='R$ '+users[current].saldo;}
+<!-- CHAT -->
+<div id="chat" class="container" style="display:none">
+  <h3 id="myCode"></h3>
 
-// ======= AUTH =======
-function doRegister(){
-  const u=rUser.value.trim(), p=rPass.value;
-  if(!u||!p) return alert('Preencha tudo');
-  if(users[u]) return alert('Usuário existe');
-  users[u]={pass:p,saldo:100}; save(); alert('Conta criada! Bônus R$100'); show('login');
-}
-function doLogin(){
-  const u=lUser.value.trim(), p=lPass.value;
-  if(users[u]?.pass!==p) return alert('Login inválido');
-  current=u; show('home'); updateUI();
-}
-function logout(){current=null; location.reload();}
+  <input id="contactCode" placeholder="Código do contato">
+  <button onclick="openChat()">Abrir conversa</button>
 
-// ======= MONEY =======
-function deposit(v){users[current].saldo+=v; save(); updateUI();}
-function canPay(v){if(users[current].saldo<v){alert('Saldo insuficiente');return false;} return true;}
+  <div class="chat-box" id="messages"></div>
 
-// ======= SLOT =======
-function spin(){
-  if(!canPay(10)) return;
-  users[current].saldo-=10;
-  const icons=['🍒','🍋','💎'];
-  const r=[0,1,2].map(()=>icons[Math.floor(Math.random()*3)]);
-  slotRes.innerText=r.join(' ');
-  if(r[0]===r[1] && r[1]===r[2]) users[current].saldo+=50;
-  save(); updateUI();
+  <input id="msgInput" placeholder="Mensagem">
+  <button onclick="sendMsg()">Enviar</button>
+</div>
+
+<script>
+// 🔥 FIREBASE (TEU PROJETO)
+const firebaseConfig = {
+  apiKey: "AIzaSyCb3qXhVccF5zaM1kT7Y0qSgpyJlltTWSE",
+  authDomain: "chat-a1210.firebaseapp.com",
+  projectId: "chat-a1210",
+  storageBucket: "chat-a1210.appspot.com",
+  messagingSenderId: "158588715768",
+  appId: "1:158588715768:web:15d8dd4f109250954cb10d"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentChatId = null;
+
+// 🔁 CONTROLE DAS ABAS
+function showTab(tab) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+
+  if (tab === "login") {
+    document.querySelectorAll(".tab")[0].classList.add("active");
+    loginTab.classList.add("active");
+  } else {
+    document.querySelectorAll(".tab")[1].classList.add("active");
+    registerTab.classList.add("active");
+  }
 }
 
-// ======= CRASH =======
-function startCrash(){
-  if(!canPay(10)) return;
-  users[current].saldo-=10; save(); updateUI();
-  mult=1; multEl();
-  clearInterval(crashTimer);
-  crashTimer=setInterval(()=>{
-    mult+=0.1; multEl();
-    if(Math.random()<0.06){ clearInterval(crashTimer); alert('Crash!'); }
-  },300);
+// 🔑 CÓDIGO ÚNICO
+function gerarCodigo() {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
-function cashout(){
-  if(!crashTimer) return;
-  clearInterval(crashTimer);
-  users[current].saldo+=Math.floor(mult*10);
-  save(); updateUI();
+
+// 📝 CADASTRO
+function register() {
+  const nome = name.value;
+  const email = emailInput.value;
+  const senha = password.value;
+
+  if (!nome || !email || !senha) {
+    alert("Preencha todos os campos");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, senha)
+    .then(res => {
+      const uid = res.user.uid;
+      const codigo = gerarCodigo();
+
+      db.collection("users").doc(uid).set({
+        name: nome,
+        email: email,
+        code: codigo,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("Cadastro criado! Faça login.");
+      showTab("login");
+    })
+    .catch(err => alert(err.message));
 }
-function multEl(){document.getElementById('mult').innerText=mult.toFixed(2)+'x';}
-</script></body>
+
+// 🔓 LOGIN
+function login() {
+  auth.signInWithEmailAndPassword(emailLogin.value, passwordLogin.value)
+    .then(() => iniciar())
+    .catch(err => alert(err.message));
+}
+
+// 🚀 INICIAR CHAT
+function iniciar() {
+  authDiv = document.getElementById("auth");
+  authDiv.style.display = "none";
+  chat.style.display = "block";
+
+  db.collection("users").doc(auth.currentUser.uid).get()
+    .then(doc => {
+      myCode.innerHTML = "Seu código: <b>" + doc.data().code + "</b>";
+    });
+}
+
+// 💬 ABRIR CHAT
+async function openChat() {
+  const code = contactCode.value.trim();
+  if (!code) return;
+
+  const snap = await db.collection("users")
+    .where("code", "==", code).get();
+
+  if (snap.empty) {
+    alert("Usuário não encontrado");
+    return;
+  }
+
+  const otherUid = snap.docs[0].id;
+  const myUid = auth.currentUser.uid;
+
+  currentChatId = [myUid, otherUid].sort().join("_");
+
+  db.collection("chats").doc(currentChatId).set({
+    members: {
+      [myUid]: true,
+      [otherUid]: true
+    }
+  }, { merge:true });
+
+  ouvirMensagens();
+}
+
+// 👂 MENSAGENS
+function ouvirMensagens() {
+  messages.innerHTML = "";
+
+  db.collection("chats").doc(currentChatId)
+    .collection("messages")
+    .orderBy("time")
+    .onSnapshot(snap => {
+      messages.innerHTML = "";
+      snap.forEach(doc => {
+        const m = doc.data();
+        const div = document.createElement("div");
+        div.className = "msg " + (m.sender === auth.currentUser.uid ? "me" : "other");
+        div.innerText = m.text;
+        messages.appendChild(div);
+      });
+      messages.scrollTop = messages.scrollHeight;
+    });
+}
+
+// ✉️ ENVIAR
+function sendMsg() {
+  if (!currentChatId || !msgInput.value) return;
+
+  db.collection("chats").doc(currentChatId)
+    .collection("messages").add({
+      sender: auth.currentUser.uid,
+      text: msgInput.value,
+      time: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+  msgInput.value = "";
+}
+</script>
+
+</body>
 </html>
