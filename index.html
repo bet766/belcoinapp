@@ -1,304 +1,157 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeoPix Bank</title>
-
-<style>
-* {margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-
-body {
-    background:#0b0f1a;
-    color:#fff;
-}
-
-/* LOGIN */
-.auth {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
-
-.auth-box {
-    background:#111827;
-    padding:30px;
-    border-radius:12px;
-    width:300px;
-}
-
-.auth-box h2 {
-    margin-bottom:20px;
-}
-
-.auth-box input {
-    width:100%;
-    padding:10px;
-    margin-bottom:10px;
-    border:none;
-    border-radius:8px;
-}
-
-.auth-box button {
-    width:100%;
-    padding:10px;
-    background:#22c55e;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-.link {
-    margin-top:10px;
-    text-align:center;
-    cursor:pointer;
-    color:#9ca3af;
-}
-
-/* APP */
-.app { display:none; }
-
-.header {
-    background:#111827;
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-}
-
-.balance {
-    padding:20px;
-    background:linear-gradient(135deg,#22c55e,#4ade80);
-    margin:20px;
-    border-radius:12px;
-    color:#000;
-}
-
-.grid {
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-    gap:15px;
-    padding:20px;
-}
-
-.card {
-    background:#111827;
-    padding:20px;
-    border-radius:12px;
-    text-align:center;
-    cursor:pointer;
-    transition:.3s;
-}
-
-.card:hover {
-    transform:translateY(-5px);
-    border:1px solid #22c55e;
-}
-
-/* HISTÓRICO */
-.history {
-    padding:20px;
-}
-
-.history-item {
-    background:#111827;
-    padding:10px;
-    margin-bottom:10px;
-    border-radius:8px;
-}
-
-/* MODAL */
-.modal {
-    position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    display:none;
-    background:rgba(0,0,0,0.8);
-    justify-content:center;
-    align-items:center;
-}
-
-.modal-box {
-    background:#111827;
-    padding:30px;
-    border-radius:12px;
-    text-align:center;
-}
-
-.modal-box img { width:200px; }
-
-.support {
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    background:#22c55e;
-    width:50px;height:50px;
-    border-radius:50%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:#000;
-    font-weight:bold;
-    cursor:pointer;
-}
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-<div class="auth" id="auth">
-    <div class="auth-box">
-        <h2>NeoPix</h2>
-        <input type="text" id="user" placeholder="Usuário">
-        <input type="password" id="pass" placeholder="Senha">
-        <button onclick="login()">Entrar</button>
-        <div class="link" onclick="register()">Criar conta</div>
-    </div>
+<title>NeoPix Bank</title><style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{background:#0b0f1a;color:#fff}
+.auth, .app{display:flex;justify-content:center;align-items:center;height:100vh}
+.auth-box{background:#111827;padding:25px;border-radius:12px;width:320px}
+.auth-box input{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none}
+.auth-box button{width:100%;padding:10px;background:#22c55e;border:none;border-radius:8px;cursor:pointer}
+.link{margin-top:10px;text-align:center;cursor:pointer;color:#9ca3af}
+.app{display:none;flex-direction:column;height:auto}
+.header{background:#111827;padding:15px;display:flex;justify-content:space-between}
+.balance{margin:20px;padding:20px;background:#22c55e;color:#000;border-radius:12px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:20px}
+.card{background:#111827;padding:15px;border-radius:10px;text-align:center;cursor:pointer}
+.history{padding:20px}
+.profile{padding:20px;background:#111827;margin:20px;border-radius:12px}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;display:none;background:rgba(0,0,0,0.8);justify-content:center;align-items:center}
+.modal-box{background:#111827;padding:20px;border-radius:10px;text-align:center}
+</style></head><body><div class="auth" id="auth">
+<div class="auth-box" id="loginBox">
+<h2>Login</h2>
+<input id="email" placeholder="Email">
+<input id="senha" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<div class="link" onclick="mostrarCadastro()">Criar conta</div>
+</div><div class="auth-box" id="cadastroBox" style="display:none">
+<h2>Cadastro</h2>
+<input id="nome" placeholder="Nome">
+<input id="emailCad" placeholder="Email">
+<input id="cpf" placeholder="CPF">
+<input id="telefone" placeholder="Telefone">
+<input id="senhaCad" type="password" placeholder="Senha">
+<button onclick="cadastrar()">Cadastrar</button>
+<div class="link" onclick="voltarLogin()">Voltar</div>
 </div>
-
-<!-- APP -->
-<div class="app" id="app">
-
+</div><div class="app" id="app">
 <div class="header">
-    <h3>NeoPix</h3>
-    <button onclick="logout()">Sair</button>
+<h3>NeoPix</h3>
+<button onclick="logout()">Sair</button>
+</div><div class="balance">
+<h4>Saldo</h4>
+<h2 id="saldo">R$ 0</h2>
+</div><div class="grid" id="grid"></div><div class="history">
+<h3>Histórico</h3>
+<div id="historico"></div>
+</div><div class="profile" id="perfil"></div>
+</div><div class="modal" id="modal">
+<div class="modal-box">
+<h3 id="valor"></h3>
+<button onclick="simular()">Simular pagamento</button>
+<button onclick="fechar()">Fechar</button>
+<p id="msg"></p>
 </div>
+</div><script>
+let usuarioAtual;
+let saldo=0;
 
-<div class="balance">
-    <h4>Saldo</h4>
-    <h2 id="saldo">R$ 0</h2>
-</div>
+function mostrarCadastro(){
+loginBox.style.display='none';
+cadastroBox.style.display='block';
+}
 
-<div style="padding:20px;">
-    <input id="cupom" placeholder="Cupom" style="padding:8px;border-radius:8px;border:none;">
-    <button onclick="usarCupom()" style="padding:8px;border:none;background:#22c55e;border-radius:8px;">OK</button>
-</div>
+function voltarLogin(){
+cadastroBox.style.display='none';
+loginBox.style.display='block';
+}
 
-<div class="grid" id="grid"></div>
+function cadastrar(){
+let user={
+nome:nome.value,
+email:emailCad.value,
+cpf:cpf.value,
+telefone:telefone.value,
+senha:senhaCad.value,
+saldo:1000,
+hist:[]
+};
 
-<div class="history">
-    <h3>Histórico</h3>
-    <div id="history"></div>
-</div>
+localStorage.setItem(user.email,JSON.stringify(user));
+alert('Conta criada!');
+voltarLogin();
+}
 
-</div>
-
-<!-- MODAL -->
-<div class="modal" id="modal">
-    <div class="modal-box">
-        <h3 id="valor"></h3>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX">
-        <br><br>
-        <button onclick="simular()">Já paguei</button>
-        <button onclick="fechar()">Fechar</button>
-        <p id="msg"></p>
-    </div>
-</div>
-
-<div class="support" onclick="alert('Suporte: suporte@neopix.com')">?</div>
-
-<script>
-
-// LOGIN
 function login(){
-    let u = user.value;
-    let p = pass.value;
+let emailL=email.value;
+let senhaL=senha.value;
+let user=JSON.parse(localStorage.getItem(emailL));
 
-    if(localStorage.getItem(u) === p){
-        iniciar(u);
-    } else {
-        alert("Usuário não encontrado");
-    }
+if(user && user.senha===senhaL){
+usuarioAtual=user;
+abrirApp();
+}else alert('Login inválido');
 }
 
-function register(){
-    let u = user.value;
-    let p = pass.value;
-
-    localStorage.setItem(u,p);
-    localStorage.setItem(u+"_saldo",1000);
-    localStorage.setItem(u+"_hist","[]");
-
-    alert("Conta criada!");
+function abrirApp(){
+auth.style.display='none';
+app.style.display='block';
+atualizar();
 }
 
-function iniciar(u){
-    window.usuario = u;
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
-    carregar();
+function atualizar(){
+saldo=usuarioAtual.saldo;
+saldoEl.innerText='R$ '+saldo;
+
+perfil.innerHTML=`
+<h3>Perfil</h3>
+<p>Nome: ${usuarioAtual.nome}</p>
+<p>Email: ${usuarioAtual.email}</p>
+<p>CPF: ${usuarioAtual.cpf}</p>
+<p>Telefone: ${usuarioAtual.telefone}</p>
+`;
+
+historico.innerHTML='';
+usuarioAtual.hist.slice().reverse().forEach(h=>{
+historico.innerHTML+=`<div>${h}</div>`;
+});
 }
 
-function logout(){
-    location.reload();
+function salvar(){
+localStorage.setItem(usuarioAtual.email,JSON.stringify(usuarioAtual));
+atualizar();
 }
 
-// SALDO
-function carregar(){
-    saldo = Number(localStorage.getItem(usuario+"_saldo"));
-    atualizarSaldo();
-    carregarHistorico();
-}
-
-function atualizarSaldo(){
-    saldoEl.innerText = "R$ " + saldo.toLocaleString();
-}
-
-// CUPOM
-const cupons = {VIP100:100,PIX500:500};
-
-function usarCupom(){
-    let c = cupom.value.toUpperCase();
-    if(cupons[c]){
-        saldo += cupons[c];
-        salvar("Cupom +" + cupons[c]);
-    } else alert("Inválido");
-}
-
-// HISTÓRICO
-function salvar(txt){
-    let hist = JSON.parse(localStorage.getItem(usuario+"_hist"));
-    hist.push(txt);
-    localStorage.setItem(usuario+"_hist",JSON.stringify(hist));
-    localStorage.setItem(usuario+"_saldo",saldo);
-    carregar();
-}
-
-function carregarHistorico(){
-    let hist = JSON.parse(localStorage.getItem(usuario+"_hist"));
-    history.innerHTML="";
-    hist.reverse().forEach(h=>{
-        history.innerHTML += `<div class="history-item">${h}</div>`;
-    });
-}
-
-// INVESTIMENTOS
-const valores=[500,1000,5000,10000,50000,100000];
-
+const valores=[100,500,1000,5000];
 valores.forEach(v=>{
-    let div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`R$ ${v}`;
-    div.onclick=()=>abrir(v);
-    grid.appendChild(div);
+let d=document.createElement('div');
+d.className='card';
+d.innerText='R$ '+v;
+d.onclick=()=>abrir(v);
+grid.appendChild(d);
 });
 
 function abrir(v){
-    modal.style.display="flex";
-    valor.innerText="R$ "+v;
+modal.style.display='flex';
+valor.innerText='Depositar R$ '+v;
+window.valorAtual=v;
 }
 
-function fechar(){ modal.style.display="none"; }
+function fechar(){modal.style.display='none'}
 
 function simular(){
-    msg.innerText="Processando...";
-    setTimeout(()=>{
-        msg.innerText="Se não atualizar, contate suporte.";
-    },1500);
+msg.innerText='Processando...';
+setTimeout(()=>{
+usuarioAtual.saldo+=valorAtual;
+usuarioAtual.hist.push('Depósito R$ '+valorAtual);
+salvar();
+fechar();
+msg.innerText='';
+},1500);
 }
 
-</script>
-
-</body>
+function logout(){location.reload()}
+</script></body>
 </html>
