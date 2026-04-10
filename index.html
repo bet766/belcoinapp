@@ -1,229 +1,303 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Chat Firebase</title>
-
-<!-- Firebase COMPAT -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoPix Bank</title>
 
 <style>
-body { font-family: Arial; background:#ece5dd; margin:0 }
-.container { max-width:400px; margin:auto; padding:15px }
+* {margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 
-.tabs { display:flex }
-.tab {
-  flex:1;
-  padding:10px;
-  background:#ccc;
-  text-align:center;
-  cursor:pointer;
+body {
+    background:#0b0f1a;
+    color:#fff;
 }
-.tab.active { background:#25d366; color:#fff }
 
-input, button { width:100%; padding:10px; margin:5px 0 }
-button { background:#25d366; color:#fff; border:none; cursor:pointer }
+/* LOGIN */
+.auth {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
 
-.section { display:none }
-.section.active { display:block }
+.auth-box {
+    background:#111827;
+    padding:30px;
+    border-radius:12px;
+    width:300px;
+}
 
-.chat-box { background:#fff; height:300px; overflow-y:auto; padding:10px }
-.msg { margin:5px 0; max-width:80% }
-.me { text-align:right; margin-left:auto; background:#dcf8c6; padding:5px; border-radius:5px }
-.other { text-align:left; background:#f1f0f0; padding:5px; border-radius:5px }
+.auth-box h2 {
+    margin-bottom:20px;
+}
+
+.auth-box input {
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:8px;
+}
+
+.auth-box button {
+    width:100%;
+    padding:10px;
+    background:#22c55e;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.link {
+    margin-top:10px;
+    text-align:center;
+    cursor:pointer;
+    color:#9ca3af;
+}
+
+/* APP */
+.app { display:none; }
+
+.header {
+    background:#111827;
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+}
+
+.balance {
+    padding:20px;
+    background:linear-gradient(135deg,#22c55e,#4ade80);
+    margin:20px;
+    border-radius:12px;
+    color:#000;
+}
+
+.grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:15px;
+    padding:20px;
+}
+
+.card {
+    background:#111827;
+    padding:20px;
+    border-radius:12px;
+    text-align:center;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.card:hover {
+    transform:translateY(-5px);
+    border:1px solid #22c55e;
+}
+
+/* HISTÓRICO */
+.history {
+    padding:20px;
+}
+
+.history-item {
+    background:#111827;
+    padding:10px;
+    margin-bottom:10px;
+    border-radius:8px;
+}
+
+/* MODAL */
+.modal {
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    display:none;
+    background:rgba(0,0,0,0.8);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-box {
+    background:#111827;
+    padding:30px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.modal-box img { width:200px; }
+
+.support {
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#22c55e;
+    width:50px;height:50px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
-<div id="auth" class="container">
+<!-- LOGIN -->
+<div class="auth" id="auth">
+    <div class="auth-box">
+        <h2>NeoPix</h2>
+        <input type="text" id="user" placeholder="Usuário">
+        <input type="password" id="pass" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+        <div class="link" onclick="register()">Criar conta</div>
+    </div>
+</div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('login')">Login</div>
-    <div class="tab" onclick="showTab('register')">Cadastro</div>
-  </div>
+<!-- APP -->
+<div class="app" id="app">
 
-  <!-- LOGIN -->
-  <div id="loginTab" class="section active">
-    <h2>Entrar</h2>
-    <input id="emailLogin" placeholder="Email">
-    <input id="passwordLogin" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-  </div>
+<div class="header">
+    <h3>NeoPix</h3>
+    <button onclick="logout()">Sair</button>
+</div>
 
-  <!-- CADASTRO -->
-  <div id="registerTab" class="section">
-    <h2>Criar conta</h2>
-    <input id="name" placeholder="Nome">
-    <input id="emailInput" placeholder="Email">
-    <input id="password" type="password" placeholder="Senha">
-    <button onclick="register()">Cadastrar</button>
-  </div>
+<div class="balance">
+    <h4>Saldo</h4>
+    <h2 id="saldo">R$ 0</h2>
+</div>
+
+<div style="padding:20px;">
+    <input id="cupom" placeholder="Cupom" style="padding:8px;border-radius:8px;border:none;">
+    <button onclick="usarCupom()" style="padding:8px;border:none;background:#22c55e;border-radius:8px;">OK</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="history">
+    <h3>Histórico</h3>
+    <div id="history"></div>
+</div>
 
 </div>
 
-<!-- CHAT -->
-<div id="chat" class="container" style="display:none">
-  <h3 id="myCode"></h3>
-
-  <input id="contactCode" placeholder="Código do contato">
-  <button onclick="openChat()">Abrir conversa</button>
-
-  <div class="chat-box" id="messages"></div>
-
-  <input id="msgInput" placeholder="Mensagem">
-  <button onclick="sendMsg()">Enviar</button>
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-box">
+        <h3 id="valor"></h3>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PIX">
+        <br><br>
+        <button onclick="simular()">Já paguei</button>
+        <button onclick="fechar()">Fechar</button>
+        <p id="msg"></p>
+    </div>
 </div>
+
+<div class="support" onclick="alert('Suporte: suporte@neopix.com')">?</div>
 
 <script>
-// 🔥 FIREBASE (TEU PROJETO)
-const firebaseConfig = {
-  apiKey: "AIzaSyCb3qXhVccF5zaM1kT7Y0qSgpyJlltTWSE",
-  authDomain: "chat-a1210.firebaseapp.com",
-  projectId: "chat-a1210",
-  storageBucket: "chat-a1210.appspot.com",
-  messagingSenderId: "158588715768",
-  appId: "1:158588715768:web:15d8dd4f109250954cb10d"
-};
 
-firebase.initializeApp(firebaseConfig);
+// LOGIN
+function login(){
+    let u = user.value;
+    let p = pass.value;
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let currentChatId = null;
-
-// 🔁 CONTROLE DAS ABAS
-function showTab(tab) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-
-  if (tab === "login") {
-    document.querySelectorAll(".tab")[0].classList.add("active");
-    loginTab.classList.add("active");
-  } else {
-    document.querySelectorAll(".tab")[1].classList.add("active");
-    registerTab.classList.add("active");
-  }
-}
-
-// 🔑 CÓDIGO ÚNICO
-function gerarCodigo() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-
-// 📝 CADASTRO
-function register() {
-  const nome = name.value;
-  const email = emailInput.value;
-  const senha = password.value;
-
-  if (!nome || !email || !senha) {
-    alert("Preencha todos os campos");
-    return;
-  }
-
-  auth.createUserWithEmailAndPassword(email, senha)
-    .then(res => {
-      const uid = res.user.uid;
-      const codigo = gerarCodigo();
-
-      db.collection("users").doc(uid).set({
-        name: nome,
-        email: email,
-        code: codigo,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-
-      alert("Cadastro criado! Faça login.");
-      showTab("login");
-    })
-    .catch(err => alert(err.message));
-}
-
-// 🔓 LOGIN
-function login() {
-  auth.signInWithEmailAndPassword(emailLogin.value, passwordLogin.value)
-    .then(() => iniciar())
-    .catch(err => alert(err.message));
-}
-
-// 🚀 INICIAR CHAT
-function iniciar() {
-  authDiv = document.getElementById("auth");
-  authDiv.style.display = "none";
-  chat.style.display = "block";
-
-  db.collection("users").doc(auth.currentUser.uid).get()
-    .then(doc => {
-      myCode.innerHTML = "Seu código: <b>" + doc.data().code + "</b>";
-    });
-}
-
-// 💬 ABRIR CHAT
-async function openChat() {
-  const code = contactCode.value.trim();
-  if (!code) return;
-
-  const snap = await db.collection("users")
-    .where("code", "==", code).get();
-
-  if (snap.empty) {
-    alert("Usuário não encontrado");
-    return;
-  }
-
-  const otherUid = snap.docs[0].id;
-  const myUid = auth.currentUser.uid;
-
-  currentChatId = [myUid, otherUid].sort().join("_");
-
-  db.collection("chats").doc(currentChatId).set({
-    members: {
-      [myUid]: true,
-      [otherUid]: true
+    if(localStorage.getItem(u) === p){
+        iniciar(u);
+    } else {
+        alert("Usuário não encontrado");
     }
-  }, { merge:true });
-
-  ouvirMensagens();
 }
 
-// 👂 MENSAGENS
-function ouvirMensagens() {
-  messages.innerHTML = "";
+function register(){
+    let u = user.value;
+    let p = pass.value;
 
-  db.collection("chats").doc(currentChatId)
-    .collection("messages")
-    .orderBy("time")
-    .onSnapshot(snap => {
-      messages.innerHTML = "";
-      snap.forEach(doc => {
-        const m = doc.data();
-        const div = document.createElement("div");
-        div.className = "msg " + (m.sender === auth.currentUser.uid ? "me" : "other");
-        div.innerText = m.text;
-        messages.appendChild(div);
-      });
-      messages.scrollTop = messages.scrollHeight;
+    localStorage.setItem(u,p);
+    localStorage.setItem(u+"_saldo",1000);
+    localStorage.setItem(u+"_hist","[]");
+
+    alert("Conta criada!");
+}
+
+function iniciar(u){
+    window.usuario = u;
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
+    carregar();
+}
+
+function logout(){
+    location.reload();
+}
+
+// SALDO
+function carregar(){
+    saldo = Number(localStorage.getItem(usuario+"_saldo"));
+    atualizarSaldo();
+    carregarHistorico();
+}
+
+function atualizarSaldo(){
+    saldoEl.innerText = "R$ " + saldo.toLocaleString();
+}
+
+// CUPOM
+const cupons = {VIP100:100,PIX500:500};
+
+function usarCupom(){
+    let c = cupom.value.toUpperCase();
+    if(cupons[c]){
+        saldo += cupons[c];
+        salvar("Cupom +" + cupons[c]);
+    } else alert("Inválido");
+}
+
+// HISTÓRICO
+function salvar(txt){
+    let hist = JSON.parse(localStorage.getItem(usuario+"_hist"));
+    hist.push(txt);
+    localStorage.setItem(usuario+"_hist",JSON.stringify(hist));
+    localStorage.setItem(usuario+"_saldo",saldo);
+    carregar();
+}
+
+function carregarHistorico(){
+    let hist = JSON.parse(localStorage.getItem(usuario+"_hist"));
+    history.innerHTML="";
+    hist.reverse().forEach(h=>{
+        history.innerHTML += `<div class="history-item">${h}</div>`;
     });
 }
 
-// ✉️ ENVIAR
-function sendMsg() {
-  if (!currentChatId || !msgInput.value) return;
+// INVESTIMENTOS
+const valores=[500,1000,5000,10000,50000,100000];
 
-  db.collection("chats").doc(currentChatId)
-    .collection("messages").add({
-      sender: auth.currentUser.uid,
-      text: msgInput.value,
-      time: firebase.firestore.FieldValue.serverTimestamp()
-    });
+valores.forEach(v=>{
+    let div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`R$ ${v}`;
+    div.onclick=()=>abrir(v);
+    grid.appendChild(div);
+});
 
-  msgInput.value = "";
+function abrir(v){
+    modal.style.display="flex";
+    valor.innerText="R$ "+v;
 }
+
+function fechar(){ modal.style.display="none"; }
+
+function simular(){
+    msg.innerText="Processando...";
+    setTimeout(()=>{
+        msg.innerText="Se não atualizar, contate suporte.";
+    },1500);
+}
+
 </script>
 
 </body>
